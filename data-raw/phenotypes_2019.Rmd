@@ -1,0 +1,137 @@
+---
+title: "Phenotypes_Planting_2019"
+author: "Alice MacQueen"
+date: "12/29/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(XLConnect)
+library(rlang)
+library(switchgrassGWAS)
+```
+
+## Load all phenotypic data from 2019
+
+```{r}
+wb_pheno <- loadWorkbook(file.path("C:", "Users", "alice", "Dropbox",
+                                   paste0("GWAS DOE Switchgrass, ",
+                                          "Consolidated Data"),
+                                   paste0("DOE_GWAS_2019_Consolidated ",
+                                          "Pheno Data_12-25-19.xlsx")))
+lst_pheno <- readWorksheet(wb_pheno, sheet = getSheets(wb_pheno))
+phenos_planting1 <- lst_pheno$`GWAS 2019 Greenup Data`
+phenos_planting2 <- lst_pheno$`GWAS 2019 Core Phenotype Data`
+phenos_key <- lst_pheno$`Column Key and Notes`
+
+wb_KING2019 <- loadWorkbook(file.path("C:", "Users", "alice", "Dropbox",
+                                      paste0("GWAS DOE Switchgrass, ",
+                                             "Consolidated Data"),
+                                      "Individual Site Files",
+                                      "KING_GWAS_2019_Chlorosis Data.xlsx"))
+lst_KING2019 <- readWorksheet(wb_KING2019, sheet = getSheets(wb_KING2019))
+KING2019 <- as_tibble(lst_KING2019$`KING GWAS 2019 Chlorosis`)
+key_KING19 <- as_tibble(lst_KING2019$`COLUMN KEY`)
+
+
+all_plants_phenos <- phenos_planting1 %>%
+  left_join(PKLE_2018, by = c("SITE", "PLOT_GL", "PLOT_LC", "ACC", "INDV", "PLANT_ID")) %>%
+  left_join(KBSM2018, by = c("PLOT_GL")) %>%
+  left_join(TMPL2018, by = c("SITE", "PLOT_GL", "PLOT_LC")) %>%
+  mutate(DAM = DAM/10) %>%
+  left_join(KING2018, by = c("SITE", "PLOT_GL", "PLOT_LC")) %>%
+  left_join(CLMB2018, by = "PLOT_GL") %>%
+  left_join(KING2019, by = "PLOT_GL") %>%
+  left_join(LOST2018, by = c("SITE", "PLOT_GL", "PLOT_LC", "PLANT_ID",
+                             "PLANT_.ID_GL")) %>%
+  mutate(PLANT_ID = ifelse(ACC == "AP13",
+                           "AP13",
+                           PLANT_ID),
+         DEAD_2018 = ifelse(is.na(DEAD_2018), 0, DEAD_2018))
+```
+
+
+# Look at 2019 data
+
+Remove 2019 phenotype scores for plants that didn't survive the winter of 2018.
+```{r}
+all_plants_phenos %>%
+  left_join(phenos_planting2, by = c("SITE", "PLOT_GL", "PLOT_LC")) %>%
+  group_by(SRV, DEAD_2018) %>% tally()
+  
+all_plants_phenos %>%
+  left_join(phenos_planting2, by = c("SITE", "PLOT_GL", "PLOT_LC")) %>%
+  filter(SRV == "W" & DEAD_2018 == 1)
+
+all_plants_phenos %>%
+  left_join(phenos_planting2, by = c("SITE", "PLOT_GL", "PLOT_LC")) %>%
+  filter(SRV == "Y" & DEAD_2018 == 1)
+
+```
+12 called as "N" but I called previously as survived (DEAD_2018 = 0) - I'm willing to call these dead. Little data was collected.
+
+13 called as "W" but I called previously as dead (and were noted (in 'NOTES') as "Dead" or "dead".) 8 have phenotype data collected in 2019.
+CLMB	C6920	6920	J216	A	J216.A	J216.A.CL	
+FRMI	F1002	1002	J462	A	J462.A	J462.A.FR	
+FRMI	F1714	1714	J458	B	J458.B	J458.B.FR	
+FRMI	F2716	2716	J498	C	J498.C	J498.C.FR	
+FRMI	F2724	2724	J235	A	J235.A	J235.A.FR	
+KING	K1909	1909	J465	C	J465.C	J465.C.KG	
+KING	K2008	2008	J597	A	J597.A	J597.A.KG	
+PKLE	P5601	5601	J036	A	J036.A	J036.A.PK	
+TMPL	T1303	1303	J597	A	J597.A	J597.A.TP	
+TMPL	T1609	1609	J538	A	J538.A	J538.A.TP
+TMPL	T2308	2308	J504	A	J504.A	J504.A.TP	
+TMPL	T2721	2721	J477	B	J477.B	J477.B.TP	
+TMPL	T2803	2803	J592	C	J592.C	J592.C.TP
+
+6 with issues on whether or not the plant died:
+For these, SRV was called as "Y", but were noted (in 'NOTES') as "Dead". All 6 have some phenotypic data collected in 2019.
+
+
+FRMI	F2519	2519	J482	A	J482.A	J482.A.FR	
+FRMI	F2523	2523	J577	B	J577.B	J577.B.FR	
+FRMI	F2720	2720	J465	A	J465.A	J465.A.FR	
+FRMI	F3302	3302	J340	A	J340.A	J340.A.FR	
+TMPL	T2106	2106	J019	A	J019.A	J019.A.TP	
+OVTN	V1319	1319	J580	A	J580.A	J580.A.VN
+
+
+Ask Jason about 19 of these. Drop all 31 for now.
+
+```{r}
+phenotypes_2019 <- all_plants_phenos %>%
+  left_join(phenos_planting2, by = c("SITE", "PLOT_GL", "PLOT_LC")) %>%
+  filter(!(SRV == "W" & DEAD_2018 == 1) & !(SRV == "Y" & DEAD_2018 == 1) & !(SRV == "N")) %>%
+  dplyr::select(SITE:PLANT_ID, GR1:GR100, EM1:NOTE_HARVEST)
+```
+
+# 2019 Phenotype Cleanup
+
+Ensure all of the columns have the correct data type - mostly, numeric.
+
+
+```{r}
+phenotypes_2019 %>%
+  mutate(GR1 = as.numeric(GR1),
+         GR50 = as.numeric(GR50),
+         GR100 = as.numeric(GR100),
+         EM1 = as.numeric(EM1),
+         EM50 = as.numeric(EM50),
+         FL1 = as.numeric(FL1),
+         FL50 = as.numeric(FL50),
+         TC_EOS = as.numeric(TC_EOS),
+         HT_PAN_EOS = as.numeric(HT_PAN_EOS),
+         LD_EOS = as.numeric(LD_EOS),
+         REGR = as.numeric(REGR),
+         MOISTURE = as.numeric(MOISTURE),
+         BIOMASS = as.numeric(BIOMASS))
+         
+  
+```
+
+## Look for outlier values by site 
+
+and maybe by genetic subgroup, or ACC, or PLANT_ID
