@@ -17,7 +17,7 @@ library(bigsnpr)
 library(scales)
 library(lubridate)
 
-source("C:/Users/alice/Documents/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+source("../../../Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 theme_set(theme_poster)
 
 load("../data/sites.rda")
@@ -30,7 +30,7 @@ usa <- map_data("state")
 ## Load all phenotypic data from 2019
 
 ```{r}
-wb_pheno <- loadWorkbook(file.path("C:", "Users", "alice", "Dropbox",
+wb_pheno <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
                                    paste0("GWAS DOE Switchgrass, ",
                                           "Consolidated Data"),
                                    paste0("DOE_GWAS_2019_Consolidated ",
@@ -40,7 +40,7 @@ phenos_planting1 <- lst_pheno$`GWAS 2019 Greenup Data`
 phenos_planting2 <- lst_pheno$`GWAS 2019 Core Phenotype Data`
 phenos_key <- lst_pheno$`Column Key and Notes`
 
-wb_KING2019 <- loadWorkbook(file.path("C:", "Users", "alice", "Dropbox",
+wb_KING2019 <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
                                       paste0("GWAS DOE Switchgrass, ",
                                              "Consolidated Data"),
                                       "Individual Site Files",
@@ -49,7 +49,7 @@ lst_KING2019 <- readWorksheet(wb_KING2019, sheet = getSheets(wb_KING2019))
 KING2019 <- as_tibble(lst_KING2019$`KING GWAS 2019 Chlorosis`)
 key_KING19 <- as_tibble(lst_KING2019$`COLUMN KEY`)
 
-wb_DEAD2018 <- loadWorkbook(file.path("C:", "Users", "alice", "Dropbox",
+wb_DEAD2018 <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
                                       paste0("GWAS DOE Switchgrass, ",
                                              "Consolidated Data"),
                                       "Forms and Miscellaneous",
@@ -313,7 +313,12 @@ metadata <- metadata %>%
 metadata$Genetic_subpop <- factor(metadata$Genetic_subpop, levels = c("TX", "GC,TX", "GC", "SEC", "NEC,SEC", "NEC", "MW", "Admixed", "Unknown"))
 metadata$Ecotype <- factor(metadata$Ecotype, levels = c("Texas", "Coastal", "Upland"))
 
-metadata <- add_row(metadata, PLANT_ID = "AP13", LIB_CLIMATE = "Y", LIB_PHENO = "Y", LIB_ACC = "Y", Ecotype = "TX", Genetic_subpop = "TX")
+# metadata <- metadata %>%
+#   filter(PLANT_ID != "AP13")
+
+metadata <- add_row(metadata, PLANT_ID = "AP13", LIBRARY = "REF", LIB_CLIMATE = "Y", LIB_PHENO = "Y", LIB_ACC = "Y", JL_genetic_subpop = "TX", JL_detail_genetic = "TX", PLOIDY = "4X", Ecotype = "TX", Genetic_subpop = "TX")
+
+save(metadata, file = "../data/metadata.rda")
 ```
 
 ```{r}
