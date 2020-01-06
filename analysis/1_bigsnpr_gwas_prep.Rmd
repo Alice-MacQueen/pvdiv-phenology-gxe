@@ -1,0 +1,261 @@
+---
+title: "1_bigsnpr_gwas_prep"
+author: "Alice MacQueen"
+date: "1/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(XLConnect)
+library(rlang)
+library(bigsnpr)
+library(switchgrassGWAS)
+library(AnnotationDbi)
+library(cowplot)
+library(viridis)
+library(bigsnpr)
+library(scales)
+library(lubridate)
+
+source("../../Functions_ggplot-theme-adjustments_2018-01-03.R")
+theme_set(theme_poster)
+
+load("../data/sites.rda")
+load("../data/metadata.rda")
+load("../data/Taxa.rda")
+load("../data/phenotypes_2019.rda")
+
+usa <- map_data("state")
+```
+
+## prepare phenotypes for GWAS
+
+```{r}
+colremove <- names(which(colSums(!is.na(phenotypes_wide_2019)) < 200))
+
+phe_gwas_4big <- phenotypes_wide_2019 %>%
+  dplyr::select(-colremove, -ends_with("1"), -ends_with("100"), 
+                -starts_with("BRKG"), -starts_with("FRMI"), 
+                -starts_with("LINC"), -starts_with("OVTN"), 
+                -starts_with("TMPL"), -starts_with("KING")) 
+
+```
+
+# gwas with 9 PCs for 509 individuals
+
+```{r}
+
+
+# Load files used in creating the annotation tables.
+
+txdb <- loadDb(file = file.path("/", "home", "alice", "pvdiv", "switchgrassGWAS", 
+                                "data",
+                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+
+anno_info <-
+  read_delim(file = file.path("/", "home", "alice",  "pvdiv", "switchgrassGWAS", 
+                              "data",
+                              "Pvirgatum_516_v5.1.annotation_info.txt"),
+             col_names = TRUE, delim = "\t")
+gene_anno_info <- tbl_df(anno_info) %>%
+  distinct(locusName, .keep_all = TRUE)
+
+svd <- readRDS(file.path("/", "home", "alice", "Github", "pvdiv-phenology-gxe",
+                         "large-files", "SVD_upland_lowland_continuous_k20.rds"))
+
+snp <- snp_attach(file.path("~", "pvdiv", "VCF_and_Numeric", "Pvirgatum_4x_784g_imp_phased_up_low_continuous_subset_maf0.05.rds"))
+
+  G <- snp$genotypes
+  CHR <- snp$map$chromosome
+  POS <- snp$map$physical.pos
+  plants <- snp$fam$sample.ID
+  bonferroni <- -log10(0.05/length(POS))
+  NCORES <- nb_cores()
+  
+  CHRN <- enframe(CHR, name = NULL) %>%
+    dplyr::rename(CHR = .data$value) %>%
+    mutate(CHRN = case_when(.data$CHR == "Chr01K" ~ 1,
+                            .data$CHR == "Chr01N" ~ 2,
+                            .data$CHR == "Chr02K" ~ 3,
+                            .data$CHR == "Chr02N" ~ 4,
+                            .data$CHR == "Chr03K" ~ 5,
+                            .data$CHR == "Chr03N" ~ 6,
+                            .data$CHR == "Chr04K" ~ 7,
+                            .data$CHR == "Chr04N" ~ 8,
+                            .data$CHR == "Chr05K" ~ 9,
+                            .data$CHR == "Chr05N" ~ 10,
+                            .data$CHR == "Chr06K" ~ 11,
+                            .data$CHR == "Chr06N" ~ 12,
+                            .data$CHR == "Chr07K" ~ 13,
+                            .data$CHR == "Chr07N" ~ 14,
+                            .data$CHR == "Chr08K" ~ 15,
+                            .data$CHR == "Chr08N" ~ 16,
+                            .data$CHR == "Chr09K" ~ 17,
+                            .data$CHR == "Chr09N" ~ 18,
+                            TRUE ~ 19
+    ))
+  markers <- tibble(CHR = CHR, POS = POS)
+  
+  plants <- plants %>% enframe(value="PLANT_ID") %>% dplyr::select(-name)
+  plants %>%
+    left_join(phe_gwas_4big) %>% arrange(PLANT_ID)
+  
+  df_phe <- plants %>%
+    left_join(phe_gwas_4big)
+  
+  gwas <- pvdiv_gwas(df = df_phe, type = "linear", snp = snp, ncores = NCORES, 
+                     covar = svd, npcs = 9)
+
+  
+```
+
+
+# Mash
+
+STIL, KBSM, PKLE, CLMB
+
+GR50
+EM50
+FL50
+TC_EOS
+HT_PAN_EOS
+T_GR_EM
+T_GR_FL
+T_EM_FL
+
+```{r}
+markers2sub <- attr(svd, "subset")
+markers2 <- tibble(CHR = CHR[markers2sub], POS = POS[markers2sub])
+
+gwas_rds <- pvdiv_results_in_folder(path = ".", pattern = "GWAS_object_") # 8 phenotypes from 4 sites - 32 phenotypes total with > 200 individuals phenotyped and sequenced. 
+
+phenotype_names <- str_sub(gwas_rds, start = 13, end = -5)
+
+numSNPs <- ceiling(1500000/length(phenotype_names)^2)
+numSNPs <- 1500 # the above gave 1465, so just rounded this to 1500.
+
+mash_input <- pvdiv_bigsnp2mashr(path = ".", gwas_rds = gwas_rds, 
+                           phenotypes = phenotype_names, numSNPs = numSNPs, 
+                           markers = markers, markers2 = markers2, G = G, 
+                           model = "linear", saveoutput = TRUE)
+
+mash_output <- mash_standard_run(path = ".", list_input = mash_input, 
+                                  numSNPs = numSNPs, saveoutput = TRUE)
+```
+
+## Visualize bigsnpr GWAS
+
+```{r}
+for(i in 2:ncol(phe_gwas_4big)){
+  
+  df1 <- phe_gwas_4big %>%
+    dplyr::select(PLANT_ID, i)
+  gwas <- pvdiv_gwas(df = df1, type = "linear", snp = snp, ncores = NCORES, 
+                     covar = svd, npcs = 9)
+  
+  ggsave(snp_manhattan(gwas, infos.chr = CHRN$CHRN,
+                       infos.pos = snp$map$physical.pos, npoints = 2.1E06) +
+           geom_hline(yintercept = bonferroni, lty = 2),
+         filename = paste0("Manhattan_logistic_winter_survival", 
+                           "_subset_9_PCs.png"), width = 10, height = 6,
+         path = file.path("~", "pvdiv", "climateGWAS", 
+                          "results-upland-vs-lowland", 
+                          "Logistic_winter_survival"))
+  anno_tables <- pvdiv_table_topsnps(df = gwas, type = "bigsnp", 
+                                     n = c(10,100,1000), FDRalpha = 0.1, 
+                                     rangevector = c(0, 20000, 100000),
+                                     markers = markers, 
+                                     anno_info = gene_anno_info,
+                                     txdb = txdb)
+  saveRDS(anno_tables, file.path("~", "pvdiv", "climateGWAS", 
+                                 "results-upland-vs-lowland", 
+                                 "Logistic_winter_survival",
+                                 paste0("Annotation_tables_", 
+                                        "logistic_winter_survival", 
+                                        "_subset_9_PCs.rds")))
+  ggsave(snp_qq(gwas[which(!is.na(gwas$score)),]),
+         filename = paste0("QQplot_logistic_winter_survival_", 
+                           "subset_9_PCs.png"), width = 4,
+         height = 4, path = file.path("~", "pvdiv", "climateGWAS", 
+                                      "results-upland-vs-lowland", 
+                                      "Logistic_winter_survival"))
+}
+
+```
+
+
+# Local score post processing of bigsnpr GWAS
+
+```{r}
+log10p <- predict(gwas)
+pval <- 10^log10p
+  
+data1 <- data.table(chr = CHR, pos = POS, estim = gwas$estim, 
+                    std.err = gwas$std.err, bigsnpscore = gwas$score, 
+                    pval = pval)
+
+setkey(data1, chr)
+data1$pval[data1$pval==0]=1e-16#min(data1$pval[-which(data1$pval ==0)])
+Nchr=length(data1[,unique(chr)])
+
+### Computation of absolute position in the genome. 
+#This is useful for doing genomewide plots. 
+chrInfo=data1[,.(L=.N,cor=autocor(pval)),chr]
+setkey(chrInfo,chr)
+data.table(chr=data1[,unique(chr),], S=cumsum(c(0,chrInfo$L[-Nchr])))
+
+# The score mean must be negative, ksi must be chosen between mean and max of -log10(p-value)
+
+xi=2
+data1[,score:= -log10(pval)-xi]
+data1[,lindley:=lindley(score),chr]
+
+### Choice of $\xi$ (1,2,3 or 4)
+
+mean(data1$score)
+
+# verify mean is negative and max is positive
+mean(-log10(data1$pval));max(-log10(data1$pval))
+
+#hist(data1$score)
+max(data1$lindley)
+
+# Compute significance threshold for each chromosome
+## Uniform distribution of p-values
+chrInfo[,th:=thresUnif(L, cor, xi),chr]
+(data1=data1[chrInfo])
+
+(sigZones=data1[chrInfo,sig_sl(lindley, pos, unique(th)),chr])
+
+saveRDS(data1, "Logistic_winter_tolerance_gwas_lindley_scores.rds")
+saveRDS(sigZones, "Logistic_winter_tolerance_Lindley_sigZones.rds")
+```
+
+# Visualize local score GWAS
+
+```{r}
+phenos <- "winter_tolerance"
+i = 1
+
+  ggmanobject <- ggplot(data = data1, aes(x = pos, y = lindley)) +
+    geom_point(aes(color = chr, fill = chr)) +
+    geom_hline(yintercept = data1$th[1], linetype = 2) + 
+    facet_wrap(~ chr, nrow = 1, scales = "free_x", 
+               strip.position = "bottom") +
+    scale_color_viridis(option = "B", end = 0.8, discrete = TRUE) + 
+    scale_fill_viridis(option = "B", end = 0.8, discrete = TRUE) +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          panel.background = element_rect(fill=NA)) +
+    labs(x = "Chromosome", y = "Lindley") +
+    scale_x_continuous(expand = c(0.22, 0.22)) #+
+    #ylim(0, 40)
+    #scale_shape_manual(values = rep(c(21,22),9), guide = FALSE)
+
+    save_plot(paste0("Manhattan_", phenos[i], "_ksi_2_ylim_", 
+                     str_replace_all(Sys.time(), ":", "."), ".png"), 
+              plot = ggmanobject, base_aspect_ratio = 2.5, base_height = 5)
+```
+
