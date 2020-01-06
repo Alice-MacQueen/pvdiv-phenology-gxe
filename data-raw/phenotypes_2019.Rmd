@@ -15,6 +15,7 @@ library(cowplot)
 library(viridis)
 library(bigsnpr)
 library(scales)
+library(lubridate)
 
 source("C:/Users/alice/Documents/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 theme_set(theme_poster)
@@ -89,7 +90,10 @@ Remove 2019 phenotype scores for plants that didn't survive the winter of 2018.
 ```{r}
 phenos_2019 %>%
   group_by(SRV, DEAD_2018) %>% tally()
-  
+
+phenos_2019 %>%
+  filter(SRV == "W" & DEAD_2018 == 2)
+
 phenos_2019 %>%
   filter(SRV == "W" & DEAD_2018 == 1)
 
@@ -98,6 +102,8 @@ phenos_2019 %>%
 
 ```
 Anything where DEAD_2018 = 2 is called as "Not virgatum" in the past, so should be dropped. Does Jason agree?
+FRMI	F2610	2610	J203	J203.A	NA	156	NA	NA	W	Likely not virgatum, Weak	switchgrass?
+FRMI	F2707	2707	J421	J421.A	NA	149	176	NA 	W	Likely not virgatum, Weak	switchgrass?
 
 12 called as "N" but I called previously as survived (DEAD_2018 = 0) - I'm willing to call these dead. Little data was collected.
 
@@ -196,8 +202,6 @@ phemean_2019 <- phenotypes_2019 %>%
 
 
 ```{r}
-load("../data/Taxa.rda")
-
 phenotypes_wide_2019 <- phemean_2019 %>%
   gather(FRZ_DMG:SPADCOR_158, key = "Phenotype", value = value) %>%
   filter(!is.na(value)) %>%
@@ -224,28 +228,27 @@ phenotypes_long_2019 <- phenotypes_2019 %>%
 sites %>%
   arrange(Latitude)
 
-sites$Factor <- factor(sites$Factor, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
-sites$Factor <- factor(sites$Factor, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
-levels(sites$Factor)
+#sites$Factor <- factor(sites$Factor, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+#sites$Factor <- factor(sites$Factor, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
+#levels(sites$Factor)
 
-phenotypes_long_2019$SITE <- factor(phenotypes_long_2019$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+# phenotypes_long_2019$SITE <- factor(phenotypes_long_2019$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
 phenotypes_long_2019$SITE <- factor(phenotypes_long_2019$SITE, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
 phenotypes_long_2019$PHE <- factor(phenotypes_long_2019$PHE, levels = c("GR1", "GR50", "GR100", "EM1", "EM50", "FL1", "FL50", "TC_EOS", "HT_PAN_EOS", "FRZ_DMG", "CHLR_101", "CHLR_121", "CHLR_136", "CHLR_JASON_138", "CHLR_150.", "SPAD_158", "SPADCOR_158"))
+
+
+phenology_long_2019 <- phenotypes_long_2019 %>%
+  filter(!(grepl("CHLR", PHE)) & !(grepl("SPAD", PHE)) & !grepl("FRZ", PHE) & !is.na(PHE) & !grepl("TC_EOS", PHE) & !grepl("HT_PAN_EOS", PHE))
 
 ```
 
 ```{r}
-
 phenotypes_long_2019 %>%
   filter(!(grepl("CHLR", PHE)) & !(grepl("SPAD", PHE))) %>%
   ggplot(aes(x = Value)) + 
   geom_histogram(aes(fill = SITE)) + 
   facet_wrap(~PHE, scales = "free")
 
-phenology_long_2019 <- phenotypes_long_2019 %>%
-  filter(!(grepl("CHLR", PHE)) & !(grepl("SPAD", PHE)) & !grepl("FRZ", PHE) & !is.na(PHE) & !grepl("TC_EOS", PHE) & !grepl("HT_PAN_EOS", PHE))
-
-library(lubridate)
 phenology_long_2019 %>%
   mutate(Days = as_date(Value)) %>%
   ggplot(aes(x = Days)) + 
@@ -296,18 +299,19 @@ save_plot("2019_Phenotypic_Data_by_Site_2019-12-30.png", plot = last_plot(), bas
 and maybe by genetic subgroup, or ACC, or PLANT_ID
 
 ```{r}
-
-
-load("../data/metadata.rda")
-
 metadata <- metadata %>%
   mutate(Genetic_subpop = case_when(
            is.na(JL_genetic_subpop) ~ "Unknown",
            JL_genetic_subpop == "other" ~ "Admixed",
            TRUE ~ JL_genetic_subpop
-           ))
+           ),
+        Ecotype = case_when(
+          Ecotype == "TX" ~ "Texas",
+          Ecotype == "Coast" ~ "Coastal",
+          Ecotype == "Up" ~ "Upland"
+          ))
 metadata$Genetic_subpop <- factor(metadata$Genetic_subpop, levels = c("TX", "GC,TX", "GC", "SEC", "NEC,SEC", "NEC", "MW", "Admixed", "Unknown"))
-metadata$Ecotype <- factor(metadata$Ecotype, levels = c("TX", "Coast", "Up"))
+metadata$Ecotype <- factor(metadata$Ecotype, levels = c("Texas", "Coastal", "Upland"))
 
 metadata <- add_row(metadata, PLANT_ID = "AP13", LIB_CLIMATE = "Y", LIB_PHENO = "Y", LIB_ACC = "Y", Ecotype = "TX", Genetic_subpop = "TX")
 ```
@@ -411,5 +415,272 @@ phenology_long_2019 %>%
 
 save_plot("Phenology_Data_by_Site_Ecotype_noAP13_Coord_Flip_2019-12-30.png", plot = last_plot(), base_height = 8, base_width = 14)
 
+```
+
+## Other phenotypes by Ecotype/Subpop
+
+```{r}
+phenotypes_long_2019 %>%
+  filter(grepl("TC_EOS", PHE) | grepl("HT_PAN_EOS", PHE) | grepl("FRZ", PHE)) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(Genetic_subpop %in% c("Admixed", "Unknown")) & 
+           PLANT_ID != "AP13") %>%
+  ggplot(aes(x = Value)) +
+  geom_histogram(aes(fill = Genetic_subpop)) + 
+  facet_grid(SITE~PHE, scales = "free") +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right", axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("Value") + ylab("Count of Individuals")
+
+save_plot("2019_Phenotypic_Data_by_Site_and_Genetic_Subpop_2019-12-30.png", plot = last_plot(), base_height = 10, base_width = 9)
+
+phenotypes_long_2019 %>%
+  filter(grepl("TC_EOS", PHE) | grepl("HT_PAN_EOS", PHE) | grepl("FRZ", PHE)) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(Genetic_subpop %in% c("Unknown")) & 
+           PLANT_ID != "AP13") %>%
+  ggplot(aes(x = Value)) +
+  geom_histogram(aes(fill = Ecotype)) + 
+  facet_grid(SITE~PHE, scales = "free") +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right", axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("Value") + ylab("Count of Individuals")
+
+save_plot("2019_Phenotypic_Data_by_Site_and_Ecotype_2019-12-30.png", plot = last_plot(), base_height = 10, base_width = 9)
+```
+
+
+# Do dates make sense for each SITE*PLANT_ID?
+
+In the aggregate these values seem to make sense, check them for individual cases.
+
+```{r}
+phenotypes_long_2019 %>%
+  filter(grepl("TC_EOS", PHE) | grepl("HT_PAN_EOS", PHE)) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(Genetic_subpop %in% c("Unknown")) & 
+           PLANT_ID != "AP13") %>%
+  pivot_wider(names_from = PHE, values_from = Value) %>%
+  ggplot(aes(x = TC_EOS, y = HT_PAN_EOS)) +
+  geom_point(aes(color = Ecotype), alpha = 0.2) +
+  facet_wrap(~SITE) +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right")
+
+phe_comp <- phenology_long_2019 %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(Genetic_subpop %in% c("Unknown")) & 
+           PLANT_ID != "AP13") %>%
+  pivot_wider(names_from = PHE, values_from = Value)
+```
+
+```{r}
+phe_comp %>%
+  ggplot(aes(x = GR50, y = EM50)) +
+  geom_point(aes(color = Ecotype), alpha = 0.2) +
+  facet_wrap(~SITE) +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right") + 
+  geom_abline(slope = 1, intercept = 0)
+save_plot("Greenup_vs_Emergence_50percent_by_Site_2019-12-31.png", plot = last_plot(), base_height = 4)
+phe_comp %>%
+  ggplot(aes(x = GR50, y = FL50)) +
+  geom_point(aes(color = Ecotype), alpha = 0.2) +
+  facet_wrap(~SITE) +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right") + 
+  geom_abline(slope = 1, intercept = 0)
+save_plot("Greenup_vs_Flowering_50percent_by_Site_2019-12-31.png", plot = last_plot(), base_height = 4)
+phe_comp %>%
+  ggplot(aes(x = EM50, y = FL50)) +
+  geom_point(aes(color = Ecotype), alpha = 0.2) +
+  facet_wrap(~SITE) +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right") + 
+  geom_abline(slope = 1, intercept = 0)
+save_plot("Emergence_vs_Flowering_50percent_by_Site_2019-12-31.png", plot = last_plot(), base_height = 4)
+```
+
+TMPL has some EM1 and EM50 issues. not collected very much at later timepoints.
+OVTN: I don't have EM or FL data. Was this data not collected?
+
+TMPL and PKLE (and KING, and STIL less so) have a huge spread of FL1 vs GR1. Also true for FL1 vs GR100 and FL50 vs GR100. GxE?!
+
+```{r}
+
+phe_comp %>%
+  ggplot(aes(x = FL1, y = FL50)) +
+  geom_point(aes(color = Ecotype), alpha = 0.5) +
+  facet_wrap(~SITE) +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right") + 
+  geom_abline(slope = 1, intercept = 0)
+save_plot("Possible_Flowering_Errors_below_the_line_by_Site_2019-12-30.png", plot = last_plot(), base_height = 4)
+
+phe_comp %>%
+  ggplot(aes(x = GR1, y = GR100)) +
+  geom_point(aes(color = Ecotype), alpha = 0.2) +
+  #facet_wrap(~SITE) +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right") + 
+  geom_abline(slope = 1, intercept = 0)
+
+save_plot("Possible_Greenup_Errors_below_the_line_by_Site_2019-12-30.png", plot = last_plot(), base_height = 4)
+
+phe_comp %>%
+  ggplot(aes(x = EM1, y = EM50)) +
+  geom_point(aes(color = Ecotype), alpha = 0.4) +
+  facet_wrap(~SITE) +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "right") + 
+  geom_abline(slope = 1, intercept = 0)
+save_plot("Possible_Emergence_Errors_below_the_line_by_Site_2019-12-30.png", plot = last_plot(), base_height = 4)
+```
+Generally, EM50 should not be less than EM1, and it certainly shouldn't be much less (like where EM1 is 200 and EM50 is 50, must be an error)
+```{r}
+phe_comp %>%
+  mutate(EMdiff = EM50 - EM1) %>%
+  filter(EMdiff < 0) %>%
+  dplyr::select(SITE:PLANT_ID, EM1, EM50, EMdiff)
+
+phe_comp %>%
+  mutate(FLdiff = FL50 - FL1) %>%
+  filter(FLdiff < 0) %>%
+  dplyr::select(SITE:PLANT_ID, FL1, FL50, FLdiff)
+```
+SITE PLOT_GL PLOT_LC ACC PLANT_ID EM1 EM50 EMdiff
+
+STIL	S1110	1110	J587	J587.A	186	185	-1
+STIL	S2907	2907	J073	J073.A	190	184	-6
+STIL	S3603	3603	J210	J210.A	188	186	-2
+TMPL	T1417	1417	J321	J321.A	182	180	-2
+TMPL	T2101	2101	J586	J586.B	199	182	-17
+TMPL	T2103	2103	J008	J008.A	182	126	-56
+TMPL	T2111	2111	J326	J326.B	199	19	-180
+TMPL	T2203	2203	J614	J614.B	142	141	-1
+TMPL	T2411	2411	J270	J270.A	199	99	-100
+
+
+For GxE study:
+
+Greenup date (50%)
+time to bolting (EM50 - GR50)
+Panicle emergence date (50%)
+time to flowering (FL50 - GR50)
+Flowering date (50%)
+Tiller count EOS 2019
+Panicle height EOS 2019
+
+Also GR1, GR100, EM1, FL1, CHLR/SPAD in KING, FRZ_DAM, but the 7 above seem more interesting.
+
+# Remove outliers
+
+```{r}
+phe_2019_fil <- phenotypes_long_2019 %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!is.na(JL_genetic_subpop)) %>%
+  pivot_wider(names_from = PHE, values_from = Value) %>%
+  dplyr::select(SITE:PLANT_ID, LIB_PHENO, Ecotype, GR1:FRZ_DMG) %>%
+  filter(LIB_PHENO == "Y") %>%
+  mutate(EM50 = ifelse(EM50 - EM1 < 0, NA, EM50),
+         FL50 = ifelse(FL50 - FL1 < 0, NA, FL50),
+         TBOLT = EM50 - GR50,
+         TFLOW = FL50 - GR50) 
+
+phemean_2019 <- phe_2019_fil %>%
+  group_by(PLANT_ID, SITE) %>%
+  summarise(FRZ_DMG = mean(FRZ_DMG, na.rm = TRUE),
+            GR1 = mean(GR1, na.rm = TRUE),
+            GR50 = mean(GR50, na.rm = TRUE),
+            GR100 = mean(GR100, na.rm = TRUE),
+            EM1 = mean(EM1, na.rm = TRUE),
+            EM50 = mean(EM50, na.rm = TRUE),
+            FL1 = mean(FL1, na.rm = TRUE),
+            FL50 = mean(FL50, na.rm = TRUE),
+            TC_EOS = mean(TC_EOS, na.rm = TRUE),
+            HT_PAN_EOS = mean(HT_PAN_EOS, na.rm = TRUE),
+            CHLR_101 = mean(CHLR_101, na.rm = TRUE),
+            CHLR_121 = mean(CHLR_121, na.rm = TRUE),
+            CHLR_136 = mean(CHLR_136, na.rm = TRUE),
+            CHLR_JASON_138 = mean(CHLR_JASON_138, na.rm = TRUE),
+            CHLR_150. = mean(CHLR_150., na.rm = TRUE),
+            SPAD_158 = mean(SPAD_158, na.rm = TRUE),
+            SPADCOR_158 = mean(SPADCOR_158, na.rm = TRUE),
+            TBOLT = mean(TBOLT, na.rm = TRUE),
+            TFLOW = mean(TFLOW, na.rm = TRUE)
+  ) %>%
+  mutate_all( ~ case_when(!is.nan(.x) ~ .x)) %>% # if the column is not NA, keep the value; else replace with NA as nothing is provided as another choice in case_when.
+  filter(!is.na(SITE) & !is.na(PLANT_ID))
+```
+
+
+```{r}
+phenotypes_wide_2019 <- phemean_2019 %>%
+  dplyr::select(PLANT_ID:SITE, GR1:HT_PAN_EOS, TBOLT, TFLOW) %>%
+  gather(c(GR1:TFLOW), key = "Phenotype", value = value) %>%
+  filter(!is.na(value)) %>%
+  # saveRDS(file = "Cleaned pvdiv Phenotypes from 2018 for 784g 2019-05-16.rds")
+  unite(col = "SITE_PHE", SITE, Phenotype) %>%
+  spread(key = SITE_PHE, value = value) %>%
+  right_join(Taxa)
+
+save(phenotypes_wide_2019, file = "../data/phenotypes_2019.rda")
+```
+
+# How many plants are phenotyped at each site?
+
+```{r}
+colSums(!is.na(phenotypes_wide_2019))
+
+phenotypes_wide_2019 %>%
+  left_join(metadata) %>%
+  group_by(Ecotype, is.na(BRKG_GR50)) %>%
+  tally()
+
+phenotypes_long_2019 %>%
+  left_join(metadata) %>%
+  group_by(SITE, PHE, Ecotype) %>%
+  tally()
+phemean_2019 %>%
+  left_join(metadata) %>%
+  dplyr::select(PLANT_ID, SITE, GR1:HT_PAN_EOS) %>%
+  ggplot(aes(x = PLANT_ID, y = SITE)) +
+  geom_heatm
+  pivot_longer(cols = GR1:HT_PAN_EOS, names_to = "PHE", values_to = "Value") %>%
+  group_by(SITE, PHE) %>%
+  tally() 
+  
+
+tibble(PLANT_ID = Taxa$PLANT_ID, PHE = rowSums(!is.na(phenotypes_wide_2019)) - 1) %>%
+  filter(PHE > 0)
+
+colremove <- names(which(colSums(!is.na(phenotypes_wide_2019)) < 200))
+
+phe_gwas_2019 <- phenotypes_wide_2019 %>%
+  dplyr::select(-colremove, -ends_with("1"), -ends_with("100")) 
+
+
+
+plotphe <- phe_gwas_2019 %>%
+  #dplyr::select(PLANT_ID, ends_with("TBOLT")) %>%
+  pivot_longer(cols = BRKG_EM50:TMPL_TFLOW, names_to = "PHE", values_to = "VALUE") %>%
+  left_join(metadata) %>%
+  filter(!is.na(VALUE)) %>%
+  separate(PHE, into = c("SITE", "_", "PHE"), sep = c(4,5))
+
+plotphe$SITE <- factor(plotphe$SITE, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
+plotphe$PHE <- factor(plotphe$PHE, levels = c("GR50", "EM50", "FL50", "TBOLT", "TFLOW", "TC_EOS", "HT_PAN_EOS"))
+
+plotphe %>%
+  group_by(PHE, Ecotype) %>% 
+  ggplot(aes(x = SITE)) +
+  geom_bar(aes( fill = Ecotype)) +
+  facet_wrap(~PHE) +
+  scale_fill_viridis(discrete = TRUE, end = 0.95, direction = -1) +
+  theme(legend.position = "right", axis.text.x = element_text(angle = 45, 
+                                                              hjust = 1)) +
+  xlab("Site") + ylab("Number of Individuals") 
+
+save_plot("Number_of_Individuals_per_Phenotype_2_2020-01-04.png", plot = last_plot(), base_height = 4*2.5, base_width = 5*2.5)
+
+summary(metadata$Ecotype)
 ```
 
