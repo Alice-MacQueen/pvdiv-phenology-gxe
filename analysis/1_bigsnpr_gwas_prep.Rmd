@@ -111,6 +111,257 @@ snp <- snp_attach(file.path("~", "pvdiv", "VCF_and_Numeric", "Pvirgatum_4x_784g_
   
 ```
 
+# T_GR_FL
+
+```{r}
+colremove <- names(which(colSums(!is.na(phenotypes_wide_2019)) < 200))
+
+phe_gwas_tgrfl <- phenotypes_wide_2019 %>%
+  dplyr::select(-colremove) %>%
+  dplyr::select(PLANT_ID, ends_with("T_GR_FL")) 
+
+
+txdb <- loadDb(file = file.path("/", "home", "alice", "pvdiv", "switchgrassGWAS", 
+                                "data",
+                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+
+anno_info <-
+  read_delim(file = file.path("/", "home", "alice",  "pvdiv", "switchgrassGWAS", 
+                              "data",
+                              "Pvirgatum_516_v5.1.annotation_info.txt"),
+             col_names = TRUE, delim = "\t")
+gene_anno_info <- tbl_df(anno_info) %>%
+  distinct(locusName, .keep_all = TRUE)
+
+svd <- readRDS(file.path("/", "home", "alice", "Github", "pvdiv-phenology-gxe",
+                         "large-files", "SVD_upland_lowland_continuous_k20.rds"))
+
+snp <- snp_attach(file.path("~", "pvdiv", "VCF_and_Numeric", "Pvirgatum_4x_784g_imp_phased_up_low_continuous_subset_maf0.05.rds"))
+
+  G <- snp$genotypes
+  CHR <- snp$map$chromosome
+  POS <- snp$map$physical.pos
+  plants <- snp$fam$sample.ID
+  bonferroni <- -log10(0.05/length(POS))
+  NCORES <- nb_cores()
+  
+  CHRN <- enframe(CHR, name = NULL) %>%
+    dplyr::rename(CHR = .data$value) %>%
+    mutate(CHRN = case_when(.data$CHR == "Chr01K" ~ 1,
+                            .data$CHR == "Chr01N" ~ 2,
+                            .data$CHR == "Chr02K" ~ 3,
+                            .data$CHR == "Chr02N" ~ 4,
+                            .data$CHR == "Chr03K" ~ 5,
+                            .data$CHR == "Chr03N" ~ 6,
+                            .data$CHR == "Chr04K" ~ 7,
+                            .data$CHR == "Chr04N" ~ 8,
+                            .data$CHR == "Chr05K" ~ 9,
+                            .data$CHR == "Chr05N" ~ 10,
+                            .data$CHR == "Chr06K" ~ 11,
+                            .data$CHR == "Chr06N" ~ 12,
+                            .data$CHR == "Chr07K" ~ 13,
+                            .data$CHR == "Chr07N" ~ 14,
+                            .data$CHR == "Chr08K" ~ 15,
+                            .data$CHR == "Chr08N" ~ 16,
+                            .data$CHR == "Chr09K" ~ 17,
+                            .data$CHR == "Chr09N" ~ 18,
+                            TRUE ~ 19
+    ))
+  markers <- tibble(CHR = CHR, POS = POS)
+  
+  plants <- plants %>% enframe(value="PLANT_ID") %>% dplyr::select(-name)
+  plants %>%
+    left_join(phe_gwas_tgrfl) %>% arrange(PLANT_ID)
+
+  df_phe <- plants %>%
+    left_join(phe_gwas_tgrfl)
+  
+  gwas <- pvdiv_gwas(df = df_phe, type = "linear", snp = snp, ncores = NCORES, 
+                     covar = svd, npcs = 9)
+
+```
+
+# Mash 8 sites T_GR_FL
+```{r}
+load(file = "../markers.rda")
+load(file = "../markers_unlinked.rda")
+gwas_rds <- pvdiv_results_in_folder(path = ".", pattern = "GWAS_object_") # 8 phenotypes from 4 sites - 32 phenotypes total with > 200 individuals phenotyped and sequenced. 
+
+phenotype_names <- str_sub(gwas_rds, start = 13, end = -5)
+
+numSNPs <- ceiling(1000000/length(phenotype_names)^2)
+numSNPs <- 20000 # the above gave 20409, so just rounded this to 20000.
+
+mash_input <- pvdiv_bigsnp2mashr(path = ".", gwas_rds = gwas_rds, 
+                           phenotypes = phenotype_names, numSNPs = numSNPs, 
+                           markers = markers, markers2 = markers2, G = G, 
+                           model = "linear", saveoutput = TRUE)
+
+mash_output <- mash_standard_run(path = ".", list_input = mash_input, 
+                                  numSNPs = numSNPs, saveoutput = TRUE)
+
+anno_tables <- pvdiv_table_topsnps(df = mash_output, type = "mash", 
+                                   n = c(10,100), FDRalpha = NA, 
+                                   rangevector = c(0, 20000, 100000),
+                                   markers = markers, 
+                                   anno_info = gene_anno_info,
+                                   txdb = txdb)
+saveRDS(anno_tables, file.path("~", "Github", "pvdiv-phenology-gxe", 
+                               "large-files", "T_GR_FL", 
+                               paste0("Annotation_tables_", 
+                                      "Time_greenup_to_flowering_date_mash_", 
+                                      "7_sites_9_PCs.rds")))
+nbycond <- mash_plot_sig_by_condition(m = mash_output, saveoutput = TRUE)
+mashhattan <- mash_plot_manhattan_by_condition(m = mash_output, saveoutput = TRUE)
+
+mhtn <- mashhattan$ggmanobject + scale_color_viridis(option = "B",  end = 0.8) + scale_fill_viridis(option = "B", end = 0.8)
+
+save_plot("Manhattan_T_GR_FL.png", plot = last_plot(), base_height = 4, base_asp = 2.5)
+
+
+
+pairwise_plot <- mash_plot_pairwise_sharing(effectRDS = "Pairwise_sharing_Strong_Effects_26989SNPs.rds", reorder = TRUE, saveoutput = TRUE)
+save_plot("Pairwise_test.png", plot = pairwise_plot$gg_corr, base_height = 2.5, base_asp = 1.618)
+```
+
+
+# FL50
+
+```{r}
+colremove <- names(which(colSums(!is.na(phenotypes_wide_2019)) < 200))
+
+phe_gwas_fl50 <- phenotypes_wide_2019 %>%
+  dplyr::select(-colremove) %>%
+  dplyr::select(PLANT_ID, ends_with("FL50")) 
+
+
+txdb <- loadDb(file = file.path("/", "home", "alice", "pvdiv", "switchgrassGWAS", 
+                                "data",
+                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+
+anno_info <-
+  read_delim(file = file.path("/", "home", "alice",  "pvdiv", "switchgrassGWAS", 
+                              "data",
+                              "Pvirgatum_516_v5.1.annotation_info.txt"),
+             col_names = TRUE, delim = "\t")
+gene_anno_info <- tbl_df(anno_info) %>%
+  distinct(locusName, .keep_all = TRUE)
+
+svd <- readRDS(file.path("/", "home", "alice", "Github", "pvdiv-phenology-gxe",
+                         "large-files", "SVD_upland_lowland_continuous_k20.rds"))
+
+snp <- snp_attach(file.path("~", "pvdiv", "VCF_and_Numeric", "Pvirgatum_4x_784g_imp_phased_up_low_continuous_subset_maf0.05.rds"))
+
+  G <- snp$genotypes
+  CHR <- snp$map$chromosome
+  POS <- snp$map$physical.pos
+  plants <- snp$fam$sample.ID
+  bonferroni <- -log10(0.05/length(POS))
+  NCORES <- nb_cores()
+  
+  CHRN <- enframe(CHR, name = NULL) %>%
+    dplyr::rename(CHR = .data$value) %>%
+    mutate(CHRN = case_when(.data$CHR == "Chr01K" ~ 1,
+                            .data$CHR == "Chr01N" ~ 2,
+                            .data$CHR == "Chr02K" ~ 3,
+                            .data$CHR == "Chr02N" ~ 4,
+                            .data$CHR == "Chr03K" ~ 5,
+                            .data$CHR == "Chr03N" ~ 6,
+                            .data$CHR == "Chr04K" ~ 7,
+                            .data$CHR == "Chr04N" ~ 8,
+                            .data$CHR == "Chr05K" ~ 9,
+                            .data$CHR == "Chr05N" ~ 10,
+                            .data$CHR == "Chr06K" ~ 11,
+                            .data$CHR == "Chr06N" ~ 12,
+                            .data$CHR == "Chr07K" ~ 13,
+                            .data$CHR == "Chr07N" ~ 14,
+                            .data$CHR == "Chr08K" ~ 15,
+                            .data$CHR == "Chr08N" ~ 16,
+                            .data$CHR == "Chr09K" ~ 17,
+                            .data$CHR == "Chr09N" ~ 18,
+                            TRUE ~ 19
+    ))
+  markers <- tibble(CHR = CHR, POS = POS)
+  
+  plants <- plants %>% enframe(value="PLANT_ID") %>% dplyr::select(-name)
+  plants %>%
+    left_join(phe_gwas_fl50) %>% arrange(PLANT_ID)
+
+  df_phe <- plants %>%
+    left_join(phe_gwas_fl50)
+  
+  gwas <- pvdiv_gwas(df = df_phe, type = "linear", snp = snp, ncores = NCORES, 
+                     covar = svd, npcs = 9)
+
+```
+
+# Mash FL50
+```{r}
+load(file = "../markers.rda")
+load(file = "../markers_unlinked.rda")
+gwas_rds <- pvdiv_results_in_folder(path = ".", pattern = "GWAS_object_") # 8 phenotypes from 4 sites - 32 phenotypes total with > 200 individuals phenotyped and sequenced. 
+
+phenotype_names <- str_sub(gwas_rds, start = 13, end = -5)
+
+numSNPs <- ceiling(1000000/length(phenotype_names)^2)
+numSNPs <- 20000 # the above gave 20409, so just rounded this to 20000.
+
+mash_input <- pvdiv_bigsnp2mashr(path = ".", gwas_rds = gwas_rds, 
+                           phenotypes = phenotype_names, numSNPs = numSNPs, 
+                           markers = markers, markers2 = markers2, G = G, 
+                           model = "linear", saveoutput = TRUE)
+
+mash_output <- mash_standard_run(path = ".", list_input = mash_input, 
+                                  numSNPs = numSNPs, saveoutput = TRUE)
+
+anno_tables <- pvdiv_table_topsnps(df = mash_output, type = "mash", 
+                                   n = c(10,100), FDRalpha = NA, 
+                                   rangevector = c(0, 20000, 100000),
+                                   markers = markers, 
+                                   anno_info = gene_anno_info,
+                                   txdb = txdb)
+saveRDS(anno_tables, file.path("~", "Github", "pvdiv-phenology-gxe", 
+                               "large-files", "T_GR_FL", 
+                               paste0("Annotation_tables_", 
+                                      "Flowering_date_mash_", 
+                                      "7_sites_9_PCs.rds")))
+```
+
+```{r}
+anno_tables <- readRDS("../PAG/FL50/Annotation_tables_Flowering_date_mash_7_sites_9_PCs.rds")
+mash_output <- readRDS(file = "../PAG/FL50/Strong_Effects29475SNPs.rds")
+anno_tables$top100SNPs_within0bp %>%
+  arrange(desc(log10BayesFactor))
+
+nbycond <- mash_plot_sig_by_condition(m = mash_output, saveoutput = TRUE)
+mashhattan <- mash_plot_manhattan_by_condition(m = mash_output)
+
+mhtn <- mashhattan$ggmanobject + scale_color_viridis(option = "B",  end = 0.8) + scale_fill_viridis(option = "B", end = 0.8)
+
+save_plot("Manhattan_FL50.png", plot = last_plot(), base_height = 4, base_asp = 2.5)
+
+
+pairwise_plot <- mash_plot_pairwise_sharing(effectRDS = "../PAG/FL50/Pairwise_sharing_Strong_Effects_29475SNPs.rds", reorder = FALSE)
+save_plot("Pairwise_FL50_unordered.svg", plot = pairwise_plot$gg_corr, base_height = 2.5, base_asp = 1.618)
+
+pairwise_plot2 <- mash_plot_pairwise_sharing(effectRDS = "../PAG/T_GR_FL/Pairwise_sharing_Strong_Effects_26989SNPs.rds", reorder = FALSE)
+save_plot("Pairwise_T_GR_FL_unordered.svg", plot = pairwise_plot2$gg_corr, base_height = 2.5, base_asp = 1.618)
+
+pairwise_plot3 <- mash_plot_pairwise_sharing(effectRDS = "../PAG/GR50/Pairwise_sharing_Strong_Effects_31355SNPs.rds", reorder = FALSE)
+save_plot("Pairwise_GR50_unordered.svg", plot = pairwise_plot3$gg_corr, base_height = 2.5, base_asp = 1.618)
+
+library(ggcorrplot)
+ggcorrplot(pairwise_plot$corr_matrix[c(4,6,8,7,2,5,3,1),c(4,6,8,7,2,5,3,1)])
+save_plot("Pairwise_FL50_latitude.svg", plot = last_plot(), base_height = 2.5, base_asp = 1.618)
+
+ggcorrplot(pairwise_plot2$corr_matrix[c(5,7,6,2,4,3,1),c(5,7,6,2,4,3,1)])
+save_plot("Pairwise_T_GR_FL_latitude.svg", plot = last_plot(), base_height = 2.5, base_asp = 1.618)
+
+ggcorrplot(pairwise_plot3$corr_matrix[c(5,8,10,7,9,2,6,3,4,1),c(5,8,10,7,9,2,6,3,4,1)])
+save_plot("Pairwise_GR50_latitude.svg", plot = last_plot(), base_height = 2.5, base_asp = 1.618)
+
+```
+
 
 # Mash
 
@@ -126,9 +377,30 @@ T_GR_FL
 T_EM_FL
 
 ```{r}
+svd <- readRDS(file.path("/", "home", "alice", "Github", "pvdiv-phenology-gxe",
+                         "large-files", "SVD_upland_lowland_continuous_k20.rds"))
+
+snp <- snp_attach(file.path("~", "pvdiv", "VCF_and_Numeric", "Pvirgatum_4x_784g_imp_phased_up_low_continuous_subset_maf0.05.rds"))
+
+  G <- snp$genotypes
+  CHR <- snp$map$chromosome
+  POS <- snp$map$physical.pos
+  plants <- snp$fam$sample.ID
+
+markers <- tibble(CHR = CHR, POS = POS)
+
 markers2sub <- attr(svd, "subset")
 markers2 <- tibble(CHR = CHR[markers2sub], POS = POS[markers2sub])
 
+save(markers, file = "markers.rda")
+save(markers2, file = "markers_unlinked.rda")
+
+```
+
+
+```{r}
+load(file = "markers.rda")
+load(file = "markers_unlinked.rda")
 gwas_rds <- pvdiv_results_in_folder(path = ".", pattern = "GWAS_object_") # 8 phenotypes from 4 sites - 32 phenotypes total with > 200 individuals phenotyped and sequenced. 
 
 phenotype_names <- str_sub(gwas_rds, start = 13, end = -5)

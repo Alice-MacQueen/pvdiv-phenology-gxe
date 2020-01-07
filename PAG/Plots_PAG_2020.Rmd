@@ -1,0 +1,249 @@
+---
+title: "Plots_PAG_2020"
+author: "Alice MacQueen"
+date: "1/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(XLConnect)
+library(rlang)
+library(switchgrassGWAS)
+library(cowplot)
+library(viridis)
+library(bigsnpr)
+library(scales)
+library(lubridate)
+
+source("../../../Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+theme_set(theme_poster)
+
+load("../data/sites.rda")
+load("../data/metadata.rda")
+load("../data/Taxa.rda")
+load("../data/phenotypes_2019.rda")
+
+usa <- map_data("state")
+```
+
+## Set colors
+
+John's scheme
+dark blue = MW
+light blue = NEC
+yellow = SEC
+orange = GC
+red = TX
+
+blue = UP
+orange = SEC, GC
+red = TX
+
+Plot: GR50, EM50, FL50, T_GR_FL as facets on x
+10 sites as facets on y, in latitudinal order
+colored by ecotype
+
+
+```{r}
+phenotypes_dates <- phenotypes_wide_2019 %>%
+  dplyr::select(PLANT_ID, ends_with("GR50"), ends_with("EM50"), ends_with("FL50")) %>%
+  pivot_longer(cols = BRKG_GR50:TMPL_FL50, names_to = "SITE_PHE", values_to = "Value") %>%
+  filter(!is.na(Value)) %>%
+  separate(SITE_PHE, into = c("SITE", "_", "PHE"), sep = c(4,5)) %>%
+  dplyr::select(-`_`)
+
+phenotypes_dates$SITE <- factor(phenotypes_dates$SITE, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
+phenotypes_dates$PHE <- factor(phenotypes_dates$PHE, levels = c("GR50", "EM50", "FL50"))
+
+phenotypes_values <- phenotypes_wide_2019 %>%
+  dplyr::select(PLANT_ID, ends_with("TC_EOS"), ends_with("HT_PAN_EOS"), ends_with("T_GR_FL")) %>%
+  pivot_longer(cols = BRKG_TC_EOS:TMPL_T_GR_FL, names_to = "SITE_PHE", values_to = "Value") %>%
+  filter(!is.na(Value)) %>%
+  separate(SITE_PHE, into = c("SITE", "_", "PHE"), sep = c(4,5)) %>%
+  dplyr::select(-`_`)
+
+phenotypes_values$SITE <- factor(phenotypes_values$SITE, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
+phenotypes_values$PHE <- factor(phenotypes_values$PHE, levels = c("T_GR_FL", "TC_EOS", "HT_PAN_EOS"))
+
+
+```
+
+```{r}
+ metadata <- metadata %>%
+   filter(PLANT_ID != "AP13")
+
+metadata <- add_row(metadata, PLANT_ID = "AP13", LIBRARY = "REF", LIB_CLIMATE = "Y", LIB_PHENO = "Y", LIB_ACC = "Y", JL_genetic_subpop = "TX", JL_detail_genetic = "TX", PLOIDY = "4X", Ecotype = "Texas", Genetic_subpop = "TX")
+
+metadata$Genetic_subpop <- factor(metadata$Genetic_subpop, levels = c("TX", "GC,TX", "GC", "SEC", "NEC,SEC", "NEC", "MW", "Admixed", "Unknown"))
+metadata$Ecotype <- factor(metadata$Ecotype, levels = c("Texas", "Coastal", "Upland"))
+```
+
+```{r}
+
+phenotypes_dates %>%
+  mutate(Days = as_date(Value)) %>%
+  filter(PHE != "EM50") %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(Genetic_subpop != "Unknown" & PLANT_ID != "AP13") %>%
+  ggplot(aes(x = Days)) + 
+  geom_histogram(aes(fill = Ecotype)) + 
+  facet_grid(SITE~PHE, scales = "free") +
+  scale_fill_manual(values = c("#CC0000", "#FF9900", "#000077")) +
+  theme(legend.position = "none", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text = element_text(size = 14)) + 
+  scale_y_continuous(breaks = c(20,60,100)) + 
+  xlab("Date") + 
+  ylab("Number of Individuals") +
+  geom_vline(xintercept = c(120), linetype = 2) +
+  geom_vline(xintercept = c(181), linetype = 3, color = "grey20") +
+  geom_vline(xintercept = c(243), linetype = 4, color = "grey80")
+
+save_plot("Phenology_Data_by_Site_Ecotype_noAP13_2020-01-07.png", plot = last_plot(), base_height = 8, base_asp = 1.618/2)
+
+phenotypes_values %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(PHE != "T_GR_FL") %>%
+  filter(Genetic_subpop != "Unknown" & PLANT_ID != "AP13") %>%
+  ggplot(aes(x = Value)) + 
+  geom_histogram(aes(fill = Ecotype)) + 
+  facet_grid(SITE~PHE, scales = "free") +
+  scale_fill_manual(values = c("#CC0000", "#FF9900", "#000077")) +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text = element_text(size = 14)) + 
+  scale_y_continuous(breaks = c(20,60,100)) +
+  xlab("Value") + 
+  ylab("Number of Individuals") +
+  geom_vline(xintercept = c(100), linetype = 2) +
+  geom_vline(xintercept = c(300), linetype = 3, color = "grey20") 
+
+save_plot("Phenotype_Data_by_Site_Ecotype_noAP13_2020-01-07.png", plot = last_plot(), base_height = 8, base_asp = 1.8/2)
+
+phenotypes_values %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(PHE == "T_GR_FL") %>%
+  filter(Genetic_subpop != "Unknown" & PLANT_ID != "AP13") %>%
+  ggplot(aes(x = Value)) + 
+  geom_histogram(aes(fill = Ecotype)) + 
+  facet_grid(SITE~PHE, scales = "free") +
+  scale_fill_manual(values = c("#CC0000", "#FF9900", "#000077")) +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        strip.text = element_text(size = 14)) + 
+  scale_y_continuous(breaks = c(20,60,100)) +
+  xlab("Value") + 
+  ylab("Number of Individuals") +
+  geom_vline(xintercept = c(100), linetype = 2) +
+  geom_vline(xintercept = c(300), linetype = 3, color = "grey20") 
+
+save_plot("T_GR_FL_Data_by_Site_Ecotype_noAP13_2020-01-07.png", plot = last_plot(), base_height = 8, base_asp = 1.8/3)
+```
+
+
+
+```{r}
+mashhattan <- mash_plot_manhattan_by_condition(m = mash_output)
+mhtn <- mashhattan$ggmanobject + scale_color_viridis(option = "B",  end = 0.8) + scale_fill_viridis(option = "B", end = 0.8)
+
+save_plot("Manhattan_test.png", plot = last_plot(), base_height = 4, base_asp = 2.5)
+
+
+pairwise_plot <- mash_plot_pairwise_sharing(effectRDS = "Pairwise_sharing_Strong_Effects_21349SNPs.rds", reorder = FALSE)
+save_plot("Pairwise_test_unordered.svg", plot = pairwise_plot$gg_corr, base_height = 2.5, base_asp = 1.618)
+
+```
+
+```{r}
+pairwise_plot <- mash_plot_pairwise_sharing(effectRDS = "T_GR_FL/Pairwise_sharing_sign_Strong_Effects_26989SNPs.rds", reorder = TRUE)
+save_plot("T_GR_FL/Pairwise_test_T_GR_FL.svg", plot = pairwise_plot$gg_corr, base_height = 2.5, base_asp = 1.618)
+
+anno_dfs <- readRDS("T_GR_FL/Annotation_tables_Time_greenup_to_flowering_date_mash_7_sites_9_PCs.rds")
+anno_dfs$top10SNPs_within20000bp
+```
+
+# Logistic winter survival
+
+```{r}
+annoswk <- readRDS("~/Github/pvdiv-climate-gwas/results-upland-vs-lowland/Logistic_winter_survival/Annotation_tables_logistic_winter_survival_subset_9_PCs.rds")
+annosldly_wk <- readRDS("~/Github/pvdiv-climate-gwas/results-upland-vs-lowland/Logistic_winter_survival/Logistic_winter_survival_Lindley_sigZones_with_allele_frequencies.rds")
+annoswk$top1000SNPs_within0bp %>%
+  mutate(Posbin = ceiling(region_end/10000))
+annosldly <- annosldly_wk %>% arrange(chr, end) %>%
+  mutate(Posbin = ceiling(end/10000))
+annosuncor <- annoswk$top1000SNPs_within100000bp %>%
+  mutate(Posbin = ceiling(region_end/10000))
+annosldly %>%
+  left_join(annosuncor, by = c("chr" = "CHR", "Posbin")) %>%
+  dplyr::select(chr, Posbin, everything()) %>%
+  group_by(chr, Posbin) %>% tally()
+
+pvdiv_table_topsnps(df = annosldly_wk, type = "table")
+
+annosuncor %>%
+  filter(CHR == "Chr03K")
+```
+
+```{r}
+annos_winterkill <- annosldly %>%
+  left_join(annosuncor, by = c("chr" = "CHR", "Posbin")) %>%
+  dplyr::select(chr, Posbin, everything()) %>%
+  arrange(desc(peak))
+
+       
+
+write_csv(annos_winterkill, path = "Annotations_Lindley_Winter_Killed.csv")
+```
+
+```{r}
+winterkill_df <- annos_winterkill %>%
+  dplyr::select(chr, beg, end) %>%
+  dplyr::rename(CHR = chr, start = beg)  %>%
+      mutate(start = as.integer(.data$start),
+             end = as.integer(.data$end),
+             POS = as.integer(.data$end))
+
+library(VariantAnnotation)
+save(winterkill_df, file = "winterkill_df.rda")
+
+anno_info <-
+  read_delim(file = file.path("~",  "Github", "pvdiv-phenology-gxe", 
+                              "large-files",
+                              "Pvirgatum_516_v5.1.annotation_info.txt"),
+             col_names = TRUE, delim = "\t")
+gene_anno_info <- tbl_df(anno_info) %>%
+  distinct(locusName, .keep_all = TRUE)
+txdb <- loadDb(file = file.path("~",  "Github", "pvdiv-phenology-gxe", 
+                              "large-files",
+                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+
+ target <- with(winterkill_df, GRanges(seqnames = Rle(CHR),
+                                      ranges = IRanges(start = start,
+                                                       end = end,
+                                                       names = NULL),
+                                      strand = Rle(strand("*"))))
+
+        ### Find genes that overlap input SNPs with VariantAnnotation
+        loc <-
+          VariantAnnotation::locateVariants(target, txdb,
+                                            VariantAnnotation::AllVariants(promoter =
+                                                                             VariantAnnotation::PromoterVariants(upstream = 2000L,
+                                                        downstream = 2000L),
+                                     intergenic =
+                                       VariantAnnotation::IntergenicVariants(upstream = 20000L,
+                                                          downstream = 20000L,
+                                                          idType = "gene")))
+
+
+
+test_df <- pvdiv_table_topsnps(df = winterkill_df, type = "table", anno_info = gene_anno_info, txdb = txdb)
+
+load("Winterkill_lindley_annotation.rda")
+library(tidyverse)
+winterkill_anno_lindley <- test_df[[1]] %>% # CHR POS
+  left_join(annosldly, by = c("CHR" = "chr", "POS" = "end"))
+write_csv(winterkill_anno_lindley, "Winterkill_lindley_annotation_df.csv")
+```
+
