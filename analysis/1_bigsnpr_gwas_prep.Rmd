@@ -434,6 +434,42 @@ mash_output <- mash_standard_run(path = ".", list_input = mash_input,
                                   numSNPs = numSNPs, saveoutput = TRUE)
 ```
 
+## Visualize mash effects
+
+```{r}
+mash_output <- readRDS("FL50/Strong_Effects29475SNPs.rds")
+```
+
+```{r}
+i=10
+get_significant_results(mash_output)[i]
+plot1 <- switchgrassGWAS::mash_plot_effects(m = mash_output, n=i)
+
+xlabs <- str_sub(plot1$effect_df$value, start = 11, end = -6)
+plot1$effect_df$SITE <- xlabs
+  
+#plot1$effect_df$SITE <- factor(plot1$effect_df$SITE, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
+plot1$effect_df$SITE  <- factor(plot1$effect_df$SITE , levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+
+plot1$ggobject + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1)) + 
+  scale_x_discrete(labels = xlabs)
+
+ggplot(data = plot1$effect_df) +
+    geom_point(mapping = aes(x = .data$SITE, y = .data$mn)) +
+    geom_errorbar(mapping = aes(ymin = .data$mn - .data$se,
+                                ymax = .data$mn + .data$se,
+                                x = .data$SITE), width = 0.3) +
+    geom_hline(yintercept = 0, lty = 2) +
+    labs(x = "Conditions", y = "Effect Size") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_flip()
+
+save_plot(paste0(names(get_significant_results(mash_output)[i]), "_Effect_Plot.png"), plot = last_plot(), base_height = 4, base_asp = 0.8)
+
+```
+
+
 ## Visualize bigsnpr GWAS
 
 ```{r}
