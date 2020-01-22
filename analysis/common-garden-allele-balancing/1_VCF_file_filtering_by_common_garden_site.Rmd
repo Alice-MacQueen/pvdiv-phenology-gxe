@@ -1,0 +1,147 @@
+---
+title: "VCF file filtering by common garden site"
+author: "Alice MacQueen"
+date: "1/22/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(bigsnpr)
+library(switchgrassGWAS)
+load("~/Github/pvdiv-phenology-gxe/data/phenotypes_2019.rda")
+load("~/Github/pvdiv-phenology-gxe/data/sites.rda")
+```
+
+## Goals & Outline
+
+    1. Use the 33.9 million SNP file, located at:
+    `/home/SharedUser/PV/NatPop/All_chr_combined_636g_80pct_maf0.005.vcf.bz2`
+      Convert this file to vcf.gz first.
+    2. Use or make a data frame of PLANT_ID's that were present at each site in 2019.
+    3. Subset the 33.9 million SNP file to 5% MAF for each site.
+    4. Use vcftools to find allele frequencies for each SNP at each site.
+
+Below are the steps necessary to make a subset of a VCF file for use for GWAS.
+
+## Subset function
+
+```{r}
+pvdiv_pop_subset_bigsnp <- function(subset, selector){
+  subset_name <- paste0("Pvirgatum_4x_784g_imp_phased_", subset, "_subset")
+  snpfile_subset <- subset(snp, ind.row = selector)
+  snp_subset <- snp_attach(snpfile_subset)
+  snp_writeBed(snp_subset, bedfile = paste0(subset_name, ".bed"))
+  mac <- round(25/length(selector), digits = 2) # what should the MAF be?
+  if(mac > 0.05){
+    mac <- 0.05
+  }
+  plink <- download_plink()
+  bedfile <- snp_plinkQC(plink, prefix.in = subset_name,
+                         maf = mac, geno = 0.1, hwe = 1e-50, 
+                         prefix.out = paste0(subset_name, "_maf", mac),
+                         extra.options = "--allow-no-sex --allow-extra-chr --chr Chr01K Chr01N Chr02K Chr02N Chr03K Chr03N Chr04K Chr04N Chr05K Chr05N Chr06K Chr06N Chr07K Chr07N Chr08K Chr08N Chr09K Chr09N")
+  rdsfile <- snp_readBed(bedfile)
+}
+
+
+# Load data - if you get errors, make sure to run R from the GWAS/ folder in pubjuenger
+snp <- snp_attach("/home/pubjuenger/GWAS/Pvirgatum_4x_784g_imp_phased_maf0.005.rds")
+switchgrassGWAS::phenotypes
+
+# Use phenotypes to set up selection criteria for subsets. These need to be vectors of the row numbers in the Taxa dataframe that you have phenotypes for.
+gwasct_sel <- which(!is.na(phenotypes$GWAS_CT)) # gwas_ct GWAS
+
+## Run function to generate subset SNP files for the subset
+pvdiv_pop_subset_bigsnp(subset = "gwasct", selector = gwasct_sel)
+
+```
+
+## 2. Use or make a data frame of PLANT_ID's that were present at each site in 2019.
+
+Plants alive EOS 2019 (higher of HT_PAN_EOS and TC_EOS):
+BRKG: 254
+CLMB: 496
+FRMI: 185
+KBSM: 516
+KING: 286
+LINC: 260
+OVTN: 331
+PKLE: 614
+STIL: 451
+TMPL: 373
+
+For each site: # SNPs above a MAF of 5%
+% SNPs above a MAF of 5% (at all 10 sites), # SNPs > 5% MAF at all 10 sites, distribution of these SNPs across the chromosomes
+Number of plants alive from each subpopulation (sort of did this already)
+
+Average, minimum, maximum, standard deviation, coefficient of variation of MAF across all 10 sites
+histograms of these values across all SNPs
+
+Compare these values to their values in 2018 to see how much frequencies shifted in the last year?
+
+```{r}
+colSums(!is.na(phenotypes_wide_2019))
+
+for(i in 1:10){
+site <- sites$Site[i]
+
+site_2019 <- phenotypes_wide_2019 %>%
+  pivot_longer(cols = BRKG_EM1:TMPL_TC_EOS, names_to = "SITE_PHE", values_to = "Measurement") %>%
+  separate(col = SITE_PHE, into = c("SITE", "_", "PHE"), sep = c(4,5)) %>%
+  filter(SITE == site & !is.na(Measurement)) %>%
+  group_by(PLANT_ID) %>%
+  summarise(count = n()) 
+
+writeLines(site_2019$PLANT_ID, con = paste0(site, "_2019"))
+}
+
+for(i in 1:10){
+site <- sites$Site[i]
+site_2018 <- phenotypes_2018 %>%
+  pivot_longer(cols = BRKG_DEAD_2018:TMPL_TC_EOS_2018, names_to = "SITE_PHE", values_to = "Measurement") %>%
+  separate(col = SITE_PHE, into = c("SITE", "_", "PHE"), sep = c(4,5)) %>%
+  filter(SITE == site & !is.na(Measurement)) %>%
+  group_by(PLANT_ID) %>%
+  summarise(count = n()) 
+writeLines(site_2018$PLANT_ID, con = paste0(site, "_2018"))
+}
+
+```
+
+Plants alive EOS 2018, then EOS 2019:
+BRKG: 412 down to 254
+CLMB: 591 down to 496
+FRMI: 273 down to 185
+KBSM: 544 down to 516
+KING: 305 down to 286
+LINC: 437 down to 260
+OVTN: 346 down to 331
+PKLE: 623 down to 614
+STIL: 469 down to 451
+TMPL: 388 down to 373
+
+# VCFtools lines
+```{}
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/PKLE_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/PKLE_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/BRKG_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/BRKG_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/CLMB_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/CLMB_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/FRMI_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/FRMI_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KBSM_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KBSM_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KING_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KING_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/LINC_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/LINC_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/OVTN_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/OVTN_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/STIL_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/STIL_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/TMPL_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/TMPL_2019 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/PKLE_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/PKLE_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/BRKG_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/BRKG_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/CLMB_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/CLMB_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/FRMI_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/FRMI_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KBSM_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KBSM_2018j &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KING_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KING_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/LINC_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/LINC_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/OVTN_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/OVTN_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/STIL_2018 --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/STIL_2018 &
+vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/TMPL_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/TMPL_2018 &
+```
