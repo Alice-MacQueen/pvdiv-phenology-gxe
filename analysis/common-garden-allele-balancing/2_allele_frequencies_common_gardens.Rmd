@@ -14,14 +14,10 @@ library(cowplot)
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 ```
 
-## 
+# Join data on server
 
 ```{r}
 load("~/Github/pvdiv-phenology-gxe/data/sites.rda")
-```
-
-
-```{r}
 year <- "2019"
 i=1
 k= i+1
@@ -98,10 +94,14 @@ for(k in 1:10){
 saveRDS(freq_sitebyyear, file = paste0("Allele_frequencies_site_by_year_", nmax, "SNPs.rds"))
 ```
 
+## Load data
+
 ```{r}
 freq_sitebyyear <- readRDS("Allele_frequencies_site_by_year_100000SNPs.rds")
 freq_sitebyyear
 ```
+
+## Tally SNPs by site
 
 ```{r}
 sites
@@ -168,14 +168,17 @@ freq_sitebyyear %>%
 28544/100000*33880000
 ```
 
-# 36007 out of 100k sites had MAF > 0.05 at Pickle in 2018, our best site.
-12.2M SNPs total.
-# 28544 out of 100k sites have MAF > 0.05 at all 10 locations.
+    *36007 out of 100k sites had MAF > 0.05 at Pickle in 2018, our best site.
+    *12.2M SNPs total.
+    *28544 out of 100k sites have MAF > 0.05 at all 10 locations.
+    
 That's 7463 SNPs less, or 79.27% of the SNPs we would have had.
 9.67M SNPs total. Lose 20% of the SNPs by constraining to 5% MAF at all sites.
 
 BRKG 35452
 
+# ------------------
+# Start of Plots
 
 ```{r}
 freq_sitebyyear %>%
@@ -216,6 +219,8 @@ freq_sitebyyear %>%
   geom_hex() + geom_abline(slope = 1, intercept = 0, color = "red") + 
   scale_fill_viridis(option = "B", trans = "log2") 
 ```
+
+## Labeled hex plots
 
 ```{r}
 freq_sitebyyear %>%
@@ -279,7 +284,7 @@ freq_sitebyyear %>%
   ylab("MAF in Lincoln, 2018")
 ```
 
-# Plots
+## Grid of plots?
 
 
 ```{r}
