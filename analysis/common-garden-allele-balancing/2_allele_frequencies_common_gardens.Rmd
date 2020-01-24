@@ -1,0 +1,292 @@
+---
+title: "Allele Frequencies Common Gardens"
+author: "Alice MacQueen"
+date: "1/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(switchgrassGWAS)
+library(viridis)
+library(cowplot)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+## 
+
+```{r}
+load("~/Github/pvdiv-phenology-gxe/data/sites.rda")
+```
+
+
+```{r}
+year <- "2019"
+i=1
+k= i+1
+nmax = 33890000
+
+site_year <- read_delim(paste0(sites$Site[i],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[i],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[i],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[i],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[i],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[i],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[i],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[i],"_", year)), sep = ":", 
+           convert = TRUE)
+site_year2 <- read_delim(paste0(sites$Site[k],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[k],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[k],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[k],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE)
+freq_sitebyyear <- site_year %>%
+  full_join(site_year2, by = c("CHR", "POS", "N_ALLELES", "MAJOR", "MINOR"))
+
+for(k in 3:10){
+  site_year2 <- read_delim(paste0(sites$Site[k],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[k],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[k],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[k],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE)
+  freq_sitebyyear <- freq_sitebyyear %>%
+    full_join(site_year2, by = c("CHR", "POS", "N_ALLELES", "MAJOR", "MINOR"))
+}
+year <- "2018"
+for(k in 1:10){
+  site_year2 <- read_delim(paste0(sites$Site[k],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[k],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[k],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[k],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE)
+  freq_sitebyyear <- freq_sitebyyear %>%
+    full_join(site_year2, by = c("CHR", "POS", "N_ALLELES", "MAJOR", "MINOR"))
+}
+saveRDS(freq_sitebyyear, file = paste0("Allele_frequencies_site_by_year_", nmax, "SNPs.rds"))
+```
+
+```{r}
+freq_sitebyyear <- readRDS("Allele_frequencies_site_by_year_100000SNPs.rds")
+freq_sitebyyear
+```
+
+```{r}
+sites
+freq_sitebyyear %>%
+  group_by(between(MINF_PKLE_2018, 0.05, 0.95)) %>% tally()
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95) & 
+           between(MINF_PKLE_2018, 0.05, 0.95) &
+           between(MINF_FRMI_2018, 0.05, 0.95) & 
+           between(MINF_KING_2018, 0.05, 0.95) & 
+           between(MINF_OVTN_2018, 0.05, 0.95) & 
+           between(MINF_KBSM_2018, 0.05, 0.95) & 
+           between(MINF_LINC_2018, 0.05, 0.95) & 
+           between(MINF_STIL_2018, 0.05, 0.95) & 
+           between(MINF_TMPL_2018, 0.05, 0.95) & 
+           between(MINF_CLMB_2018, 0.05, 0.95)) 
+freq_sitebyyear %>%
+  group_by(between(MINF_BRKG_2018, 0.05, 0.95), 
+           between(MINF_PKLE_2018, 0.05, 0.95),
+           between(MINF_FRMI_2018, 0.05, 0.95), 
+           between(MINF_KING_2018, 0.05, 0.95), 
+           between(MINF_OVTN_2018, 0.05, 0.95),  
+           between(MINF_KBSM_2018, 0.05, 0.95),  
+           between(MINF_LINC_2018, 0.05, 0.95),  
+           between(MINF_STIL_2018, 0.05, 0.95),  
+           between(MINF_TMPL_2018, 0.05, 0.95),  
+           between(MINF_CLMB_2018, 0.05, 0.95),
+           between(MINF_BRKG_2019, 0.05, 0.95), 
+           between(MINF_PKLE_2019, 0.05, 0.95),
+           between(MINF_FRMI_2019, 0.05, 0.95), 
+           between(MINF_KING_2019, 0.05, 0.95), 
+           between(MINF_OVTN_2019, 0.05, 0.95),  
+           between(MINF_KBSM_2019, 0.05, 0.95),  
+           between(MINF_LINC_2019, 0.05, 0.95),  
+           between(MINF_STIL_2019, 0.05, 0.95),  
+           between(MINF_TMPL_2019, 0.05, 0.95),  
+           between(MINF_CLMB_2019, 0.05, 0.95)) %>% 
+  tally() %>% arrange(desc(n)) %>%
+  mutate(frac = n/100000)# %>%
+  #write_csv(., path = "MAF_allows_gwas_10_sites_2_years.csv")
+freq_sitebyyear %>%
+  group_by(between(MINF_BRKG_2018, 0.05, 0.95), 
+           between(MINF_PKLE_2018, 0.05, 0.95),
+           between(MINF_FRMI_2018, 0.05, 0.95), 
+           between(MINF_KING_2018, 0.05, 0.95), 
+           between(MINF_OVTN_2018, 0.05, 0.95),  
+           between(MINF_KBSM_2018, 0.05, 0.95),  
+           between(MINF_LINC_2018, 0.05, 0.95),  
+           between(MINF_STIL_2018, 0.05, 0.95),  
+           between(MINF_TMPL_2018, 0.05, 0.95),  
+           between(MINF_CLMB_2018, 0.05, 0.95)) %>% 
+  tally() %>% arrange(desc(n)) %>%
+  mutate(approx = n/100000*33880000) %>%
+  write_csv(., path = "MAF_allows_gwas_10_sites_2018.csv")
+
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_BRKG_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+
+36007-28544
+28544/36007
+36007/100000*33880000
+28544/100000*33880000
+```
+
+# 36007 out of 100k sites had MAF > 0.05 at Pickle in 2018, our best site.
+12.2M SNPs total.
+# 28544 out of 100k sites have MAF > 0.05 at all 10 locations.
+That's 7463 SNPs less, or 79.27% of the SNPs we would have had.
+9.67M SNPs total. Lose 20% of the SNPs by constraining to 5% MAF at all sites.
+
+BRKG 35452
+
+
+```{r}
+freq_sitebyyear %>%
+  filter(between(MINF_TMPL_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_TMPL_2018, y = MINF_TMPL_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  filter(between(MINF_LINC_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_LINC_2018, y = MINF_LINC_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  filter(between(MINF_CLMB_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_CLMB_2018, y = MINF_CLMB_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_BRKG_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  ggplot(aes(x = MINF_BRKG_2019, y = MINF_KING_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+```
+
+```{r}
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95) & between(MINF_KING_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_KING_2018)) + 
+  geom_hex() + geom_abline(slope = 1, intercept = 0, color = "red") + 
+  scale_fill_viridis(option = "B", trans = "log2") 
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2019, 0.05, 0.95) & between(MINF_KING_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2019, y = MINF_KING_2019)) + 
+  geom_hex() + geom_abline(slope = 1, intercept = 0, color = "red") + 
+  scale_fill_viridis(option = "B", trans = "log2") 
+freq_sitebyyear %>%
+  filter(between(MINF_LINC_2019, 0.05, 0.95) & between(MINF_PKLE_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_LINC_2019, y = MINF_PKLE_2019)) + 
+  geom_hex() + geom_abline(slope = 1, intercept = 0, color = "red") + 
+  scale_fill_viridis(option = "B", trans = "log2") 
+```
+
+```{r}
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95) & between(MINF_BRKG_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Brookings, 2018") +
+  ylab("MAF in Brookings, 2019")
+
+freq_sitebyyear %>%
+  filter(between(MINF_KING_2019, 0.05, 0.95) & between(MINF_BRKG_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_KING_2019, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Kingsville, 2019") +
+  ylab("MAF in Brookings, 2019")
+
+freq_sitebyyear %>%
+  filter(between(MINF_OVTN_2019, 0.05, 0.95) & between(MINF_BRKG_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_OVTN_2019, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Overton, 2019") +
+  ylab("MAF in Brookings, 2019")
+
+freq_sitebyyear %>%
+  filter(between(MINF_OVTN_2018, 0.05, 0.95) & between(MINF_BRKG_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_OVTN_2018, y = MINF_BRKG_2018)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Overton, 2018") +
+  ylab("MAF in Brookings, 2018")
+
+freq_sitebyyear %>%
+  filter(between(MINF_OVTN_2018, 0.05, 0.95) & between(MINF_LINC_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_OVTN_2018, y = MINF_LINC_2018)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Overton, 2018") +
+  ylab("MAF in Lincoln, 2018")
+```
+
+# Plots
+
+
+```{r}
+maf_long <- freq_sitebyyear %>%
+  dplyr::select(-starts_with("MAJF"), -starts_with("N_CHR_")) %>%
+  pivot_longer(cols = starts_with("MINF"), names_to = "SITE_YEAR", values_to = "MINF") %>%
+  separate(col = "SITE_YEAR", into = c("MINF_", "SITE", "YEAR"), sep = "_")
+
+```
+
