@@ -4,3 +4,6 @@
 pvdiv-phenology-gxe.Rproj
 .Rbuildignore
 large-files/
+
+# Large .rds that I identify and rename appropriately
+*_.rds
