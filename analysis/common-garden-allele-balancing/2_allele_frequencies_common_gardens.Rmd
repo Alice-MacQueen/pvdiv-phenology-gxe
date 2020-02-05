@@ -1,0 +1,768 @@
+---
+title: "Allele Frequencies Common Gardens"
+author: "Alice MacQueen"
+date: "1/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(switchgrassGWAS)
+library(viridis)
+library(cowplot)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+# Join data on server
+
+```{r}
+load("~/Github/pvdiv-phenology-gxe/data/sites.rda")
+year <- "2019"
+i=1
+k= i+1
+nmax = 33890000
+
+site_year <- read_delim(paste0(sites$Site[i],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[i],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[i],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[i],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[i],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[i],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[i],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[i],"_", year)), sep = ":", 
+           convert = TRUE)
+site_year2 <- read_delim(paste0(sites$Site[k],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[k],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[k],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[k],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE)
+freq_sitebyyear <- site_year %>%
+  full_join(site_year2, by = c("CHR", "POS", "N_ALLELES", "MAJOR", "MINOR"))
+
+for(k in 3:10){
+  site_year2 <- read_delim(paste0(sites$Site[k],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[k],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[k],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[k],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE)
+  freq_sitebyyear <- freq_sitebyyear %>%
+    full_join(site_year2, by = c("CHR", "POS", "N_ALLELES", "MAJOR", "MINOR"))
+}
+year <- "2018"
+for(k in 1:10){
+  site_year2 <- read_delim(paste0(sites$Site[k],"_", year, ".frq"), delim = "\t", 
+                        n_max = nmax, col_types = "cdddcc", skip = 1, 
+                        col_names=c("CHR", "POS", "N_ALLELES", 
+                                    paste0("N_CHR_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ1_", sites$Site[k],"_", year),
+                                    paste0("ALLELEFREQ2_", sites$Site[k],"_", year))) %>%
+  separate(col = paste0("ALLELEFREQ1_", sites$Site[k],"_", year), 
+           into = c("MAJOR",
+                    paste0("MAJF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE) %>%
+  separate(col = paste0("ALLELEFREQ2_", sites$Site[k],"_", year), 
+           into = c("MINOR",
+                    paste0("MINF_", sites$Site[k],"_", year)), sep = ":", 
+           convert = TRUE)
+  freq_sitebyyear <- freq_sitebyyear %>%
+    full_join(site_year2, by = c("CHR", "POS", "N_ALLELES", "MAJOR", "MINOR"))
+}
+saveRDS(freq_sitebyyear, file = paste0("Allele_frequencies_site_by_year_", nmax, "SNPs.rds"))
+```
+
+## Load data
+
+```{r}
+freq_sitebyyear <- readRDS("Allele_frequencies_site_by_year_100000SNPs.rds")
+freq_sitebyyear
+```
+
+## Tally SNPs by site
+
+```{r}
+sites
+freq_sitebyyear %>%
+  group_by(between(MINF_PKLE_2018, 0.05, 0.95)) %>% tally()
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95) & 
+           between(MINF_PKLE_2018, 0.05, 0.95) &
+           between(MINF_FRMI_2018, 0.05, 0.95) & 
+           between(MINF_KING_2018, 0.05, 0.95) & 
+           between(MINF_OVTN_2018, 0.05, 0.95) & 
+           between(MINF_KBSM_2018, 0.05, 0.95) & 
+           between(MINF_LINC_2018, 0.05, 0.95) & 
+           between(MINF_STIL_2018, 0.05, 0.95) & 
+           between(MINF_TMPL_2018, 0.05, 0.95) & 
+           between(MINF_CLMB_2018, 0.05, 0.95)) 
+freq_sitebyyear %>%
+  group_by(between(MINF_BRKG_2018, 0.05, 0.95), 
+           between(MINF_PKLE_2018, 0.05, 0.95),
+           between(MINF_FRMI_2018, 0.05, 0.95), 
+           between(MINF_KING_2018, 0.05, 0.95), 
+           between(MINF_OVTN_2018, 0.05, 0.95),  
+           between(MINF_KBSM_2018, 0.05, 0.95),  
+           between(MINF_LINC_2018, 0.05, 0.95),  
+           between(MINF_STIL_2018, 0.05, 0.95),  
+           between(MINF_TMPL_2018, 0.05, 0.95),  
+           between(MINF_CLMB_2018, 0.05, 0.95),
+           between(MINF_BRKG_2019, 0.05, 0.95), 
+           between(MINF_PKLE_2019, 0.05, 0.95),
+           between(MINF_FRMI_2019, 0.05, 0.95), 
+           between(MINF_KING_2019, 0.05, 0.95), 
+           between(MINF_OVTN_2019, 0.05, 0.95),  
+           between(MINF_KBSM_2019, 0.05, 0.95),  
+           between(MINF_LINC_2019, 0.05, 0.95),  
+           between(MINF_STIL_2019, 0.05, 0.95),  
+           between(MINF_TMPL_2019, 0.05, 0.95),  
+           between(MINF_CLMB_2019, 0.05, 0.95)) %>% 
+  tally() %>% arrange(desc(n)) %>%
+  mutate(frac = n/100000)# %>%
+  #write_csv(., path = "MAF_allows_gwas_10_sites_2_years.csv")
+freq_sitebyyear %>%
+  group_by(between(MINF_BRKG_2018, 0.05, 0.95), 
+           between(MINF_PKLE_2018, 0.05, 0.95),
+           between(MINF_FRMI_2018, 0.05, 0.95), 
+           between(MINF_KING_2018, 0.05, 0.95), 
+           between(MINF_OVTN_2018, 0.05, 0.95),  
+           between(MINF_KBSM_2018, 0.05, 0.95),  
+           between(MINF_LINC_2018, 0.05, 0.95),  
+           between(MINF_STIL_2018, 0.05, 0.95),  
+           between(MINF_TMPL_2018, 0.05, 0.95),  
+           between(MINF_CLMB_2018, 0.05, 0.95)) %>% 
+  tally() %>% arrange(desc(n)) %>%
+  mutate(approx = n/100000*33880000) %>%
+  write_csv(., path = "MAF_allows_gwas_10_sites_2018.csv")
+
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_BRKG_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+
+36007-28544
+28544/36007
+36007/100000*33880000
+28544/100000*33880000
+```
+
+    *36007 out of 100k sites had MAF > 0.05 at Pickle in 2018, our best site.
+    *12.2M SNPs total.
+    *28544 out of 100k sites have MAF > 0.05 at all 10 locations.
+    
+That's 7463 SNPs less, or 79.27% of the SNPs we would have had.
+9.67M SNPs total. Lose 20% of the SNPs by constraining to 5% MAF at all sites.
+
+BRKG 35452
+
+# ------------------
+# Start of Plots
+
+```{r}
+freq_sitebyyear %>%
+  filter(between(MINF_TMPL_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_TMPL_2018, y = MINF_TMPL_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  filter(between(MINF_LINC_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_LINC_2018, y = MINF_LINC_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  filter(between(MINF_CLMB_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_CLMB_2018, y = MINF_CLMB_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_BRKG_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+freq_sitebyyear %>%
+  ggplot(aes(x = MINF_BRKG_2019, y = MINF_KING_2019)) + 
+  geom_point(alpha = 0.05) + geom_abline(slope = 1, intercept = 0, color = "red")
+```
+
+```{r}
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95) & between(MINF_KING_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_KING_2018)) + 
+  geom_hex() + geom_abline(slope = 1, intercept = 0, color = "red") + 
+  scale_fill_viridis(option = "B", trans = "log2") 
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2019, 0.05, 0.95) & between(MINF_KING_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2019, y = MINF_KING_2019)) + 
+  geom_hex() + geom_abline(slope = 1, intercept = 0, color = "red") + 
+  scale_fill_viridis(option = "B", trans = "log2") 
+freq_sitebyyear %>%
+  filter(between(MINF_LINC_2019, 0.05, 0.95) & between(MINF_PKLE_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_LINC_2019, y = MINF_PKLE_2019)) + 
+  geom_hex() + geom_abline(slope = 1, intercept = 0, color = "red") + 
+  scale_fill_viridis(option = "B", trans = "log2") 
+```
+
+## Labeled hex plots
+
+```{r}
+freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95) & between(MINF_BRKG_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Brookings, 2018") +
+  ylab("MAF in Brookings, 2019")
+
+freq_sitebyyear %>%
+  filter(between(MINF_KING_2019, 0.05, 0.95) & between(MINF_BRKG_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_KING_2019, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Kingsville, 2019") +
+  ylab("MAF in Brookings, 2019")
+
+freq_sitebyyear %>%
+  filter(between(MINF_OVTN_2019, 0.05, 0.95) & between(MINF_BRKG_2019, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_OVTN_2019, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Overton, 2019") +
+  ylab("MAF in Brookings, 2019")
+
+freq_sitebyyear %>%
+  filter(between(MINF_OVTN_2018, 0.05, 0.95) & between(MINF_BRKG_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_OVTN_2018, y = MINF_BRKG_2018)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Overton, 2018") +
+  ylab("MAF in Brookings, 2018")
+
+freq_sitebyyear %>%
+  filter(between(MINF_OVTN_2018, 0.05, 0.95) & between(MINF_LINC_2018, 0.05, 0.95)) %>%
+  ggplot(aes(x = MINF_OVTN_2018, y = MINF_LINC_2018)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.43)) + 
+  xlab("MAF in Overton, 2018") +
+  ylab("MAF in Lincoln, 2018")
+```
+
+## Grid of plots?
+
+
+```{r}
+maf_long <- freq_sitebyyear %>%
+  dplyr::select(-starts_with("MAJF"), -starts_with("N_CHR_")) %>%
+  pivot_longer(cols = starts_with("MINF"), names_to = "SITE_YEAR", values_to = "MINF") %>%
+  separate(col = "SITE_YEAR", into = c("MINF_", "SITE", "YEAR"), sep = "_")
+
+```
+
+# ---------------------------
+## Full SNP file analyses
+
+```{r}
+
+freq_sitebyyear %>%
+  group_by(between(MINF_BRKG_2018, 0.05, 0.95), 
+           between(MINF_PKLE_2018, 0.05, 0.95),
+           between(MINF_FRMI_2018, 0.05, 0.95), 
+           between(MINF_KING_2018, 0.05, 0.95), 
+           between(MINF_OVTN_2018, 0.05, 0.95),  
+           between(MINF_KBSM_2018, 0.05, 0.95),  
+           between(MINF_LINC_2018, 0.05, 0.95),  
+           between(MINF_STIL_2018, 0.05, 0.95),  
+           between(MINF_TMPL_2018, 0.05, 0.95),  
+           between(MINF_CLMB_2018, 0.05, 0.95),
+           between(MINF_BRKG_2019, 0.05, 0.95), 
+           between(MINF_PKLE_2019, 0.05, 0.95),
+           between(MINF_FRMI_2019, 0.05, 0.95), 
+           between(MINF_KING_2019, 0.05, 0.95), 
+           between(MINF_OVTN_2019, 0.05, 0.95),  
+           between(MINF_KBSM_2019, 0.05, 0.95),  
+           between(MINF_LINC_2019, 0.05, 0.95),  
+           between(MINF_STIL_2019, 0.05, 0.95),  
+           between(MINF_TMPL_2019, 0.05, 0.95),  
+           between(MINF_CLMB_2019, 0.05, 0.95)) %>% 
+  tally() %>% arrange(desc(n)) %>%
+  write_csv(., path = "SNPs_where_MAF_allows_gwas_10_sites_2_years.csv")
+freq_sitebyyear %>%
+  group_by(between(MINF_BRKG_2018, 0.05, 0.95), 
+           between(MINF_PKLE_2018, 0.05, 0.95),
+           between(MINF_FRMI_2018, 0.05, 0.95), 
+           between(MINF_KING_2018, 0.05, 0.95), 
+           between(MINF_OVTN_2018, 0.05, 0.95),  
+           between(MINF_KBSM_2018, 0.05, 0.95),  
+           between(MINF_LINC_2018, 0.05, 0.95),  
+           between(MINF_STIL_2018, 0.05, 0.95),  
+           between(MINF_TMPL_2018, 0.05, 0.95),  
+           between(MINF_CLMB_2018, 0.05, 0.95)) %>% 
+  tally() %>% arrange(desc(n)) %>%
+  write_csv(., path = "SNPs_where_MAF_allows_gwas_10_sites_2018.csv")
+```
+
+```{r}
+freq_maf_2018 <- freq_sitebyyear %>%
+  filter(between(MINF_BRKG_2018, 0.05, 0.95) & 
+           between(MINF_PKLE_2018, 0.05, 0.95) &
+           between(MINF_FRMI_2018, 0.05, 0.95) & 
+           between(MINF_KING_2018, 0.05, 0.95) & 
+           between(MINF_OVTN_2018, 0.05, 0.95) & 
+           between(MINF_KBSM_2018, 0.05, 0.95) & 
+           between(MINF_LINC_2018, 0.05, 0.95) & 
+           between(MINF_STIL_2018, 0.05, 0.95) & 
+           between(MINF_TMPL_2018, 0.05, 0.95) & 
+           between(MINF_CLMB_2018, 0.05, 0.95)) 
+saveRDS(freq_maf_2018, "~/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/Allele_frequencies_with_maf_above_5percent.rds")
+```
+
+## Labeled hex plots
+
+```{r}
+brkg2yr <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_BRKG_2018, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Brookings, 2018") +
+  ylab("MAF in Brookings, 2019")
+save_plot(filename = "BRKG_2_years_MAF_change.png", plot = brkg2yr)
+
+brkg_king9 <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_KING_2019, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Kingsville, 2019") +
+  ylab("MAF in Brookings, 2019")
+save_plot(filename = "BRKG_2019_vs_KING_2019_MAF.png", plot = brkg_king9)
+
+brkg_ovtn9 <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_OVTN_2019, y = MINF_BRKG_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Overton, 2019") +
+  ylab("MAF in Brookings, 2019")
+save_plot(filename = "BRKG_2019_vs_OVTN_2019_MAF.png", plot = brkg_ovtn9)
+
+brkg_ovtn8 <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_OVTN_2018, y = MINF_BRKG_2018)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Overton, 2018") +
+  ylab("MAF in Brookings, 2018")
+save_plot(filename = "BRKG_2018_vs_OVTN_2018_MAF.png", plot = brkg_ovtn8)
+
+
+linc_ovtn8 <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_OVTN_2018, y = MINF_LINC_2018)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Overton, 2018") +
+  ylab("MAF in Lincoln, 2018")
+save_plot(filename = "LINC_2018_vs_OVTN_2018_MAF.png", plot = linc_ovtn8)
+###
+linc_ovtn9 <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_OVTN_2019, y = MINF_LINC_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Overton, 2019") +
+  ylab("MAF in Lincoln, 2019")
+save_plot(filename = "LINC_2019_vs_OVTN_2019_MAF.png", plot = linc_ovtn9)
+
+frmi_king9 <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_FRMI_2019, y = MINF_KING_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Fermilab, IL, 2019") +
+  ylab("MAF in Kingsville, TX, 2019")
+save_plot(filename = "FRMI_2019_vs_KING_2019_MAF.png", plot = frmi_king9)
+##
+
+frmi_2yr <- freq_maf_2018 %>%
+  ggplot(aes(x = MINF_FRMI_2018, y = MINF_FRMI_2019)) + 
+  geom_hline(yintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_vline(xintercept = c(0.25, 0.5, 0.75), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.95, 0.475)) + 
+  xlab("MAF in Fermilab, IL, 2018") +
+  ylab("MAF in Fermilab, IL, 2019")
+save_plot(filename = "FRMI_2018_vs_2019_MAF.png", plot = frmi_2yr)
+##
+
+```
+
+
+# Minor allele count instead of MAF
+
+Minor allele needs to be present at least 15 times (for a MAF of 5% in 2019 at FRMI). 18 for mean
+
+But for BRKG/LINC/KING 21 - 24 present is better. Let's do 25, every location has to have 25 or more of an allele to keep that SNP.
+
+Or (if FRMI leads to dropping a ton of SNPs) possibly keep some SNPs that are above 15 for FRMI, and above 25 everywhere else.
+
+```{r}
+freq
+mean(freq$N_CHR_FRMI_2019)*.05 # 286 # 416 BRKG 428 LINC 478 KING
+(286)*.05
+mean(freq$N_CHR_BRKG_2019)*.05
+mean(freq$N_CHR_LINC_2019)*.05
+mean(freq$N_CHR_KING_2019)*.05
+```
+STIL 762
+
+```{r}
+mac_sitebyyear <- freq_sitebyyear %>%
+  mutate(MAC_PKLE_2019 = ifelse(round(N_CHR_PKLE_2019*MINF_PKLE_2019)>=N_CHR_PKLE_2019/2, round(N_CHR_PKLE_2019*MAJF_PKLE_2019), round(N_CHR_PKLE_2019*MINF_PKLE_2019)),
+         MAC_FRMI_2019 = ifelse(round(N_CHR_FRMI_2019*MINF_FRMI_2019)>=N_CHR_FRMI_2019/2, round(N_CHR_FRMI_2019*MAJF_FRMI_2019), round(N_CHR_FRMI_2019*MINF_FRMI_2019)),
+         MAC_LINC_2019 = ifelse(round(N_CHR_LINC_2019*MINF_LINC_2019)>=N_CHR_LINC_2019/2, round(N_CHR_LINC_2019*MAJF_LINC_2019), round(N_CHR_LINC_2019*MINF_LINC_2019)),
+         MAC_BRKG_2019 = ifelse(round(N_CHR_BRKG_2019*MINF_BRKG_2019)>=N_CHR_BRKG_2019/2, round(N_CHR_BRKG_2019*MAJF_BRKG_2019), round(N_CHR_BRKG_2019*MINF_BRKG_2019)),
+         MAC_CLMB_2019 = ifelse(round(N_CHR_CLMB_2019*MINF_CLMB_2019)>=N_CHR_CLMB_2019/2, round(N_CHR_CLMB_2019*MAJF_CLMB_2019), round(N_CHR_CLMB_2019*MINF_CLMB_2019)),
+         MAC_OVTN_2019 = ifelse(round(N_CHR_OVTN_2019*MINF_OVTN_2019)>=N_CHR_OVTN_2019/2, round(N_CHR_OVTN_2019*MAJF_OVTN_2019), round(N_CHR_OVTN_2019*MINF_OVTN_2019)),
+         MAC_STIL_2019 = ifelse(round(N_CHR_STIL_2019*MINF_STIL_2019)>=N_CHR_STIL_2019/2, round(N_CHR_STIL_2019*MAJF_STIL_2019), round(N_CHR_STIL_2019*MINF_STIL_2019)),
+         MAC_TMPL_2019 = ifelse(round(N_CHR_TMPL_2019*MINF_TMPL_2019)>=N_CHR_TMPL_2019/2, round(N_CHR_TMPL_2019*MAJF_TMPL_2019), round(N_CHR_TMPL_2019*MINF_TMPL_2019)),
+         MAC_KBSM_2019 = ifelse(round(N_CHR_KBSM_2019*MINF_KBSM_2019)>=N_CHR_KBSM_2019/2, round(N_CHR_KBSM_2019*MAJF_KBSM_2019), round(N_CHR_KBSM_2019*MINF_KBSM_2019)),
+         MAC_KING_2019 = ifelse(round(N_CHR_KING_2019*MINF_KING_2019)>=N_CHR_KING_2019/2, round(N_CHR_KING_2019*MAJF_KING_2019), round(N_CHR_KING_2019*MINF_KING_2019)),
+         MAC_KING_2018 = ifelse(round(N_CHR_KING_2018*MINF_KING_2018)>=N_CHR_KING_2018/2, round(N_CHR_KING_2018*MAJF_KING_2018), round(N_CHR_KING_2018*MINF_KING_2018)),
+         MAC_KBSM_2018 = ifelse(round(N_CHR_KBSM_2018*MINF_KBSM_2018)>=N_CHR_KBSM_2018/2, round(N_CHR_KBSM_2018*MAJF_KBSM_2018), round(N_CHR_KBSM_2018*MINF_KBSM_2018)),
+         MAC_PKLE_2018 = ifelse(round(N_CHR_PKLE_2018*MINF_PKLE_2018)>=N_CHR_PKLE_2018/2, round(N_CHR_PKLE_2018*MAJF_PKLE_2018), round(N_CHR_PKLE_2018*MINF_PKLE_2018)),
+         MAC_OVTN_2018 = ifelse(round(N_CHR_OVTN_2018*MINF_OVTN_2018)>=N_CHR_OVTN_2018/2, round(N_CHR_OVTN_2018*MAJF_OVTN_2018), round(N_CHR_OVTN_2018*MINF_OVTN_2018)),
+         MAC_BRKG_2018 = ifelse(round(N_CHR_BRKG_2018*MINF_BRKG_2018)>=N_CHR_BRKG_2018/2, round(N_CHR_BRKG_2018*MAJF_BRKG_2018), round(N_CHR_BRKG_2018*MINF_BRKG_2018)),
+         MAC_CLMB_2018 = ifelse(round(N_CHR_CLMB_2018*MINF_CLMB_2018)>=N_CHR_CLMB_2018/2, round(N_CHR_CLMB_2018*MAJF_CLMB_2018), round(N_CHR_CLMB_2018*MINF_CLMB_2018)),
+         MAC_TMPL_2018 = ifelse(round(N_CHR_TMPL_2018*MINF_TMPL_2018)>=N_CHR_TMPL_2018/2, round(N_CHR_TMPL_2018*MAJF_TMPL_2018), round(N_CHR_TMPL_2018*MINF_TMPL_2018)),
+         MAC_LINC_2018 = ifelse(round(N_CHR_LINC_2018*MINF_LINC_2018)>=N_CHR_LINC_2018/2, round(N_CHR_LINC_2018*MAJF_LINC_2018), round(N_CHR_LINC_2018*MINF_LINC_2018)),
+         MAC_STIL_2018 = ifelse(round(N_CHR_STIL_2018*MINF_STIL_2018)>=N_CHR_STIL_2018/2, round(N_CHR_STIL_2018*MAJF_STIL_2018), round(N_CHR_STIL_2018*MINF_STIL_2018)),
+         MAC_FRMI_2018 = ifelse(round(N_CHR_FRMI_2018*MINF_FRMI_2018)>=N_CHR_FRMI_2018/2, round(N_CHR_FRMI_2018*MAJF_FRMI_2018), round(N_CHR_FRMI_2018*MINF_FRMI_2018))) %>%
+  dplyr::select(CHR, POS, MAC_PKLE_2019:MAC_FRMI_2018)
+
+saveRDS(mac_sitebyyear, file =  "SNPs_where_minor_allele_count_allows_gwas_10_sites_2_years.rds")
+
+mac_sitebyyear %>%
+    group_by(MAC_PKLE_2019 > 25, MAC_PKLE_2018 > 25,
+           MAC_FRMI_2019 > 15, MAC_FRMI_2018 > 15,
+           MAC_OVTN_2019 > 25, MAC_OVTN_2018 > 25,
+           MAC_LINC_2019 > 25, MAC_LINC_2018 > 25,
+           MAC_STIL_2019 > 25, MAC_STIL_2018 > 25,
+           MAC_TMPL_2019 > 25, MAC_TMPL_2018 > 25,
+           MAC_CLMB_2019 > 25, MAC_CLMB_2018 > 25,
+           MAC_BRKG_2019 > 25, MAC_BRKG_2018 > 25,
+           MAC_KBSM_2019 > 25, MAC_KBSM_2018 > 25,
+           MAC_KING_2019 > 25, MAC_KING_2018 > 25) %>%
+  tally() %>%
+  write_csv(., path = "Minor_allele_count_that_allows_gwas_10_sites_2_years_relaxed_FRMI.csv")
+
+mac_sitebyyear %>%
+    group_by(MAC_PKLE_2019 > 25, MAC_PKLE_2018 > 25,
+           MAC_FRMI_2019 > 25, MAC_FRMI_2018 > 25,
+           MAC_OVTN_2019 > 25, MAC_OVTN_2018 > 25,
+           MAC_LINC_2019 > 25, MAC_LINC_2018 > 25,
+           MAC_STIL_2019 > 25, MAC_STIL_2018 > 25,
+           MAC_TMPL_2019 > 25, MAC_TMPL_2018 > 25,
+           MAC_CLMB_2019 > 25, MAC_CLMB_2018 > 25,
+           MAC_BRKG_2019 > 25, MAC_BRKG_2018 > 25,
+           MAC_KBSM_2019 > 25, MAC_KBSM_2018 > 25,
+           MAC_KING_2019 > 25, MAC_KING_2018 > 25) %>%
+  tally() %>%
+  write_csv(., path = "Minor_allele_count_that_allows_gwas_10_sites_2_years.csv")
+```
+
+```{r}
+mac %>%
+  group_by(MAC_PKLE_2019 > 25, MAC_PKLE_2018 > 25,
+           MAC_FRMI_2019 > 15, MAC_FRMI_2018 > 15,
+           MAC_OVTN_2019 > 25, MAC_OVTN_2018 > 25,
+           MAC_LINC_2019 > 25, MAC_LINC_2018 > 25,
+           MAC_STIL_2019 > 25, MAC_STIL_2018 > 25,
+           MAC_TMPL_2019 > 25, MAC_TMPL_2018 > 25,
+           MAC_CLMB_2019 > 25, MAC_CLMB_2018 > 25,
+           MAC_BRKG_2019 > 25, MAC_BRKG_2018 > 25,
+           MAC_KBSM_2019 > 25, MAC_KBSM_2018 > 25,
+           MAC_KING_2019 > 25, MAC_KING_2018 > 25) %>%
+  tally()
+```
+
+```{r}
+mac_sitebyyear <- readRDS(file =  "SNPs_where_minor_allele_count_allows_gwas_10_sites_2_years.rds")
+
+mac_2018_gt25 <- mac_sitebyyear %>%
+  filter(MAC_PKLE_2018 >= 25,
+         MAC_FRMI_2018 >= 15,
+         MAC_OVTN_2018 >= 25,
+         MAC_LINC_2018 >= 25,
+         MAC_STIL_2018 >= 25,
+         MAC_TMPL_2018 >= 25,
+         MAC_CLMB_2018 >= 25,
+         MAC_BRKG_2018 >= 25,
+         MAC_KBSM_2018 >= 25,
+         MAC_KING_2018 >= 25)
+
+brkg_2yr <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_BRKG_2018, y = MAC_BRKG_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Brookings, 2018") +
+  ylab("Minor Allele Count in Brookings, 2019")
+save_plot(filename = "BRKG_2018_v_2019_minor_allele_count_change.png", plot = brkg_2yr)
+
+brkg_king9 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_KING_2019, y = MAC_BRKG_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Kingsville, 2019") +
+  ylab("Minor Allele Count in Brookings, 2019")
+save_plot(filename = "BRKG_2019_vs_KING_2019_minor_allele_count.png", plot = brkg_king9)
+
+brkg_ovtn9 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_OVTN_2019, y = MAC_BRKG_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + + 
+  xlab("Minor Allele Count in Overton, 2019") +
+  ylab("Minor Allele Count in Brookings, 2019")
+save_plot(filename = "BRKG_2019_vs_OVTN_2019_minor_allele_count.png", plot = brkg_ovtn9)
+
+brkg_ovtn8 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_OVTN_2018, y = MAC_BRKG_2018)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Overton, TX, 2018") +
+  ylab("Minor Allele Count in Brookings, SD, 2018")
+save_plot(filename = "BRKG_2018_vs_OVTN_2018_minor_allele_count.png", plot = brkg_ovtn8)
+
+
+linc_ovtn8 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_OVTN_2018, y = MAC_LINC_2018)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) +  
+  xlab("Minor Allele Count in Overton, 2018") +
+  ylab("Minor Allele Count in Lincoln, 2018")
+save_plot(filename = "LINC_2018_vs_OVTN_2018_minor_allele_count.png", plot = linc_ovtn8)
+###
+
+
+
+
+
+
+
+
+linc_ovtn9 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_OVTN_2019, y = MAC_LINC_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Overton, TX, 2019") +
+  ylab("Minor Allele Count in Lincoln, NE, 2019")
+save_plot(filename = "LINC_2019_vs_OVTN_2019_minor_allele_count.png", plot = linc_ovtn9)
+
+frmi_king9 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_FRMI_2019, y = MAC_KING_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Fermilab, IL, 2019") +
+  ylab("Minor Allele Count in Kingsville, TX, 2019")
+save_plot(filename = "FRMI_2019_vs_KING_2019_minor_allele_count.png", plot = frmi_king9)
+##
+
+frmi_2yr <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_FRMI_2018, y = MAC_FRMI_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Fermilab, IL, 2018") +
+  ylab("Minor Allele Count in Fermilab, IL, 2019")
+save_plot(filename = "FRMI_2018_vs_2019_minor_allele_count.png", plot = frmi_2yr)
+##
+linc_2yr <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_LINC_2018, y = MAC_LINC_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Lincoln, NE, 2018") +
+  ylab("Minor Allele Count in Lincoln, NE, 2019")
+save_plot(filename = "LINC_2018_vs_2019_minor_allele_count.png", plot = linc_2yr)
+
+clmb_2yr <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_CLMB_2018, y = MAC_CLMB_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Columbia, MO, 2018") +
+  ylab("Minor Allele Count in Columbia, MO, 2019")
+save_plot(filename = "CLMB_2018_vs_2019_minor_allele_count.png", plot = clmb_2yr)
+
+kbsm_2yr <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_KBSM_2018, y = MAC_KBSM_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in KBS, MI, 2018") +
+  ylab("Minor Allele Count in KBS, MI, 2019")
+save_plot(filename = "KBSM_2018_vs_2019_minor_allele_count.png", plot = kbsm_2yr)
+###
+frmi_king8 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_FRMI_2018, y = MAC_KING_2018)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Fermilab, IL, 2018") +
+  ylab("Minor Allele Count in Kingsville, TX, 2018")
+save_plot(filename = "FRMI_2018_vs_KING_2018_minor_allele_count.png", plot = frmi_king9)
+brkg_king8 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_KING_2018, y = MAC_BRKG_2018)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Kingsville, 2018") +
+  ylab("Minor Allele Count in Brookings, 2018")
+save_plot(filename = "BRKG_2018_vs_KING_2018_minor_allele_count.png", plot = brkg_king9)
+#
+clmb_pkle9 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_CLMB_2019, y = MAC_PKLE_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Columbia, MO, 2019") +
+  ylab("Minor Allele Count in Pickle, TX, 2019")
+save_plot(filename = "CLMB_2019_vs_PKLE_2019_minor_allele_count.png", plot = clmb_pkle9)
+
+kbsm_pkle9 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_KBSM_2019, y = MAC_PKLE_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in KBS, MI, 2019") +
+  ylab("Minor Allele Count in Pickle, TX, 2019")
+save_plot(filename = "KBSM_2019_vs_PKLE_2019_minor_allele_count.png", plot = kbsm_pkle9)
+
+brkg_pkle9 <- mac_2018_gt25 %>%
+  ggplot(aes(x = MAC_BRKG_2019, y = MAC_PKLE_2019)) + 
+  geom_hline(yintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_vline(xintercept = c(0, 100, 200), color = "lightgrey") +
+  geom_hex() + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) + 
+  scale_fill_viridis(option = "B", trans = "log2") + 
+  theme(legend.position = c(0.2, 0.7)) + 
+  xlab("Minor Allele Count in Brookings, SD, 2019") +
+  ylab("Minor Allele Count in Pickle, TX, 2019")
+save_plot(filename = "BRKG_2019_vs_PKLE_2019_minor_allele_count.png", plot = brkg_pkle9)
+```
+
+5 plots of 2018 vs 2019: any place where more than 20 plants died. That's basically just the north.
+
+Some 2019 north vs south plots.

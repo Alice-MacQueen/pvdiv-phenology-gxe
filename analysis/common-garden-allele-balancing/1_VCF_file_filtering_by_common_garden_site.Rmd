@@ -11,6 +11,7 @@ library(tidyverse)
 library(bigsnpr)
 library(switchgrassGWAS)
 load("~/Github/pvdiv-phenology-gxe/data/phenotypes_2019.rda")
+load("~/Github/pvdiv-phenology-gxe/data/phenotypes_2018.rda")
 load("~/Github/pvdiv-phenology-gxe/data/sites.rda")
 ```
 
@@ -83,7 +84,7 @@ Compare these values to their values in 2018 to see how much frequencies shifted
 
 ```{r}
 colSums(!is.na(phenotypes_wide_2019))
-
+i=7
 for(i in 1:10){
 site <- sites$Site[i]
 
@@ -111,37 +112,110 @@ writeLines(site_2018$PLANT_ID, con = paste0(site, "_2018"))
 ```
 
 Plants alive EOS 2018, then EOS 2019:
-BRKG: 412 down to 254
-CLMB: 591 down to 496
-FRMI: 273 down to 185
-KBSM: 544 down to 516
-KING: 305 down to 286
-LINC: 437 down to 260
-OVTN: 346 down to 331
-PKLE: 623 down to 614
-STIL: 469 down to 451
-TMPL: 388 down to 373
+BRKG: 412 down to 254 (377 in 2018; 234 in 2019)
+CLMB: 591 down to 496 (547 in 2018; 462 in 2019)
+FRMI: 273 down to 185 (245 in 2018; 163 in 2019)
+KBSM: 544 down to 516 (501 in 2018; 480 in 2019)
+KING: 305 down to 286 (275 in 2018; 267 in 2019)
+LINC: 437 down to 260 (400 in 2018; 247 in 2019)
+OVTN: 346 down to 331 (312 in 2018; 304 in 2019)
+PKLE: 623 down to 614 (579 in 2018; 577 in 2019 out of 732 individuals in 2020 genome file)
+STIL: 469 down to 451 (433 in 2018; 419 in 2019)
+TMPL: 388 down to 373 (351 in 2018; 341 in 2019)
 
 # VCFtools lines
 ```{}
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/PKLE_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/PKLE_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/BRKG_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/BRKG_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/CLMB_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/CLMB_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/FRMI_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/FRMI_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KBSM_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KBSM_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KING_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KING_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/LINC_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/LINC_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/OVTN_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/OVTN_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/STIL_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/STIL_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/TMPL_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/TMPL_2019 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/PKLE_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/PKLE_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/BRKG_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/BRKG_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/CLMB_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/CLMB_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/FRMI_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/FRMI_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KBSM_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KBSM_2018j &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KING_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KING_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/LINC_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/LINC_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/OVTN_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/OVTN_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/STIL_2018 --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/STIL_2018 &
-vcftools --gzvcf All_chr_combined_636g_80pct_maf0.005.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/TMPL_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/TMPL_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/PKLE_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/PKLE_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/BRKG_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/BRKG_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/CLMB_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/CLMB_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/FRMI_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/FRMI_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KBSM_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KBSM_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KING_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KING_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/LINC_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/LINC_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/OVTN_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/OVTN_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/STIL_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/STIL_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/TMPL_2019 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/TMPL_2019 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/PKLE_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/PKLE_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/BRKG_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/BRKG_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/CLMB_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/CLMB_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/FRMI_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/FRMI_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KBSM_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KBSM_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/KING_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/KING_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/LINC_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/LINC_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/OVTN_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/OVTN_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/TMPL_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/TMPL_2018 &
+vcftools --gzvcf /home/SharedUser/PV/NatPop/33dot9MSite_Unimputed/Pvirgatum_V5_GWAS_630g_33dot9M.vcf.gz --keep /home/alice/Github/pvdiv-phenology-gxe/analysis/common-garden-allele-balancing/STIL_2018 --freq --out /home/alice/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/STIL_2018 &
 ```
+
+```{r}
+snpfile <- read_csv(file = "33M_SNP_file_PLANT_ID")
+pkle2019 <- read_csv(file = "PKLE_2019", col_names = "PLANT_ID")
+
+
+snpfile %>%
+  left_join(phenotypes_wide_2019)
+
+metadata %>%
+  filter(LIB_CLIMATE == "Y") %>%
+  anti_join(snpfile)
+
+snpfile %>%
+  anti_join(metadata) # NL94SL93 is the only one not in the metadata. So what happened?
+
+metadata2 %>%
+  anti_join(snpfile) # NL94SL93 is the only one not in the 732 metadata. Ehhhh? 732 metadata has NL94 & SL93. 
+# So the error isn't because I gave Taslima the wrong metadata for the 732 file.
+
+snpfile %>%
+  anti_join(pkle2019)
+pkle2019 %>%
+  anti_join(snpfile)
+site_2019 %>%
+  anti_join(snpfile) %>%
+  left_join(metadata)
+
+metadata %>%
+  filter(LIB_CLIMATE == "Y")
+metadata %>%
+  filter(LIB_PHENO == "Y")
+```
+NL94SL93 is the only one not in the 732 metadata. Ehhhh? 732 metadata has NL94 & SL93. 
+
+So the error isn't because I gave Taslima the wrong metadata for the 732 file. But there are still 44 missing individuals that were planted in the field but aren't in the 732 genotype file. 
+
+I think maybe this file has the 
+
+```{r}
+
+phenotypes_wide_2019 %>%
+  anti_join(snpfile) %>%
+  dplyr::select(PLANT_ID) %>%
+  left_join(metadata) %>%
+  arrange(LIB_PHENO) %>%
+  filter(!(PLANT_ID %in% c("J661.C", "J491.A", "J385.C", "J471.A", "J243.A")))
+
+phenotypes_wide_2019 %>%
+  filter(!(PLANT_ID %in% c("J661.C", "J491.A", "J385.C", "J471.A", "J243.A", "J428.A", "J399.B", "J344.B", "J003.C", "J624.B", "J682.C", "NL94×SL93_370", "NL94×SL93_305"))) # None of these have any 2019 data.
+
+phe_2019 <- phenotypes_wide_2019[which(rowSums(!is.na(phenotypes_wide_2019))>1),] 
+# Only 630 individuals have phenotyping data in 2019. But 38 aren't in 732 file. That's 10% of data.
+phe_2018 <- phenotypes_2018[which(rowSums(!is.na(phenotypes_2018))>1),] # 636 have 2018 data.
+phe_csv <- phe_2018 %>%
+  dplyr::select(PLANT_ID) %>%
+  #anti_join(snpfile) %>%
+  left_join(metadata) %>% 
+  filter(LIB_PHENO == "Y") %>%
+  dplyr::select(PLANT_ID:LIB_PHENO) #%>% anti_join(snpfile)
+
+write_csv(phe_csv, path = "Individuals_needed_for_33M_SNPs.csv")
+```
+
+Individuals that are in the phenotyping panel and should be resequenced:
+
+J428.A	IGRB	N	N	N	 Highest heterozygoisty and low-ish coverage. Fishy, but also, probaably OK. Exclude
+J399.B	IHZG	N	N	N	low coverage, high het. Exclude
+J344.B	IHZN	N	N	N	low coverage, high het. Exclude
+J003.C	IIAH	N	N	N	J003 is a mess. Exclude
+J243.A	IRUH	N	N	N	This has really bad coverage and should be excluded. Exclude
+J661.C	IRXF	N	N	N		Probable Error, Plant does not match others. Exclude
+J682.C	ITCI	N	N N Very high heterozygosity, coverage on the low side. Exclude
