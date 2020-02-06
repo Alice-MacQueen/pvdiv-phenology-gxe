@@ -13,6 +13,7 @@ library(switchgrassGWAS)
 load("~/Github/pvdiv-phenology-gxe/data/phenotypes_2019.rda")
 load("~/Github/pvdiv-phenology-gxe/data/phenotypes_2018.rda")
 load("~/Github/pvdiv-phenology-gxe/data/sites.rda")
+load("~/Github/pvdiv-phenology-gxe/data/metadata.rda")
 ```
 
 ## Goals & Outline
@@ -195,7 +196,7 @@ phenotypes_wide_2019 %>%
   filter(!(PLANT_ID %in% c("J661.C", "J491.A", "J385.C", "J471.A", "J243.A")))
 
 phenotypes_wide_2019 %>%
-  filter(!(PLANT_ID %in% c("J661.C", "J491.A", "J385.C", "J471.A", "J243.A", "J428.A", "J399.B", "J344.B", "J003.C", "J624.B", "J682.C", "NL94×SL93_370", "NL94×SL93_305"))) # None of these have any 2019 data.
+  filter((PLANT_ID %in% c("J661.C", "J491.A", "J385.C", "J471.A", "J243.A", "J428.A", "J399.B", "J344.B", "J003.C", "J624.B", "J682.C", "NL94×SL93_370", "NL94×SL93_305"))) # None of these have any 2019 data.
 
 phe_2019 <- phenotypes_wide_2019[which(rowSums(!is.na(phenotypes_wide_2019))>1),] 
 # Only 630 individuals have phenotyping data in 2019. But 38 aren't in 732 file. That's 10% of data.
@@ -208,6 +209,10 @@ phe_csv <- phe_2018 %>%
   dplyr::select(PLANT_ID:LIB_PHENO) #%>% anti_join(snpfile)
 
 write_csv(phe_csv, path = "Individuals_needed_for_33M_SNPs.csv")
+
+phe_2018 %>%
+  dplyr::select(PLANT_ID) %>%
+  anti_join(phe_csv)
 ```
 
 Individuals that are in the phenotyping panel and should be resequenced:

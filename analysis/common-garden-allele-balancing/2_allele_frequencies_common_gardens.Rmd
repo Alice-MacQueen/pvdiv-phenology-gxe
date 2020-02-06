@@ -766,3 +766,142 @@ save_plot(filename = "BRKG_2019_vs_PKLE_2019_minor_allele_count.png", plot = brk
 5 plots of 2018 vs 2019: any place where more than 20 plants died. That's basically just the north.
 
 Some 2019 north vs south plots.
+
+
+# -----------------
+
+# Impute on 11M SNPs
+
+```{r}
+snps <- readRDS("SNPs_where_minor_allele_count_allows_gwas_10_sites_2_years_.rds")
+```
+
+Here is a breakdown of the number of individuals we have for GWAS at each site, for phenotypes from 2018 and from 2019. The first two data columns have individuals with high quality SNP data and phenotypes. The next two have tetraploid plants with phenotypes – there is a lot of overlap, and only 5-6 plants that could have their libraries resequenced to help the GWAS data.
+
+	Plants with SNP data & phenotypes	Plants with phenotypes	Plants Dead
+	2018	2019	2018	2019	2018 to 2019
+BRKG	408	254	412	254	154
+KBSM	539	517	544	517	22
+FRMI	272	185	273	185	87
+LINC	433	262	437	262	171
+CLMB	585	496	591	496	89
+STIL	465	451	469	451	14
+OVTN	343	332	346	332	11
+TMPL	384	373	388	373	11
+PKLE	617	615	623	615	2
+KING	303	294	305	294	9
+
+
+Given that information, I then subdivided the SNPs from John’s new 33.9M SNP dataset. These are SNPs missing in 20% or less of individuals from each subpopulation. Instead of a minor allele frequency, I used a minor allele count of 25 or more (except for FRMI where I used 15). This was the same as a MAF of 5% at BRKG, FRMI, and LINC, and a slightly lower MAF for the other sites with more individuals. Here’s the breakdown of the site*year combinations where SNPs can and can’t be used for GWAS:
+
+Number of SNPs	Category
+12536071
+	Can't be used for GWAS – these SNPs have less than 25 copies of the minor allele in the 631 individuals planted at the common gardens.
+10452584	Can be used for GWAS at all 10 sites and both 2018 and 2019 data.
+1160326	Can’t be used in LINC & BRKG in 2019
+1155906	Only at high enough frequency to be used at the big 3 sites
+546381	Can only be used at PKLE & CLMB
+439918	Can only be used at PKLE
+346189	Can only be used at big 4 sites – KBSM CLMB PKLE STIL
+341773	Can’t be used at KING OVTN FRMI
+331082	Can’t be used at LINC in 2019 
+327364	Can’t be used at KING
+315522	Can only be used at big 4 and LINC 2018
+305573	Missing 2019 at 4 freezing sites – LINC FRMI CLMB BRKG
+285838	Can only be used at PKLE x2yr & CLMB 2018
+246340	Missing 2019 at 3 freezing sites, not big site (BRKG)
+231650	Missing KING x2yr and FRMI 2019
+192819	Missing KING x2yr and FRMI x2yr
+……	4.67M SNPs have some other combination of Site x Year that is useable.
+ 
+10_site_2_yr 10452584 all MAC > 25 except FRMI 2019 > 15.
+big_three   10452584 + 1155906 PKLE KBSM CLMB > 25
+fourway_seven   PKLE TMPL BRKG KBSM LINC CLMB STIL > 25
+ 10452584 + 341773 + 327364 + 231650 + 192819 + ...
+miss_freeze 305573 + 246340 + 1160326 + 331082 4 sites 2018 > 25 and 1-4 sites 2019 < 25
+
+## 10site_2yr
+all MAC >= 25 except FRMI 2019 > 15.
+
+10,183,856 SNPs
+```{r}
+tensite_twoyear <- snps %>%
+  filter(MAC_PKLE_2019 >= 25, MAC_PKLE_2018 >= 25,
+           MAC_FRMI_2019 >= 15, MAC_FRMI_2018 >= 25,
+           MAC_OVTN_2019 >= 25, MAC_OVTN_2018 >= 25,
+           MAC_LINC_2019 >= 25, MAC_LINC_2018 >= 25,
+           MAC_STIL_2019 >= 25, MAC_STIL_2018 >= 25,
+           MAC_TMPL_2019 >= 25, MAC_TMPL_2018 >= 25,
+           MAC_CLMB_2019 >= 25, MAC_CLMB_2018 >= 25,
+           MAC_BRKG_2019 >= 25, MAC_BRKG_2018 >= 25,
+           MAC_KBSM_2019 >= 25, MAC_KBSM_2018 >= 25,
+           MAC_KING_2019 >= 25, MAC_KING_2018 >= 25)
+saveRDS(tensite_twoyear, file = "SNPs_above_MAC_25_in_10sites_2years.rds")
+```
+
+## big_three
+
+18,333,684
+
+PKLE KBSM CLMB >= 25
+```{r}
+big_three <- snps %>%
+  filter(MAC_PKLE_2019 >= 25, MAC_PKLE_2018 >= 25,
+           MAC_CLMB_2019 >= 25, MAC_CLMB_2018 >= 25,
+           MAC_KBSM_2019 >= 25, MAC_KBSM_2018 >= 25)
+saveRDS(big_three, "SNPs_above_MAC_25_in_big_three_sites.rds")
+```
+
+## fourway_seven
+
+12,358,701 SNPs
+
+PKLE TMPL BRKG KBSM LINC CLMB STIL >= 25
+```{r}
+fourway_seven <- snps %>%
+  filter(MAC_PKLE_2019 >= 25, MAC_PKLE_2018 >= 25,
+           MAC_LINC_2019 >= 25, MAC_LINC_2018 >= 25,
+           MAC_STIL_2019 >= 25, MAC_STIL_2018 >= 25,
+           MAC_TMPL_2019 >= 25, MAC_TMPL_2018 >= 25,
+           MAC_CLMB_2019 >= 25, MAC_CLMB_2018 >= 25,
+           MAC_BRKG_2019 >= 25, MAC_BRKG_2018 >= 25,
+           MAC_KBSM_2019 >= 25, MAC_KBSM_2018 >= 25)
+saveRDS(fourway_seven, file = "SNPs_above_MAC_25_in_fourway_7_sites.rds")
+```
+
+## missing_frz
+
+4 sites 2018 >= 25 and 1-4 sites 2019 < 25
+
+1,963,771 SNPs
+```{r}
+missing_frz <- snps %>%
+  filter(MAC_FRMI_2018 >= 25 & MAC_LINC_2018 >= 25 & MAC_CLMB_2018 >= 25 &
+           MAC_BRKG_2018 >= 25, MAC_FRMI_2019 < 15 | MAC_LINC_2018 < 25 | 
+           MAC_CLMB_2018 < 25 | MAC_BRKG_2019 < 25) %>%
+  mutate(avediff = ((MAC_FRMI_2018 - MAC_FRMI_2019) + (MAC_LINC_2018 - MAC_LINC_2019) + (MAC_CLMB_2018 - MAC_CLMB_2019) + (MAC_BRKG_2018 - MAC_BRKG_2019))/4)
+
+saveRDS(missing_frz, file = "Missing_SNPs_2019_4_freezing_sites.rds")
+```
+
+```{r}
+missing_frz <- readRDS(file = "Missing_SNPs_2019_4_freezing_sites.rds")
+```
+
+```{r}
+missing_frz %>%
+  ggplot(aes(x = POS, y = avediff)) + 
+  geom_point() + 
+  facet_wrap(~CHR)
+save_plot(filename = "Distribution_of_SNPs_lost_in_freezing_four_sites.png", plot = last_plot())
+
+
+missing_frz %>%
+  ggplot(aes(x = POS, y = avediff)) + 
+  geom_hex() + 
+  facet_wrap(~CHR) + 
+  scale_color_viridis() + 
+  scale_fill_viridis()
+save_plot(filename = "Distribution_of_SNPs_lost_in_freezing_four_sites_hex.png", plot = last_plot())
+```
+
