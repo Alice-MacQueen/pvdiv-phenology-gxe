@@ -841,7 +841,7 @@ saveRDS(tensite_twoyear, file = "SNPs_above_MAC_25_in_10sites_2years.rds")
 
 ## big_three
 
-18,333,684
+18,704,908 SNPs
 
 PKLE KBSM CLMB >= 25
 ```{r}
@@ -850,11 +850,12 @@ big_three <- snps %>%
            MAC_CLMB_2019 >= 25, MAC_CLMB_2018 >= 25,
            MAC_KBSM_2019 >= 25, MAC_KBSM_2018 >= 25)
 saveRDS(big_three, "SNPs_above_MAC_25_in_big_three_sites.rds")
+10183856+6027776+2493276
 ```
 
 ## fourway_seven
 
-12,358,701 SNPs
+12,677,132 SNPs
 
 PKLE TMPL BRKG KBSM LINC CLMB STIL >= 25
 ```{r}
@@ -867,28 +868,117 @@ fourway_seven <- snps %>%
            MAC_BRKG_2019 >= 25, MAC_BRKG_2018 >= 25,
            MAC_KBSM_2019 >= 25, MAC_KBSM_2018 >= 25)
 saveRDS(fourway_seven, file = "SNPs_above_MAC_25_in_fourway_7_sites.rds")
+10183856+2493276
 ```
+
+## microbiome
+
+Just got the results from PKLE thus far.
+
+21,525,180 SNPs
+
+```{r}
+microbiome <- snps %>%
+  filter(MAC_PKLE_2019 >= 25)
+10183856+6027776+2493276+2820272
+```
+
 
 ## missing_frz
 
 4 sites 2018 >= 25 and 1-4 sites 2019 < 25
 
-1,963,771 SNPs
+2,288,528 SNPs
 ```{r}
 missing_frz <- snps %>%
   filter(MAC_FRMI_2018 >= 25 & MAC_LINC_2018 >= 25 & MAC_CLMB_2018 >= 25 &
-           MAC_BRKG_2018 >= 25, MAC_FRMI_2019 < 15 | MAC_LINC_2018 < 25 | 
-           MAC_CLMB_2018 < 25 | MAC_BRKG_2019 < 25) %>%
+           MAC_BRKG_2018 >= 25, MAC_FRMI_2019 < 15 | MAC_LINC_2019 < 25 | 
+           MAC_CLMB_2019 < 25 | MAC_BRKG_2019 < 25) %>%
   mutate(avediff = ((MAC_FRMI_2018 - MAC_FRMI_2019) + (MAC_LINC_2018 - MAC_LINC_2019) + (MAC_CLMB_2018 - MAC_CLMB_2019) + (MAC_BRKG_2018 - MAC_BRKG_2019))/4)
 
 saveRDS(missing_frz, file = "Missing_SNPs_2019_4_freezing_sites.rds")
+
+25/(615*2)
+25/(496*2)
 ```
+
+```{r}
+snp_subsets <- snps %>%
+  mutate(SNP_tensite_twoyear = ifelse(MAC_PKLE_2019 >= 25 & 
+                                        MAC_PKLE_2018 >= 25 & 
+                                        MAC_FRMI_2019 >= 15 & 
+                                        MAC_FRMI_2018 >= 25 & 
+                                        MAC_OVTN_2019 >= 25 & 
+                                        MAC_OVTN_2018 >= 25 & 
+                                        MAC_LINC_2019 >= 25 & 
+                                        MAC_LINC_2018 >= 25 & 
+                                        MAC_STIL_2019 >= 25 & 
+                                        MAC_STIL_2018 >= 25 & 
+                                        MAC_TMPL_2019 >= 25 & 
+                                        MAC_TMPL_2018 >= 25 & 
+                                        MAC_CLMB_2019 >= 25 & 
+                                        MAC_CLMB_2018 >= 25 & 
+                                        MAC_BRKG_2019 >= 25 & 
+                                        MAC_BRKG_2018 >= 25 & 
+                                        MAC_KBSM_2019 >= 25 & 
+                                        MAC_KBSM_2018 >= 25 & 
+                                        MAC_KING_2019 >= 25 & 
+                                        MAC_KING_2018 >= 25, "Y", "N"),
+         SNP_big_three = ifelse(MAC_PKLE_2019 >= 25 & 
+                                        MAC_PKLE_2018 >= 25 & 
+                                        MAC_CLMB_2019 >= 25 & 
+                                        MAC_CLMB_2018 >= 25 & 
+                                        MAC_KBSM_2019 >= 25 & 
+                                        MAC_KBSM_2018 >= 25, "Y", "N"),
+         SNP_fourway_seven = ifelse(MAC_PKLE_2019 >= 25 & 
+                                        MAC_PKLE_2018 >= 25 & 
+                                        MAC_LINC_2019 >= 25 & 
+                                        MAC_LINC_2018 >= 25 & 
+                                        MAC_STIL_2019 >= 25 & 
+                                        MAC_STIL_2018 >= 25 & 
+                                        MAC_TMPL_2019 >= 25 & 
+                                        MAC_TMPL_2018 >= 25 & 
+                                        MAC_CLMB_2019 >= 25 & 
+                                        MAC_CLMB_2018 >= 25 & 
+                                        MAC_BRKG_2019 >= 25 & 
+                                        MAC_BRKG_2018 >= 25 & 
+                                        MAC_KBSM_2019 >= 25 & 
+                                        MAC_KBSM_2018 >= 25, "Y", "N"),
+         SNP_microbiome = ifelse(MAC_PKLE_2019 >= 25 & 
+                                        MAC_PKLE_2018 >= 25, "Y", "N"),
+         SNP_missing_frz = ifelse((MAC_FRMI_2018 >= 25 & MAC_BRKG_2018 >= 25 &
+                                     MAC_LINC_2018 >= 25 & 
+                                     MAC_CLMB_2018 >= 25) &
+                                     (MAC_LINC_2019 < 25 | 
+                                        MAC_CLMB_2019 < 25 | 
+                                        MAC_BRKG_2019 < 25 |
+                                    MAC_FRMI_2019 < 15), "Y", "N")
+         )
+
+snp_subsets %>%
+  dplyr::select(CHR, POS, starts_with("SNP_")) %>%
+  saveRDS(., file = "SNP_subsets_33M_markers.rds")
+
+missing_frz <- snp_subsets %>%
+  filter(SNP_missing_frz == "Y")
+
+snp_subsets %>%
+  filter(SNP_missing_frz == "Y") %>%
+  saveRDS(., file = "Missing_SNPs_2019_4_freezing_sites.rds")
+
+snp_subsets %>%
+  group_by(SNP_missing_frz) %>% tally()
+snp_subsets %>%
+  group_by(SNP_tensite_twoyear, SNP_big_three, SNP_fourway_seven, SNP_microbiome) %>% tally()
+```
+
 
 ```{r}
 missing_frz <- readRDS(file = "Missing_SNPs_2019_4_freezing_sites.rds")
 ```
 
 ```{r}
+theme_set(theme_poster)
 missing_frz %>%
   ggplot(aes(x = POS, y = avediff)) + 
   geom_point() + 
@@ -899,9 +989,248 @@ save_plot(filename = "Distribution_of_SNPs_lost_in_freezing_four_sites.png", plo
 missing_frz %>%
   ggplot(aes(x = POS, y = avediff)) + 
   geom_hex() + 
-  facet_wrap(~CHR) + 
-  scale_color_viridis() + 
-  scale_fill_viridis()
-save_plot(filename = "Distribution_of_SNPs_lost_in_freezing_four_sites_hex.png", plot = last_plot())
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position") + ylab("Minor Allele Loss, 4 sites") +
+  theme(legend.position = "right")
+save_plot(filename = "Distribution_of_SNPs_lost_in_freezing_four_sites_log10.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+missing_frz %>%
+  filter(MAC_FRMI_2018 >= 25 & MAC_LINC_2018 >= 25 & MAC_CLMB_2018 >= 25 &
+           MAC_BRKG_2018 >= 25 & MAC_FRMI_2019 < 15 & MAC_LINC_2019 < 25 & 
+           MAC_CLMB_2019 < 25 & MAC_BRKG_2019 < 25) %>%
+  ggplot(aes(x = POS, y = avediff)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position") + ylab("Minor Allele Loss, 4 sites") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_lost_in_all_four_freezing_sites_log10.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+missing_frz %>%
+  filter(MAC_BRKG_2018 >= 25 & MAC_BRKG_2019 < 15) %>%
+  mutate(Allele_loss = MAC_BRKG_2018 - MAC_BRKG_2019) %>%
+  ggplot(aes(x = POS, y = Allele_loss)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_lost_in_BRKG_log10.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+missing_frz %>%
+  filter(MAC_LINC_2018 >= 25 & MAC_LINC_2019 < 15) %>%
+  mutate(Allele_loss = MAC_LINC_2018 - MAC_LINC_2019) %>%
+  ggplot(aes(x = POS, y = Allele_loss)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_lost_in_LINC_log10.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+missing_frz %>%
+  filter(MAC_FRMI_2018 >= 25 & MAC_FRMI_2019 < 15) %>%
+  mutate(Allele_loss = MAC_FRMI_2018 - MAC_FRMI_2019) %>%
+  ggplot(aes(x = POS, y = Allele_loss)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_lost_in_FRMI_log10.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+missing_frz %>%
+  filter(MAC_CLMB_2018 >= 25 & MAC_CLMB_2019 < 15) %>%
+  mutate(Allele_loss = MAC_CLMB_2018 - MAC_CLMB_2019) %>%
+  ggplot(aes(x = POS, y = Allele_loss)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_lost_in_CLMB_log10.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+missing_frz <- missing_frz %>%
+  mutate(Loss_LINC = MAC_LINC_2018 - MAC_LINC_2019,
+         Loss_BRKG = MAC_BRKG_2018 - MAC_BRKG_2019,
+         Loss_FRMI = MAC_FRMI_2018 - MAC_FRMI_2019,
+         Loss_CLMB = MAC_CLMB_2018 - MAC_CLMB_2019)
+
+missing_frz %>%
+  group_by(Loss_BRKG > 75, Loss_LINC > 78, Loss_FRMI > 54, Loss_CLMB > 51) %>%
+  tally() %>%
+  write_csv(., path = "SNPs_loss_overlaps_1percent_tail_2019_four_freezing_sites.csv")
+
+plot1 <- missing_frz %>%
+  ggplot(aes(x = Loss_CLMB)) + geom_histogram(binwidth = 2)
+save_plot(filename = "Histogram_SNPs_lost_CLMB.png", plot = plot1)
+plot1 <- missing_frz %>%
+  ggplot(aes(x = Loss_FRMI)) + geom_histogram(binwidth = 2)
+save_plot(filename = "Histogram_SNPs_lost_FRMI.png", plot = plot1)
+
+plot1 <- missing_frz %>%
+  ggplot(aes(x = Loss_BRKG)) + geom_histogram(binwidth = 2)
+save_plot(filename = "Histogram_SNPs_lost_BRKG.png", plot = plot1)
+
+plot1 <- missing_frz %>%
+  ggplot(aes(x = Loss_LINC)) + geom_histogram(binwidth = 2)
+save_plot(filename = "Histogram_SNPs_lost_LINC.png", plot = plot1)
+
+missing_frz %>%
+  summarise(top_LINC = quantile(Loss_LINC, 0.99),
+            top_BRKG = quantile(Loss_BRKG, 0.99),
+            top_FRMI = quantile(Loss_FRMI, 0.99),
+            top_CLMB = quantile(Loss_CLMB, 0.99),
+            )
+
+# LINC & BRKG are the most similar
+
+all_frz <- snp_subsets %>%
+  mutate(Loss_LINC = (MAC_LINC_2018 - MAC_LINC_2019)/MAC_LINC_2018,
+         Loss_BRKG = (MAC_BRKG_2018 - MAC_BRKG_2019)/MAC_BRKG_2018,
+         Loss_FRMI = (MAC_FRMI_2018 - MAC_FRMI_2019)/MAC_FRMI_2018,
+         Loss_CLMB = (MAC_CLMB_2018 - MAC_CLMB_2019)/MAC_CLMB_2018)
+all_frz %>%
+  summarise(top_LINC = quantile(Loss_LINC, 0.99, na.rm = TRUE),
+            top_BRKG = quantile(Loss_BRKG, 0.99, na.rm = TRUE),
+            top_FRMI = quantile(Loss_FRMI, 0.99, na.rm = TRUE),
+            top_CLMB = quantile(Loss_CLMB, 0.99, na.rm = TRUE)
+            )
+all_frz %>%
+  group_by(Loss_BRKG > 159, Loss_LINC > 179, Loss_FRMI > 84, Loss_CLMB > 94) %>%
+  tally() %>%
+  write_csv(., path = "All_SNPs_lost_alleles_1percent_tail_2019_four_freezing_sites.csv")
+
+missing_frz %>%
+  filter(Loss_BRKG > 75 | Loss_LINC > 78 | Loss_FRMI > 54 | Loss_CLMB > 51) %>% saveRDS(., file = "Lost_SNPs_with_1percent_tail_frequency_change_freezing_sites.rds")
+all_frz %>%
+  filter(Loss_BRKG > 159 | Loss_LINC > 179 | Loss_FRMI > 84 | Loss_CLMB > 94) %>% saveRDS(., file = "SNPs_with_1percent_tail_frequency_change_freezing_sites.rds")
+```
+
+  top_LINC top_BRKG top_FRMI top_CLMB
+     <dbl>    <dbl>    <dbl>    <dbl>
+1       78       75       54       51
+
+# Frequencies lost 
+```{r}
+frz_freq <- readRDS("SNPs_with_1percent_tail_frequency_change_freezing_sites.rds") 
+loss_freq <- readRDS("Lost_SNPs_with_1percent_tail_frequency_change_freezing_sites.rds")
+```
+
+```{r}
+loss_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_LINC/MAC_LINC_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_lost_in_LINC.png", plot = last_plot(), base_asp = 4, base_height = 4)
+frz_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_LINC/MAC_LINC_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_LINC.png", plot = last_plot(), base_asp = 4, base_height = 4)
+```
+
+```{r}
+loss_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_CLMB/MAC_CLMB_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_lost_in_CLMB.png", plot = last_plot(), base_asp = 4, base_height = 4)
+frz_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_CLMB/MAC_CLMB_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_CLMB.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+loss_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_FRMI/MAC_FRMI_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_lost_in_FRMI.png", plot = last_plot(), base_asp = 4, base_height = 4)
+frz_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_FRMI/MAC_FRMI_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_FRMI.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+loss_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_BRKG/MAC_BRKG_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_lost_in_BRKG.png", plot = last_plot(), base_asp = 4, base_height = 4)
+frz_freq %>%
+ggplot(aes(x = POS/1000000, y = Loss_BRKG/MAC_BRKG_2018)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_BRKG.png", plot = last_plot(), base_asp = 4, base_height = 4)
+```
+
+```{r}
+loss_freq %>%
+    filter(Loss_BRKG > 75 | Loss_LINC > 78 | Loss_FRMI > 54 | 
+             Loss_CLMB > 51) %>% 
+  mutate(Loss_freq = (Loss_BRKG/MAC_BRKG_2018 + Loss_FRMI/MAC_FRMI_2018 +
+                            Loss_LINC/MAC_LINC_2018 +
+                            Loss_CLMB/MAC_CLMB_2018)/4) %>% 
+  ggplot(aes(x = POS/1000000, y = Loss_freq)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_one_lost_all_four_sites.png", plot = last_plot(), base_asp = 4, base_height = 4)
+frz_freq %>%
+  filter(Loss_BRKG > 159 | Loss_LINC > 179 | Loss_FRMI > 84 | 
+           Loss_CLMB > 94) %>%
+  mutate(Loss_freq = (Loss_BRKG/MAC_BRKG_2018 + Loss_FRMI/MAC_FRMI_2018 +
+                            Loss_LINC/MAC_LINC_2018 +
+                            Loss_CLMB/MAC_CLMB_2018)/4) %>% 
+  ggplot(aes(x = POS/1000000, y = Loss_freq)) +
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_all_four_sites.png", plot = last_plot(), base_asp = 4, base_height = 4)
 ```
 
