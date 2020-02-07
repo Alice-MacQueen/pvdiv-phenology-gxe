@@ -1234,3 +1234,9 @@ frz_freq %>%
 save_plot(filename = "Distribution_of_SNPs_1per_delta_all_four_sites.png", plot = last_plot(), base_asp = 4, base_height = 4)
 ```
 
+```{r}
+loss_freq %>% 
+  group_by(CHR) %>%
+  tally() %>% arrange(n)
+```
+

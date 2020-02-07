@@ -1,0 +1,22 @@
+---
+title: "3_subset_SNP_files"
+author: "Alice MacQueen"
+date: "2/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(switchgrassGWAS)
+library(viridis)
+library(cowplot)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+## 
+
+```{r}
+snp_subsets <- readRDS("SNP_subsets_33M_markers.rds")
+```
+
