@@ -1240,3 +1240,83 @@ loss_freq %>%
   tally() %>% arrange(n)
 ```
 
+## Allele frequencies k=5
+
+For the SNPs in the 1% tail for the most shift in allele frequencies at the freezing sites, these are the minor allele frequencies in each of the old k=5 subpopulations. If this is a useful way to look at the data, I will have to redo it for whatever new groupings we decide on.
+
+```{r}
+frz_1per_freq <- readRDS("Five_subpop_allele_frequencies_for_SNPs_with_1percent_tail_frequency_change_freezing_sites.rds")
+
+frz_1per_freq
+```
+
+```{r}
+frz_1per_freq %>%
+  filter(CHR == "Chr02N" & between(POS, 20000000, 40000000) & Loss_CLMB/MAC_CLMB_2018 >= 0.4) %>%
+  ggplot(aes(x = POS/1000000, y = mafmw)) + 
+  geom_hex() + 
+  #facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("Minor Allele Loss") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_LINC.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+frz_1per_freq %>%
+  filter(Loss_CLMB/MAC_CLMB_2018 >= 0.42) %>%
+  ggplot(aes(x = POS/1000000, y = mafmw)) + 
+  geom_hex() + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("MAF Midwest") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "Distribution_of_SNPs_1per_delta_LINC.png", plot = last_plot(), base_asp = 4, base_height = 4)
+
+frz_1per_freq <- frz_1per_freq %>%
+  separate(col = "mafgc", into = c("magc", "mafgc"), sep = ":", convert = TRUE)
+frz_1per_freq %>%
+  filter(Loss_CLMB/MAC_CLMB_2018 >= 0.4) %>%
+  ggplot(aes(x = POS/1000000)) + 
+  geom_point(aes(y = maftx), color = "red", alpha = 0.2) +
+  geom_point(aes(y = mafgc), color = "orange", alpha = 0.2) +
+  geom_point(aes(y = mafmw), color = "darkblue", alpha = 0.2) + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("MAF Midwest") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "MAF_of_5000_SNPs_where_1per_delta_winter_at_CLMB_TX_GC_MW.png", plot = last_plot(), base_asp = 4, base_height = 4)  
+
+frz_1per_freq %>%
+  filter(Loss_CLMB/MAC_CLMB_2018 >= 0.4) %>%
+  ggplot(aes(x = POS/1000000)) + 
+  geom_point(aes(y = mafse), color = "#FFCC33", alpha = 0.4) +
+    geom_point(aes(y = mafne), color = "#33FFFF", alpha = 0.2) +
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("MAF Midwest") +
+  ylim(c(0,1)) + 
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "MAF_of_5000_SNPs_where_1per_delta_winter_at_CLMB_NEC_SEC.png", plot = last_plot(), base_asp = 4, base_height = 4)  
+
+randomfreq <- readRDS("Random_5000SNP_subset_allele_Freq.rds")
+
+randomfreq %>%
+  filter(!grepl("scaffold", CHR)) %>%
+  separate(col = "mafgc", into = c("magc", "mafgc"), sep = ":", convert = TRUE) %>%
+  ggplot(aes(x = POS/1000000)) + 
+  geom_point(aes(y = maftx), color = "red", alpha = 0.2) +
+  geom_point(aes(y = mafse), color = "yellow", alpha = 0.2) +
+  geom_point(aes(y = mafne), color = "lightblue", alpha = 0.2) +
+  geom_point(aes(y = mafgc), color = "orange", alpha = 0.2) +
+  geom_point(aes(y = mafmw), color = "darkblue", alpha = 0.2) + 
+  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
+  scale_fill_viridis(trans = "log10") + 
+  xlab("Position (Mb)") + ylab("MAF Midwest") +
+  theme(legend.position = "right", 
+        axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "MAF_of_5000_random_SNPs_where_maf_20per_one_subpop.png", plot = last_plot(), base_asp = 4, base_height = 4)  
+```
+

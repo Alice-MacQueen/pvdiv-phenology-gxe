@@ -1,0 +1,31 @@
+---
+title: "FL50_33M_Results"
+author: "Alice MacQueen"
+date: "2/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(switchgrassGWAS)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+## 
+
+```{r}
+annos$top10SNPs_within0bp
+```
+
+```{r}
+m <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/FL50/gwas_33M/Strong_Effects28384SNPs.rds")
+switchgrassGWAS::mash_plot_pairwise_sharing(effectRDS = "Pairwise_sharing_Strong_Effects_28384SNPs.rds")
+
+mash_plot_manhattan_by_condition(m = m)
+mash_plot_sig_by_condition(m=m)
+mash_plot_effects(m=m, n=1)
+```
+
+# Overlaps with fourway set!
+
