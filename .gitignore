@@ -7,3 +7,5 @@ large-files/
 
 # Large .rds that I identify and rename appropriately
 *_.rds
+GWAS_object_*
+GWAS_datatable_*
