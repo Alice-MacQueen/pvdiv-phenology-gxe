@@ -112,7 +112,7 @@ phenotypes_2019 <- phenotypes_2019 %>%
          T_EM_FL = FL50 - EM50,
          EM50 = ifelse(EM50 - EM1 < 0, NA, EM50),
          FL50 = ifelse(FL50 - FL1 < 0, NA, FL50),
-         MOISTURE = ifelse(between(BIOMASS, 0, 100), MOISTURE, NA),
+         MOISTURE = ifelse(between(MOISTURE, 0, 100), MOISTURE, NA),
          BIOMASS = ifelse(BIOMASS < 10000, BIOMASS, NA)
   )
 
