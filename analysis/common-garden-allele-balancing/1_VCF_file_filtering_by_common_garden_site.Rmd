@@ -85,6 +85,9 @@ Compare these values to their values in 2018 to see how much frequencies shifted
 
 ```{r}
 colSums(!is.na(phenotypes_wide_2019))
+
+libswitch <- metadata %>%
+  dplyr::select(PLANT_ID, LIBRARY)
 i=7
 for(i in 1:10){
 site <- sites$Site[i]
@@ -94,9 +97,10 @@ site_2019 <- phenotypes_wide_2019 %>%
   separate(col = SITE_PHE, into = c("SITE", "_", "PHE"), sep = c(4,5)) %>%
   filter(SITE == site & !is.na(Measurement)) %>%
   group_by(PLANT_ID) %>%
-  summarise(count = n()) 
+  summarise(count = n()) %>%
+  left_join(libswitch, by = "PLANT_ID")
 
-writeLines(site_2019$PLANT_ID, con = paste0(site, "_2019"))
+writeLines(site_2019$LIBRARY, con = paste0("LIBRARY/", site, "_2019"))
 }
 
 for(i in 1:10){
@@ -106,8 +110,9 @@ site_2018 <- phenotypes_2018 %>%
   separate(col = SITE_PHE, into = c("SITE", "_", "PHE"), sep = c(4,5)) %>%
   filter(SITE == site & !is.na(Measurement)) %>%
   group_by(PLANT_ID) %>%
-  summarise(count = n()) 
-writeLines(site_2018$PLANT_ID, con = paste0(site, "_2018"))
+  summarise(count = n())  %>%
+  left_join(libswitch, by = "PLANT_ID")
+writeLines(site_2018$LIBRARY, con = paste0("LIBRARY/", site, "_2018"))
 }
 
 ```
