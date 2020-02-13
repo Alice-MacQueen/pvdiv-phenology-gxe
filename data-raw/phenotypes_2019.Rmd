@@ -159,6 +159,10 @@ phenotypes_2019 <- phenotypes_2019 %>%
          FL50 = as.numeric(FL50),
          TC_EOS = as.numeric(TC_EOS),
          HT_PAN_EOS = as.numeric(HT_PAN_EOS),
+         REGR = as.numeric(REGR),
+         LD_EOS = as.numeric(LD_EOS),
+         MOISTURE = as.numeric(MOISTURE),
+         BIOMASS = as.numeric(BIOMASS),
          DEAD_2018 = ifelse(is.na(DEAD_2018), 0, DEAD_2018),
          CHLR_101 = as.numeric(CHLR_101),
          CHLR_121 = as.numeric(CHLR_121),
@@ -220,7 +224,7 @@ Use long format data to look for outlier values. This data has associated plot p
 phenotypes_long_2019 <- phenotypes_2019 %>%
   dplyr::select(-SRV, -DEAD_2018) %>%
   dplyr::select(SITE:PLANT_ID, starts_with("NOTE"), everything()) %>%
-  pivot_longer(cols = FRZ_DMG:SPADCOR_158, names_to = "PHE", values_to = "Value") %>%
+  pivot_longer(cols = FRZ_DMG:T_EM_FL, names_to = "PHE", values_to = "Value") %>%
   filter(!is.na(Value)) %>%
   dplyr::select(SITE:PLANT_ID, PHE, Value, everything())
 
@@ -234,7 +238,9 @@ sites %>%
 
 # phenotypes_long_2019$SITE <- factor(phenotypes_long_2019$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
 phenotypes_long_2019$SITE <- factor(phenotypes_long_2019$SITE, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
-phenotypes_long_2019$PHE <- factor(phenotypes_long_2019$PHE, levels = c("GR1", "GR50", "GR100", "EM1", "EM50", "FL1", "FL50", "TC_EOS", "HT_PAN_EOS", "FRZ_DMG", "CHLR_101", "CHLR_121", "CHLR_136", "CHLR_JASON_138", "CHLR_150.", "SPAD_158", "SPADCOR_158"))
+
+unique(phenotypes_long_2019$PHE) # check what phenotypes there are
+phenotypes_long_2019$PHE <- factor(phenotypes_long_2019$PHE, levels = c("GR1", "GR50", "GR100", "EM1", "EM50", "FL1", "FL50", "T_GR_EM", "T_GR_FL", "T_EM_FL", "TC_EOS", "HT_PAN_EOS", "REGR", "LD_EOS", "BIOMASS", "MOISTURE", "FRZ_DMG", "CHLR_101", "CHLR_121", "CHLR_136", "CHLR_JASON_138", "CHLR_150.", "SPAD_158", "SPADCOR_158"))
 
 
 phenology_long_2019 <- phenotypes_long_2019 %>%
@@ -285,7 +291,7 @@ as_date(243) # September 1st
 
 ```{r}
 phenotypes_long_2019 %>%
-  filter(grepl("TC_EOS", PHE) | grepl("HT_PAN_EOS", PHE) | grepl("FRZ", PHE)) %>%
+  filter(grepl("TC_EOS", PHE) | grepl("HT_PAN_EOS", PHE) | grepl("BIOMASS", PHE) | grepl("MOIST", PHE)) %>%
   ggplot(aes(x = Value)) +
   geom_histogram(aes(fill = SITE)) + 
   facet_grid(SITE~PHE, scales = "free") +
@@ -293,8 +299,19 @@ phenotypes_long_2019 %>%
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("Date") + ylab("Number of Individuals")
 
 save_plot("2019_Phenotypic_Data_by_Site_2019-12-30.png", plot = last_plot(), base_height = 10, base_width = 6)
+
+phenotypes_long_2019 %>%
+  filter(grepl("MOIST", PHE)) %>% arrange(desc(Value))
+phenotypes_long_2019 %>%
+  filter(grepl("BIOMASS", PHE)) %>% arrange(desc(Value))
 ```
 
+SITE  PLOT_GL   PLOT_LC  ACC  PLANT_ID  PHE  Value
+KBSM	M5710	5710	J476	J476.C	MOISTURE	-1154.137931	NA	NA	
+KBSM	M4412	4412	J024	J024.A	MOISTURE	-195.065147
+KBSM	M6607	6607	J646	J646.A	MOISTURE	973.34815	
+
+KBSM	M5710	5710	J476	J476.C	BIOMASS	19439.138	
 
 and maybe by genetic subgroup, or ACC, or PLANT_ID
 

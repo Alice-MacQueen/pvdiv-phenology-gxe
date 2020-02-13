@@ -16,15 +16,15 @@ theme_set(theme_poster)
 # Load all data
 
 load("data/sites.rda")
-load("data/metadata.rda")
-load("data/Taxa.rda")
+metadata <- read_csv(file = "~/Github/pvdiv-climate-gwas/data/Metadata_2020-02.csv")
+#load("data/Taxa.rda")
 
 usa <- map_data("state")
 wb_pheno <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
                                    paste0("GWAS DOE Switchgrass, ",
                                           "Consolidated Data"),
                                    paste0("DOE_GWAS_2019_Consolidated ",
-                                          "Pheno Data_12-25-19.xlsx")))
+                                          "Pheno Data_2-12-20.xlsx")))
 lst_pheno <- readWorksheet(wb_pheno, sheet = getSheets(wb_pheno))
 phenos_planting1 <- lst_pheno$`GWAS 2019 Greenup Data`
 phenos_planting2 <- lst_pheno$`GWAS 2019 Core Phenotype Data`
@@ -70,14 +70,15 @@ phenos_2019 <- phenos_planting1 %>%
   mutate(PLANT_ID = ifelse(ACC == "AP13",
                            "AP13",
                            PLANT_ID)) %>%
-  dplyr::select(-TC_EOS_2018, -`PLANT_.ID_GL`, -INDV, -(LD_EOS:BIOMASS))
+  dplyr::select(-TC_EOS_2018, -`PLANT_.ID_GL`, -INDV, -(VERIFY:PLOT_GL_VER))
+  # %>%  filter(PLANT_ID == "AP13")
 
 # Drop 31 plants with confusion on whether plant died for now.
 
 phenotypes_2019 <- phenos_2019 %>%
-  filter(!(DEAD_2018 %in% c(1,2)) | is.na(DEAD_2018)) %>% # 1 = dead in 2018, and 2 = not a virgatum plant. Drop 1's and 2's. Keep 0's and NA's.
-  filter(SRV != "N") %>% # Drop individuals that did not survive
-  dplyr::select(-VERIFY, -PLOT_GL_CHK)
+  filter(!(DEAD_2018 %in% c(1,2)) | is.na(DEAD_2018)) %>% # 1 = dead in 2018,
+  # and 2 = not a virgatum plant. Drop 1's and 2's. Keep 0's and NA's.
+  filter(SRV != "N") # Drop individuals that did not survive
 
 ## --------------------------------
 # Ensure all of the columns have the correct data type - mostly, numeric.
@@ -94,6 +95,10 @@ phenotypes_2019 <- phenotypes_2019 %>%
          FL50 = as.numeric(FL50),
          TC_EOS = as.numeric(TC_EOS),
          HT_PAN_EOS = as.numeric(HT_PAN_EOS),
+         REGR = as.numeric(REGR),
+         LD_EOS = as.numeric(LD_EOS),
+         MOISTURE = as.numeric(MOISTURE),
+         BIOMASS = as.numeric(BIOMASS),
          DEAD_2018 = ifelse(is.na(DEAD_2018), 0, DEAD_2018),
          CHLR_101 = as.numeric(CHLR_101),
          CHLR_121 = as.numeric(CHLR_121),
@@ -106,7 +111,9 @@ phenotypes_2019 <- phenotypes_2019 %>%
          T_GR_FL = FL50 - GR50,
          T_EM_FL = FL50 - EM50,
          EM50 = ifelse(EM50 - EM1 < 0, NA, EM50),
-         FL50 = ifelse(FL50 - FL1 < 0, NA, FL50)
+         FL50 = ifelse(FL50 - FL1 < 0, NA, FL50),
+         MOISTURE = ifelse(between(BIOMASS, 0, 100), MOISTURE, NA),
+         BIOMASS = ifelse(BIOMASS < 10000, BIOMASS, NA)
   )
 
 # Get the mean phenotype value for each PLANT_ID at each SITE as the GWAS value
@@ -122,6 +129,10 @@ phemean_2019 <- phenotypes_2019 %>%
             FL50 = mean(FL50, na.rm = TRUE),
             TC_EOS = mean(TC_EOS, na.rm = TRUE),
             HT_PAN_EOS = mean(HT_PAN_EOS, na.rm = TRUE),
+            REGR = mean(REGR, na.rm = TRUE),
+            LD_EOS = mean(LD_EOS, na.rm = TRUE),
+            MOISTURE = mean(MOISTURE, na.rm = TRUE),
+            BIOMASS = mean(BIOMASS, na.rm = TRUE),
             T_GR_EM = mean(T_GR_EM, na.rm = TRUE),
             T_GR_FL = mean(T_GR_FL, na.rm = TRUE),
             T_EM_FL = mean(T_EM_FL, na.rm = TRUE),
@@ -133,19 +144,27 @@ phemean_2019 <- phenotypes_2019 %>%
             SPAD_158 = mean(SPAD_158, na.rm = TRUE),
             SPADCOR_158 = mean(SPADCOR_158, na.rm = TRUE)
   ) %>%
-  mutate_all( ~ case_when(!is.nan(.x) ~ .x)) %>% # if the column is not NA, keep the value; else replace with NA as nothing is provided as another choice in case_when.
+  mutate_all( ~ case_when(!is.nan(.x) ~ .x)) %>% # if the column is not NA,
+  # keep the value; else replace with NA as nothing is provided as another
+  # choice in case_when.
   filter(!is.na(SITE) & !is.na(PLANT_ID)) %>%
   left_join(metadata, by = "PLANT_ID") %>%
-  dplyr::select(PLANT_ID:SITE, LIB_PHENO, Ecotype, GR1:SPADCOR_158, JL_genetic_subpop) %>%
-  filter(LIB_PHENO == "Y")
+  mutate(Ecotype = ifelse(PLANT_ID == "AP13", "Texas", Ecotype),
+         LIB_GROWN = ifelse(PLANT_ID == "AP13", "Y", LIB_GROWN),
+         Genetic_subpop_50per = ifelse(PLANT_ID == "AP13", "Texas", Genetic_subpop_50per),
+         Genetic_subpop_95per = ifelse(PLANT_ID == "AP13", "Texas", Genetic_subpop_95per)) %>%
+  dplyr::select(PLANT_ID:SITE, LIBRARY, LIB_GROWN, Genetic_subpop_50per,
+                Genetic_subpop_95per, Ecotype, GR1:SPADCOR_158) %>%
+  filter(LIB_GROWN == "Y")
 
 phenotypes_wide_2019 <- phemean_2019 %>%
-  dplyr::select(-LIB_PHENO, -Ecotype, -JL_genetic_subpop) %>%
+  dplyr::select(-LIB_GROWN, -Ecotype, -Genetic_subpop_50per,
+                -Genetic_subpop_95per, -LIBRARY) %>%
   gather(c(GR1:SPADCOR_158), key = "Phenotype", value = value) %>%
   filter(!is.na(value)) %>%
   # saveRDS(file = "Cleaned pvdiv Phenotypes from 2018 for 784g 2019-05-16.rds")
   unite(col = "SITE_PHE", SITE, Phenotype) %>%
-  spread(key = SITE_PHE, value = value) %>%
-  right_join(Taxa) #%>% filter(PLANT_ID == "AP13")
+  spread(key = SITE_PHE, value = value)# %>%
+  #filter(PLANT_ID == "AP13")
 
 save(phenotypes_wide_2019, file = "data/phenotypes_2019.rda")
