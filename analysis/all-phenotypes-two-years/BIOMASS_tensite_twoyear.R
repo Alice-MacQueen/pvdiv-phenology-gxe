@@ -52,57 +52,6 @@ load("~/Github/pvdiv-phenology-gxe/data/phenotypes_2019.rda")
 setwd("~/Github/pvdiv-phenology-gxe/analysis/all-phenotypes-two-years/")
 
 
-# -------------------
-
-
-
-# Prepare phenotype data frame.
-df <- plants %>%
-  enframe(value = "PLANT_ID") %>%
-  left_join(phenotypes_2018, by = "PLANT_ID") %>%
-  left_join(phenotypes_wide_2019, by = "PLANT_ID") %>%
-  dplyr::select(-name)
-
-
-# Look for the number of PCs to correct for population structure
-# that makes lambda_GC closest to 1.05.
-
-lambdagc <- pvdiv_lambda_GC(df = df, type = "linear", snp = snp,
-                            covar = svd, ncores = NCORES,
-                            npcs = c(0:8), saveoutput = TRUE)
-# From 2_phenotypes_best_lambda_GC.Rmd
-## One/two site:
-# k = 2
-## TC_EOS_2018 k = 2 (or possibly k = 4, PKLE)
-
-# k = 3
-## KING CHLR k = 3
-## KING SPAD k = 3
-## RUST k = 3 or k = 2 for PKLE?
-##  KING/TMPL DAM k = 3
-## TC_EOS k = 3 (or possibly k = 4, KBSM, LINC)
-## GR1.x/y k = 3
-## GR100.x k = 3 (or k = 5 for PKLE, TMPL, OVTN)
-## GR50.x  k = 3 (or k = 5 for PKLE, TMPL, OVTN)
-
-# k = 4
-## Tensite k = 4:
-##   EM1 k = 4
-## EM50 k = 4
-## FL1 k = 4 (OVTN issue but it should be dropped anyway)
-## FL50 k = 4 (KING k=5...)
-## HT_PAN_EOS k = 4
-## T_EM_FL k = 4 (esp for LINC KBSM)
-## T_GR_EM k = 4
-## T_GR_FL k = 4
-## PKLE leaf k = 4
-
-
-
-
-# ------------------------------------
-# Prepare phenotype data frame.
-
 txdb <- loadDb(file = file.path("/", "home", "alice", "Github", "pvdiv-genome",
                                 "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
 
@@ -120,25 +69,6 @@ df <- plants %>%
                 -ends_with("GR1"), -ends_with("DEAD_2018"), -ends_with("GR100"),
                 -contains("CHLR"), -contains("SPAD"), -(LATITUDE:ELEVATION)) %>%
   left_join(phenotypes_wide_2019, by = "PLANT_ID") %>%
-  dplyr::select(-OVTN_FL50, -OVTN_FL1, -OVTN_T_GR_FL)
-
-# -------------------
-PCdf <- enframe(names(df)[-1], value = "trait") %>%
-  separate(trait, into = c("SITE", "_", "PHE"), sep = c(4,5),
-           remove = FALSE) %>%
-  dplyr::select(-"_") %>%
-  arrange(PHE, SITE)
-# ------------------
-
-PCdf <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/all-phenotypes-two-years/PCdf_10site_2yr.csv")
-
-df <- plants %>%
-  enframe(value = "PLANT_ID") %>%
-  left_join(phenotypes_2018, by = "PLANT_ID") %>%
-  dplyr::select(-name, PLANT_ID, ends_with("TC_EOS_2018"), -ends_with("GR50"),
-                -ends_with("GR1"), -ends_with("DEAD_2018"), -ends_with("GR100"),
-                -contains("CHLR"), -contains("SPAD"), -(LATITUDE:ELEVATION)) %>%
-  left_join(phenotypes_wide_2019, by = "PLANT_ID") %>%
   dplyr::select(PLANT_ID, ends_with("BIOMASS"), ends_with("LD_EOS"), ends_with("MOISTURE"), ends_with("REGR"))
 PCdf <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/all-phenotypes-two-years/PCdf2_BIOMASS.csv")
 
@@ -146,14 +76,14 @@ for(i in 1:nrow(PCdf)){
   PCdf1 <- PCdf[i,]
   df1 <- df %>%
     dplyr::select(PLANT_ID, PCdf1$trait)
-
+  
   if(PCdf1$NumPCs == 0){
     gwas <- pvdiv_gwas(df = df1, type = "linear", snp = snp, ncores = NCORES)
   } else {
-  gwas <- pvdiv_gwas(df = df1, type = "linear", snp = snp, covar = svd,
-                     ncores = NCORES, npcs = PCdf1$NumPCs)
+    gwas <- pvdiv_gwas(df = df1, type = "linear", snp = snp, covar = svd,
+                       ncores = NCORES, npcs = PCdf1$NumPCs)
   }
-
+  
   gwas_df <- gwas %>%
     mutate(p.value = predict(gwas, log10 = FALSE),
            log10p = -log10(p.value))
@@ -161,19 +91,19 @@ for(i in 1:nrow(PCdf)){
   adj_p <- res$adjp[order(res$index), ]
   gwas_df <- cbind(markers, gwas_df, adj_p) %>%
     as_tibble()
-
+  
   gwas_data <- data.table(chr = markers$CHR, pos = markers$POS,
-                        estim = gwas_df$estim, std_err = gwas_df$std.err,
-                        bigsnpscore = gwas_df$score,
-                        pvalue = gwas_df$p.value, log10p = gwas_df$log10p,
-                        FDR_10per = gwas_df$BH)
+                          estim = gwas_df$estim, std_err = gwas_df$std.err,
+                          bigsnpscore = gwas_df$score,
+                          pvalue = gwas_df$p.value, log10p = gwas_df$log10p,
+                          FDR_10per = gwas_df$BH)
   saveRDS(gwas_data, file = paste0("GWAS_datatable_", names(df1)[2], "_",
                                    PCdf1$NumPCs, "_PCs", "_.rds"))
   FDRthresh <- gwas_data %>%
     as_tibble() %>%
     filter(between(FDR_10per, 0.01, 0.1)) %>%
     summarise(thresh = max(log10p))
-
+  
   ggmanobject1 <- gwas_data %>%
     filter(log10p > 1) %>%
     ggplot(aes(x = pos, y = log10p)) +
@@ -191,12 +121,12 @@ for(i in 1:nrow(PCdf)){
     labs(x = "Chromosome", y = "-log10(p value)") +
     scale_x_continuous(expand = c(0.18, 0.18))
   #scale_shape_manual(values = rep(c(21,22),9), guide = FALSE)
-
+  
   save_plot(paste0("Manhattan_", names(df1)[2], "_",
                    PCdf1$NumPCs, "_PCs_FDR_", str_replace_all(Sys.time(), ":", "."),
                    ".png"),
             plot = ggmanobject1, base_aspect_ratio = 4, base_height = 4)
-
+  
   # Save annotation tables for the top associations
   anno_tables <- pvdiv_table_topsnps(df = gwas, type = "bigsnp", n = c(10,500),
                                      FDRalpha = NA,
@@ -209,7 +139,7 @@ for(i in 1:nrow(PCdf)){
                                  "all-phenotypes-two-years",
                                  paste0("Annotation_tables_", names(df1)[2],
                                         "_", PCdf1$NumPCs, "_PCs", ".rds")))
-
+  
   # Save a QQ plot
   ggsave(snp_qq(gwas[which(!is.na(gwas$score)),]),
          filename = paste0("QQplot_", names(df1)[2], "_", PCdf1$NumPCs,
@@ -217,14 +147,14 @@ for(i in 1:nrow(PCdf)){
          height = 4, path = file.path("/", "home", "alice", "Github",
                                       "pvdiv-phenology-gxe", "analysis",
                                       "all-phenotypes-two-years"))
-
-# Save a Manhattan plot with Bonferroni
-ggsave(snp_manhattan(gwas, infos.chr = CHRN$CHRN,
-                     infos.pos = snp$map$physical.pos, npoints = 1E06) +
-         geom_hline(yintercept = bonferroni, lty = 2),
-       filename = paste0("Manhattan_", names(df1)[2], "_", PCdf1$NumPCs,
-                         "_PCs_bonferroni.png"), width = 12,
-       height = 4, path = file.path("/", "home", "alice", "Github",
-                                    "pvdiv-phenology-gxe", "analysis",
-                                    "all-phenotypes-two-years"))
+  
+  # Save a Manhattan plot with Bonferroni
+  ggsave(snp_manhattan(gwas, infos.chr = CHRN$CHRN,
+                       infos.pos = snp$map$physical.pos, npoints = 1E06) +
+           geom_hline(yintercept = bonferroni, lty = 2),
+         filename = paste0("Manhattan_", names(df1)[2], "_", PCdf1$NumPCs,
+                           "_PCs_bonferroni.png"), width = 12,
+         height = 4, path = file.path("/", "home", "alice", "Github",
+                                      "pvdiv-phenology-gxe", "analysis",
+                                      "all-phenotypes-two-years"))
 }
