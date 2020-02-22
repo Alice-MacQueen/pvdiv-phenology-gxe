@@ -139,9 +139,69 @@ plot_grid(map1, map2)
 save_plot(filename = "Map_plants_winter_killed_2018.svg", plot = last_plot(), base_height = 5)
 
 library(scales)
-show_col(viridis(8, option = "B"))
+show_col(viridis(2, option = "D", end = 0.8))
 
 ```
+
+# 4X vs 8X for Jason
+
+
+
+```{r}
+
+wb_pheno <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
+                                   paste0("GWAS DOE Switchgrass, ",
+                                          "Consolidated Data"),
+                                   paste0("DOE_GWAS_Master Plant List.xlsx")))
+lst_pheno <- readWorksheet(wb_pheno, sheet = getSheets(wb_pheno))
+planting_2018 <- lst_pheno$`GWAS 2018 Master Plant List`
+
+
+
+ploidyplot <- planting_2018 %>%
+  left_join(metadata) %>%
+   mutate(PLOIDY = ifelse(ACC == "AP13", "4X", PLOIDY)) %>%
+   filter(!is.na(PLOIDY)) %>%
+    mutate(GENETIC_SUBPOP = case_when(is.na(Genetic_subpop_50per) ~ "Unknown",
+                                    Genetic_subpop_50per == "Eastcoast" ~ "Atlantic",
+                                    Genetic_subpop_50per == "Texas" ~ "Gulf",
+                                    TRUE ~ Genetic_subpop_50per),
+         ECOTYPE = case_when(is.na(Ecotype) ~ "Unknown", 
+                             Ecotype == "TX" ~ "Lowland",
+                             Ecotype == "Texas" ~ "Lowland",
+                             TRUE ~ Ecotype)) 
+
+ploidyplot$PLOIDY <- factor(ploidyplot$PLOIDY, levels = c("8X", "4X"))
+ploidyplot$SITE <- factor(ploidyplot$SITE, levels = c("BRKG", "KBSM", "FRMI", "LINC", "CLMB", "STIL", "OVTN", "TMPL", "PKLE", "KING"))
+ploidyplot$GENETIC_SUBPOP <- factor(ploidyplot$GENETIC_SUBPOP, levels = c("Midwest", "Atlantic", "Gulf", "Admixed", "Unknown"))
+ploidyplot$ECOTYPE <- factor(ploidyplot$ECOTYPE, levels = c("Upland", "Coastal", "Lowland", "Unknown"))
+
+
+ploidyplot %>%
+  #group_by(SITE, PLOIDY) %>% tally() %>%
+   ggplot(aes(x = SITE)) + 
+   geom_bar(aes(fill = PLOIDY)) +
+   scale_fill_manual(values = c("black", "darkgreen")) + 
+  xlab("Sites (North to South)") + ylab("Number of Plants") + 
+  theme(legend.position = "right",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+save_plot(filename = "Ploidy of Plants at Common Garden Sites.png", plot = last_plot())
+
+ploidyplot %>%
+  #group_by(SITE, PLOIDY) %>% tally() %>%
+   ggplot(aes(x = SITE)) + 
+   geom_bar(aes(fill = GENETIC_SUBPOP)) +
+   scale_fill_manual(values = c("darkblue", "orange", "red", "grey", "lightgrey")) + 
+  xlab("Sites (North to South)") + ylab("Number of Plants") + 
+  theme(legend.position = "right",
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+save_plot(filename = "Ploidy of Plants at Common Garden Sites.png", plot = last_plot())
+
+```
+
+
 
 ```{r}
 winterlost <- read_csv("twoHit.Chi2PeakIntervals.csv")
@@ -155,24 +215,28 @@ winterlost %>%
 frz_freq <- readRDS("../analysis/common-garden-allele-balancing/SNPs_with_1percent_tail_frequency_change_freezing_sites.rds") 
 
 theme_set(theme_poster)
-frz_freq %>%
+frzlostplot <- frz_freq %>%
   filter(Loss_BRKG > 159 | Loss_LINC > 179 | Loss_FRMI > 84 | 
            Loss_CLMB > 94) %>%
   mutate(Loss_freq = (Loss_BRKG/MAC_BRKG_2018 + Loss_FRMI/MAC_FRMI_2018 +
                             Loss_LINC/MAC_LINC_2018 +
                             Loss_CLMB/MAC_CLMB_2018)/4) %>% 
-  filter(Loss_freq > 0.5) %>%
+  filter(Loss_freq > 0.42) %>%
   ggplot(aes(x = POS/1000000, y = Loss_freq)) +
   geom_point(aes(color = CHR), alpha = 0.35) + 
-  facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
-  scale_fill_viridis(trans = "log10", option = "B") + 
-  xlab("Position (Mb)") + ylab("Fraction of Minor Allele Lost") +
-    scale_x_continuous(expand = c(0.12, 0.12)) +
+  facet_wrap(~CHR, scales = "free_x", nrow = 1,
+            strip.position = "bottom") + 
+  #scale_fill_viridis(trans = "log10", option = "B") + 
+  xlab("Chromosome") + ylab("Fraction of Minor Allele Lost") +
+    scale_x_continuous(expand = c(0.03, 0.03)) +
   theme(legend.position = "none", 
-        axis.text.x = element_text(angle = 45, hjust = 1)) +
+        axis.text.x = element_blank(),
+          axis.ticks.x = element_blank()) +
+        #axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_color_manual(values = c(rep(c("#1B0C42FF", "grey"), 9)))
 
-save_plot(filename = "Distribution_of_SNPs_1per_delta_all_four_sites_lost_50per.png", plot = last_plot(), base_asp = 4, base_height = 4)
+save_plot(filename = paste0("Distribution_of_SNPs_1per_delta_all_four_sites_lost_50per", str_replace_all(Sys.time(), ":", "."),
+                   ".png"), plot = frzlostplot, base_asp = 4, base_height = 4)
 
 ```
 
@@ -280,17 +344,17 @@ gwas_data <- readRDS("GWAS_datatable_TMPL_BIOMASS_5_PCs.rds")
 gwas_data[,FDR_adj := p.adjust(pvalue, method = "BH")]
 FDRthreshhi <- gwas_data %>%
     as_tibble() %>%
-    filter(between(FDR_adj, 0.000501, 1)) %>%  # 5% FDR threshold currently.
+    filter(between(FDR_adj, 0.1001, 1)) %>%  # 5% FDR threshold currently.
     summarise(thresh = max(log10p))
   FDRthreshlo <- gwas_data %>%
     as_tibble() %>%
-    filter(between(FDR_adj, 0, 0.000499)) %>%  # 5% FDR threshold currently.
+    filter(between(FDR_adj, 0, 0.0999)) %>%  # 5% FDR threshold currently.
     summarise(thresh = min(log10p))
   if(FDRthreshhi$thresh[1] > 0 & FDRthreshlo$thresh[1] > 0){
     FDRthreshold = (FDRthreshhi$thresh[1] + FDRthreshlo$thresh[1])/2
   } else if(FDRthreshhi$thresh[1] > 0){
     FDRthreshold = FDRthreshhi$thresh[1]
-  } else if(FDRthreshlo$thresh[1] > 0){
+  } else if(FDRthreshlo$thresh[1] > 0){g
     FDRthreshold = FDRthreshlo$thresh[1]
   } else {
     FDRthreshold = NA
@@ -301,7 +365,10 @@ FDRthreshhi <- gwas_data %>%
     ggplot(aes(x = pos, y = log10p)) +
     geom_hline(yintercept = c(10,15,20), color = "lightgrey") +
     geom_point(aes(color = chr, fill = chr)) +
-    geom_hline(yintercept = FDRthreshold, color = "black", linetype = 2,
+    geom_point(aes(color = chr, fill = chr)) +
+    #geom_hline(yintercept = FDRthreshold, color = "black", linetype = 2,
+    #           size = 0.7) +
+    geom_hline(yintercept = bonferroni, color = "#FAC127FF", linetype = 2,
                size = 1) +
     facet_wrap(~ chr, nrow = 1, scales = "free_x",
                strip.position = "bottom") +
@@ -311,25 +378,25 @@ FDRthreshhi <- gwas_data %>%
           axis.ticks.x = element_blank(),
           panel.background = element_rect(fill=NA), legend.position = "none") +
     labs(x = "Chromosome", y = "-log10(p value)") +
-    scale_x_continuous(expand = c(0.22, 0.22)) +
+    scale_x_continuous(expand = c(0.18, 0.18)) +
     scale_color_manual(values = rep(c("#1B0C42FF", "grey"),9), guide = FALSE)
    #scale_shape_manual(values = rep(c(21,22),9), guide = FALSE)
   theme_set(theme_poster)
   save_plot(paste0("Manhattan_TMPL_BIOMASS_5_PCs_FDR_", str_replace_all(Sys.time(), ":", "."),
                    ".png"),
-            plot = ggmanobject1, base_aspect_ratio = 4, base_height = 3)
+            plot = ggmanobject1, base_aspect_ratio = 4, base_height = 4)
 ```
 
 ```{r}
-gwas_data <- readRDS("GWAS_datatable_KBSM_GR50_3_PCs_.rds")
-gwas_data[,FDR_adj := p.adjust(pvalue, method = "BH")]
-FDRthreshhi <- gwas_data %>%
+gwas_data2 <- readRDS("GWAS_datatable_KBSM_GR50_3_PCs_.rds")
+gwas_data2[,FDR_adj := p.adjust(pvalue, method = "BH")]
+FDRthreshhi <- gwas_data2 %>%
     as_tibble() %>%
-    filter(between(FDR_adj, 0.0501, 1)) %>%  # 5% FDR threshold currently.
+    filter(between(FDR_adj, 0.1001, 1)) %>%  # 5% FDR threshold currently.
     summarise(thresh = max(log10p))
-  FDRthreshlo <- gwas_data %>%
+  FDRthreshlo <- gwas_data2 %>%
     as_tibble() %>%
-    filter(between(FDR_adj, 0, 0.0499)) %>%  # 5% FDR threshold currently.
+    filter(between(FDR_adj, 0, 0.0999)) %>%  # 5% FDR threshold currently.
     summarise(thresh = min(log10p))
   if(FDRthreshhi$thresh[1] > 0 & FDRthreshlo$thresh[1] > 0){
     FDRthreshold = (FDRthreshhi$thresh[1] + FDRthreshlo$thresh[1])/2
@@ -341,12 +408,14 @@ FDRthreshhi <- gwas_data %>%
     FDRthreshold = NA
   }
 
-  ggmanobject1 <- gwas_data %>%
+  ggmanobject1 <- gwas_data2 %>%
     filter(log10p > 1) %>%
     ggplot(aes(x = pos, y = log10p)) +
     geom_hline(yintercept = c(10,15), color = "lightgrey") +
     geom_point(aes(color = chr, fill = chr)) +
-    geom_hline(yintercept = FDRthreshold, color = "black", linetype = 2,
+    #geom_hline(yintercept = FDRthreshold, color = "black", linetype = 2,
+    #           size = 0.7) +
+    geom_hline(yintercept = bonferroni, color = "#FAC127FF", linetype = 2,
                size = 1) +
     facet_wrap(~ chr, nrow = 1, scales = "free_x",
                strip.position = "bottom") +
@@ -356,12 +425,64 @@ FDRthreshhi <- gwas_data %>%
           axis.ticks.x = element_blank(),
           panel.background = element_rect(fill=NA), legend.position = "none") +
     labs(x = "Chromosome", y = "-log10(p value)") +
-    scale_x_continuous(expand = c(0.22, 0.22)) +
+    scale_x_continuous(expand = c(0.18, 0.18)) +
     scale_color_manual(values = rep(c("#1B0C42FF", "grey"),9), guide = FALSE)
    #scale_shape_manual(values = rep(c(21,22),9), guide = FALSE)
   theme_set(theme_poster)
   save_plot(paste0("Manhattan_KBSM_GR50_3_PCs_FDR_", str_replace_all(Sys.time(), ":", "."),
                    ".png"),
-            plot = ggmanobject1, base_aspect_ratio = 4, base_height = 3)
+            plot = ggmanobject1, base_aspect_ratio = 4, base_height = 4)
+```
+
+# Manhattan plots for ASV's with 10% FDR & Bonferroni
+```{r}
+asvs <- c("ASV89_2_PCs", "ASV113_3_PCs", "ASV1197_3_PCs")
+for(i in seq_along(asvs)){
+gwas_data <- readRDS(paste0("../GWAS_datatable_", asvs[i], "_.rds"))
+#gwas_data[,FDR_adj := p.adjust(pvalue, method = "BH")]
+FDRthreshhi <- gwas_data %>%
+    as_tibble() %>%
+    filter(between(FDR_adj, 0.1001, 1)) %>%  # 5% FDR threshold currently.
+    summarise(thresh = max(log10p))
+  FDRthreshlo <- gwas_data %>%
+    as_tibble() %>%
+    filter(between(FDR_adj, 0, 0.0999)) %>%  # 5% FDR threshold currently.
+    summarise(thresh = min(log10p))
+  if(FDRthreshhi$thresh[1] > 0 & FDRthreshlo$thresh[1] > 0){
+    FDRthreshold = (FDRthreshhi$thresh[1] + FDRthreshlo$thresh[1])/2
+  } else if(FDRthreshhi$thresh[1] > 0){
+    FDRthreshold = FDRthreshhi$thresh[1]
+  } else if(FDRthreshlo$thresh[1] > 0){g
+    FDRthreshold = FDRthreshlo$thresh[1]
+  } else {
+    FDRthreshold = NA
+  }
+
+  ggmanobject1 <- gwas_data %>%
+    filter(log10p > 1) %>%
+    ggplot(aes(x = pos, y = log10p)) +
+    geom_hline(yintercept = c(10,15), color = "lightgrey") +
+    geom_point(aes(color = chr, fill = chr)) +
+    geom_point(aes(color = chr, fill = chr)) +
+    geom_hline(yintercept = FDRthreshold, color = "black", linetype = 2,
+               size = 0.7) +
+    geom_hline(yintercept = bonferroni, color = "#FAC127FF", linetype = 2,
+               size = 1) +
+    facet_wrap(~ chr, nrow = 1, scales = "free_x",
+               strip.position = "bottom") +
+    #scale_color_viridis(option = "B", end = 0.8, discrete = TRUE) +
+    #scale_fill_viridis(option = "B", end = 0.8, discrete = TRUE) +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          panel.background = element_rect(fill=NA), legend.position = "none") +
+    labs(x = "Chromosome", y = "-log10(p value)") +
+    scale_x_continuous(expand = c(0.18, 0.18)) +
+    scale_color_manual(values = rep(c("#1B0C42FF", "grey"),9), guide = FALSE)
+   #scale_shape_manual(values = rep(c(21,22),9), guide = FALSE)
+  theme_set(theme_poster)
+  save_plot(paste0("../../presentations/Nice_Manhattans/Manhattan_", asvs[i], "_Bonferroni_10percent_FDR_", str_replace_all(Sys.time(), ":", "."),
+                   ".png"),
+            plot = ggmanobject1, base_aspect_ratio = 4, base_height = 4)
+}
 ```
 
