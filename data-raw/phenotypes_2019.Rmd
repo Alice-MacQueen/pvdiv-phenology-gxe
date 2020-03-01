@@ -22,6 +22,10 @@ theme_set(theme_poster)
 
 load("../data/sites.rda")
 load("../data/metadata.rda")
+meta732 <- read_csv("~/Github/pvdiv-climate-gwas/data/Metadata_2020-02.csv")
+meta732 <- meta732 %>%
+  add_row(PLANT_ID = "AP13", LIBRARY = "REF", Genetic_subpop_50per = "Texas", Genetic_subpop_95per = "Texas", Ecotype = "Texas", Texas_Q = 1, Eastcoast_Q = 0, Midwest_DA = 0, LIB_GROWN = "Y")
+
 load("../data/Taxa.rda")
 
 usa <- map_data("state")
@@ -219,6 +223,15 @@ phenotypes_wide_2019 <- phemean_2019 %>%
 ## Look for outlier values by site 
 
 Use long format data to look for outlier values. This data has associated plot positions (PLOT_GL and PLOT_LC), as well as all associated notes (on greenup, flowering, harvest, chlr and spad). The notes might be relevant for outlier analysis.
+```{r}
+load("~/Github/pvdiv-phenology-gxe/data/phenotypes_2019.rda")
+
+phenotypes_long_2019 <- phenotypes_wide_2019 %>%
+  pivot_longer(cols = BRKG_BIOMASS:TMPL_TC_EOS, names_to = "SITE_PHE", values_to = "Value") %>%
+  separate(col = "SITE_PHE", into = c("SITE", "_", "PHE"), sep = c(4,5), remove = FALSE) %>%
+  dplyr::select(-"_")
+```
+
 
 ```{r}
 phenotypes_long_2019 <- phenotypes_2019 %>%
@@ -467,6 +480,27 @@ phenotypes_long_2019 %>%
   theme(legend.position = "right", axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("Value") + ylab("Count of Individuals")
 
 save_plot("2019_Phenotypic_Data_by_Site_and_Ecotype_2019-12-30.png", plot = last_plot(), base_height = 10, base_width = 9)
+```
+
+### BIOMASS
+
+```{r}
+meta732$Genetic_subpop_50per <- factor(meta732$Genetic_subpop_50per, levels = c("Texas", "Eastcoast", "Midwest"))
+
+phenotypes_long_2019 %>%
+  filter(grepl("BIOMASS", PHE)) %>%
+  left_join(meta732, by = "PLANT_ID") %>%
+  filter(!(Genetic_subpop_50per %in% c("Admixed", "NA")), !is.na(Genetic_subpop_50per)) %>%
+  ggplot(aes(x = Value)) +
+  geom_histogram(aes(fill = Genetic_subpop_50per), binwidth = 500) + 
+  facet_grid(SITE~PHE, scales = "free_y") +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 45, hjust = 1)) + xlab("Value") + ylab("Count of Individuals") +
+  geom_vline(xintercept = 2800, linetype = 3) +
+  scale_y_continuous(breaks = c(10, 50, 100))
+
+save_plot("2019_Phenotypic_Data_by_Site_and_Genetic_Subpop_scale_2020-02-14.png", plot = last_plot(), base_height = 7, base_asp = 0.4)
+
 ```
 
 

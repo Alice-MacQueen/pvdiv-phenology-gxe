@@ -23,20 +23,22 @@ usa <- map_data("state")
 wb_pheno <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
                                    paste0("GWAS DOE Switchgrass, ",
                                           "Consolidated Data"),
+                                   "DOE GWAS 2019 Files",
                                    paste0("DOE_GWAS_2019_Consolidated ",
-                                          "Pheno Data_2-12-20.xlsx")))
+                                          "Pheno Data_2-13-20.xlsx")))
 lst_pheno <- readWorksheet(wb_pheno, sheet = getSheets(wb_pheno))
 phenos_planting1 <- lst_pheno$`GWAS 2019 Greenup Data`
 phenos_planting2 <- lst_pheno$`GWAS 2019 Core Phenotype Data`
 phenos_key <- lst_pheno$`Column Key and Notes`
 
-wb_KING2019 <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
+wb_onesite2019 <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
                                       paste0("GWAS DOE Switchgrass, ",
                                              "Consolidated Data"),
-                                      "Individual Site Files",
-                                      "KING_GWAS_2019_Chlorosis Data.xlsx"))
-lst_KING2019 <- readWorksheet(wb_KING2019, sheet = getSheets(wb_KING2019))
-KING2019 <- as_tibble(lst_KING2019$`KING GWAS 2019 Chlorosis`)
+                                      "DOE GWAS 2019 Files",
+                                      paste0("DOE_GWAS_2019_Consolidated ",
+                                      "Senescence and Extra Data_Final.xlsx")))
+wb_onesite2019 <- readWorksheet(wb_onesite2019, sheet = getSheets(wb_onesite2019))
+KING2019 <- as_tibble(wb_onesite2019$`KING GWAS 2019 Chlorosis`)
 key_KING19 <- as_tibble(lst_KING2019$`COLUMN KEY`)
 
 wb_DEAD2018 <- loadWorkbook(file.path("C:", "Users", "ahm543", "Dropbox",
@@ -66,7 +68,7 @@ phenos_2019 <- phenos_planting1 %>%
   left_join(LOST2018, by = c("SITE", "PLOT_GL", "PLOT_LC", "PLANT_ID",
                              "PLANT_.ID_GL")) %>%
   left_join(phenos_planting2, by = c("SITE", "PLOT_GL", "PLOT_LC")) %>%
-  left_join(KING2019, by = "PLOT_GL") %>%
+  #left_join(KING2019, by = "PLOT_GL") %>%
   mutate(PLANT_ID = ifelse(ACC == "AP13",
                            "AP13",
                            PLANT_ID)) %>%

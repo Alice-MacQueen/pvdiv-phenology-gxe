@@ -1227,7 +1227,7 @@ frz_freq %>%
   ggplot(aes(x = POS/1000000, y = Loss_freq)) +
   geom_hex() + 
   facet_wrap(~CHR, scales = "free_x", nrow = 1) + 
-  scale_fill_viridis(trans = "log10") + 
+  scale_fill_viridis(trans = "log10", option = "B") + 
   xlab("Position (Mb)") + ylab("Minor Allele Loss") +
   theme(legend.position = "right", 
         axis.text.x = element_text(angle = 45, hjust = 1))
