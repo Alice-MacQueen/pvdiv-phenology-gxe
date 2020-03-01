@@ -1,0 +1,358 @@
+nohup: ignoring input
+── Attaching packages ─────────────────────────────────────── tidyverse 1.2.1 ──
+✔ ggplot2 3.2.1     ✔ purrr   0.3.3
+✔ tibble  2.1.3     ✔ dplyr   0.8.4
+✔ tidyr   1.0.2     ✔ stringr 1.4.0
+✔ readr   1.3.1     ✔ forcats 0.4.0
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+Loading required package: bigstatsr
+Loading required package: stats4
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:dplyr’:
+
+    combine, intersect, setdiff, union
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colMeans,
+    colnames, colSums, dirname, do.call, duplicated, eval, evalq,
+    Filter, Find, get, grep, grepl, intersect, is.unsorted, lapply,
+    lengths, Map, mapply, match, mget, order, paste, pmax, pmax.int,
+    pmin, pmin.int, Position, rank, rbind, Reduce, rowMeans, rownames,
+    rowSums, sapply, setdiff, sort, table, tapply, union, unique,
+    unsplit, which, which.max, which.min
+
+Loading required package: Biobase
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: IRanges
+Loading required package: S4Vectors
+
+Attaching package: ‘S4Vectors’
+
+The following objects are masked from ‘package:dplyr’:
+
+    first, rename
+
+The following object is masked from ‘package:tidyr’:
+
+    expand
+
+The following object is masked from ‘package:base’:
+
+    expand.grid
+
+
+Attaching package: ‘IRanges’
+
+The following objects are masked from ‘package:dplyr’:
+
+    collapse, desc, slice
+
+The following object is masked from ‘package:purrr’:
+
+    reduce
+
+
+Attaching package: ‘AnnotationDbi’
+
+The following object is masked from ‘package:dplyr’:
+
+    select
+
+Loading required package: viridisLite
+
+********************************************************
+Note: As of version 1.0.0, cowplot does not change the
+  default ggplot2 theme anymore. To recover the previous
+  behavior, execute:
+  theme_set(theme_cowplot())
+********************************************************
+
+
+Attaching package: ‘data.table’
+
+The following object is masked from ‘package:IRanges’:
+
+    shift
+
+The following objects are masked from ‘package:S4Vectors’:
+
+    first, second
+
+The following objects are masked from ‘package:dplyr’:
+
+    between, first, last
+
+The following object is masked from ‘package:purrr’:
+
+    transpose
+
+Loading required package: gridExtra
+
+Attaching package: ‘gridExtra’
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    combine
+
+The following object is masked from ‘package:dplyr’:
+
+    combine
+
+Loading required package: GenomicFeatures
+Loading required package: GenomeInfoDb
+Loading required package: GenomicRanges
+Parsed with column specification:
+cols(
+  pacId = col_double(),
+  locusName = col_character(),
+  transcriptName = col_character(),
+  peptideName = col_character(),
+  Pfam = col_character(),
+  Panther = col_character(),
+  KOG = col_character(),
+  ec = col_character(),
+  KO = col_character(),
+  GO = col_character(),
+  `Best-hit-arabi-name` = col_character(),
+  `arabi-symbol` = col_character(),
+  `arabi-defline` = col_character(),
+  `Best-hit-rice-name` = col_character(),
+  `rice-symbol` = col_logical(),
+  `rice-defline` = col_character()
+)
+Finished Lambda_GC calculation for died_logistic using 0 PCs.
+Finished Lambda_GC calculation for died_logistic using 1 PCs.
+Finished Lambda_GC calculation for died_logistic using 2 PCs.
+Finished Lambda_GC calculation for died_logistic using 3 PCs.
+Finished Lambda_GC calculation for died_logistic using 4 PCs.
+Finished Lambda_GC calculation for died_logistic using 5 PCs.
+Finished Lambda_GC calculation for died_logistic using 6 PCs.
+Finished Lambda_GC calculation for died_logistic using 7 PCs.
+Finished Lambda_GC calculation for died_logistic using 8 PCs.
+Finished Lambda_GC calculation for died_logistic using 9 PCs.
+Finished Lambda_GC calculation for died_logistic using 10 PCs.
+Finished Lambda_GC calculation for died_logistic using 11 PCs.
+Finished Lambda_GC calculation for died_logistic using 12 PCs.
+Finished Lambda_GC calculation for died_logistic using 13 PCs.
+Finished Lambda_GC calculation for died_logistic using 14 PCs.
+Finished Lambda_GC calculation for died_logistic using 15 PCs.
+Finished Lambda_GC calculation for died_logistic using 16 PCs.
+Finished Lambda_GC calculation for died_logistic using 17 PCs.
+Finished Lambda_GC calculation for died_logistic using 18 PCs.
+Finished Lambda_GC calculation for died_logistic using 19 PCs.
+Finished Lambda_GC calculation for died_logistic using 20 PCs.
+Finished phenotype 1: died_logistic
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 0 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 1 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 2 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 3 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 4 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 5 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 6 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 7 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 8 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 9 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 10 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 11 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 12 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 13 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 14 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 15 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 16 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 17 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 18 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 19 PCs.
+Finished Lambda_GC calculation for BRKG_DEAD_2018 using 20 PCs.
+Finished phenotype 2: BRKG_DEAD_2018
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 0 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 1 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 2 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 3 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 4 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 5 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 6 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 7 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 8 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 9 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 10 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 11 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 12 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 13 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 14 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 15 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 16 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 17 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 18 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 19 PCs.
+Finished Lambda_GC calculation for CLMB_DEAD_2018 using 20 PCs.
+Finished phenotype 3: CLMB_DEAD_2018
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 0 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 1 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 2 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 3 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 4 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 5 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 6 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 7 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 8 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 9 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 10 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 11 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 12 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 13 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 14 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 15 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 16 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 17 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 18 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 19 PCs.
+Finished Lambda_GC calculation for FRMI_DEAD_2018 using 20 PCs.
+Finished phenotype 4: FRMI_DEAD_2018
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 0 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 1 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 2 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 3 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 4 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 5 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 6 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 7 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 8 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 9 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 10 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 11 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 12 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 13 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 14 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 15 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 16 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 17 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 18 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 19 PCs.
+Finished Lambda_GC calculation for LINC_DEAD_2018 using 20 PCs.
+Finished phenotype 5: LINC_DEAD_2018
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 0 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 1 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 2 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 3 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 4 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 5 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 6 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 7 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 8 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 9 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 10 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 11 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 12 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 13 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 14 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 15 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 16 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 17 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 18 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 19 PCs.
+Finished Lambda_GC calculation for KBSM_DEAD_2018 using 20 PCs.
+Finished phenotype 6: KBSM_DEAD_2018
+There were 50 or more warnings (use warnings() to see the first 50)
+Loading required namespace: VariantAnnotation
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned 1:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+'select()' returned many:1 mapping between keys and columns
+There were 15 warnings (use warnings() to see them)
