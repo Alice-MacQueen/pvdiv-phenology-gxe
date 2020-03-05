@@ -1,0 +1,99 @@
+---
+title: "4_kmer_and_PAV_vcf_conversion"
+author: "Alice MacQueen"
+date: "3/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 
+
+wget --user=switchgrass --ask-password http://hagsc.org/restricted_access/switchgrass/newKmerPAVMatrix.Nov25.19.0.005MAF.wHeader.vcf.gz
+
+plink --vcf newKmerPAVMatrix.Nov25.19.0.005MAF.wHeader.vcf.gz --const-fid Pvirgatum --allow-extra-chr --make-bed --out newKmerPAVMatrix.Nov25.19.0.005MAF
+
+# Alter fam and nosex files so they have PLANT_ID not LIBRARY
+```{r}
+metadata <- read_csv("~/Github/pvdiv-phenology-gxe/data/metadata_hierarchical_kof3.csv")
+
+kmerfam <- read_delim("~/Github/pvdiv-kmer-gwas/data-raw/Pvirgatum_gene_PAV_2019_08_16.fam", delim = " ", col_names = c("FID", "LIBRARY", "X3", "X4", "X5", "X6")) %>%
+  left_join(metadata) %>%
+  dplyr::select(FID, PLANT_ID, X3:X6, LIBRARY) %>%
+  #filter(!is.na(PLANT_ID))
+  mutate(PLANT_ID = coalesce(PLANT_ID, LIBRARY)) %>%
+  dplyr::select(FID, PLANT_ID, X3:X6)
+write_delim(kmerfam, path = "~/Github/pvdiv-kmer-gwas/data-raw/Pvirgatum_gene_PAV_2019_08_16.fam", delim = " ", col_names = FALSE)
+
+kmernosex <- read_delim("~/Github/pvdiv-kmer-gwas/data-raw/Pvirgatum_gene_PAV_2019_08_16.nosex", delim = "\t", col_names = c("FID", "LIBRARY")) %>%
+  left_join(metadata) %>%
+  dplyr::select(FID, PLANT_ID, LIBRARY) %>%
+  #filter(!is.na(PLANT_ID))
+  mutate(PLANT_ID = coalesce(PLANT_ID, LIBRARY)) %>%
+  dplyr::select(FID, PLANT_ID)
+write_delim(kmernosex, path = "~/Github/pvdiv-kmer-gwas/data-raw/Pvirgatum_gene_PAV_2019_08_16.nosex", delim = "\t", col_names = FALSE)
+```
+
+
+
+
+plink --vcf Pvirgatum_gene_PAV_2019_08_16.vcf --const-fid Pvirgatum --allow-extra-chr --make-bed --out Pvirgatum_gene_PAV_2019_08_16
+
+```{r}
+pavfam <- read_delim("~/Github/pvdiv-kmer-gwas/data-raw/newKmerPAVMatrix.Nov25.19.0.005MAF.fam", delim = " ", col_names = c("FID", "LIBRARY", "X3", "X4", "X5", "X6")) %>%
+  left_join(metadata) %>%
+  dplyr::select(FID, PLANT_ID, X3:X6, LIBRARY) %>%
+  #filter(!is.na(PLANT_ID))
+  mutate(PLANT_ID = coalesce(PLANT_ID, LIBRARY)) %>%
+  dplyr::select(FID, PLANT_ID, X3:X6)
+write_delim(pavfam, path = "~/Github/pvdiv-kmer-gwas/data-raw/newKmerPAVMatrix.Nov25.19.0.005MAF.fam", delim = " ", col_names = FALSE)
+
+pavnosex <- read_delim("~/Github/pvdiv-kmer-gwas/data-raw/newKmerPAVMatrix.Nov25.19.0.005MAF.nosex", delim = "\t", col_names = c("FID", "LIBRARY")) %>%
+  left_join(metadata) %>%
+  dplyr::select(FID, PLANT_ID, LIBRARY) %>%
+  #filter(!is.na(PLANT_ID))
+  mutate(PLANT_ID = coalesce(PLANT_ID, LIBRARY)) %>%
+  dplyr::select(FID, PLANT_ID)
+write_delim(pavnosex, path = "~/Github/pvdiv-kmer-gwas/data-raw/newKmerPAVMatrix.Nov25.19.0.005MAF.nosex", delim = "\t", col_names = FALSE)
+```
+
+# Make bigsnp file and subset it to plants in ind_gwas
+
+Have to do this from the working directory of the bed file. Can't point to it, even with an absolute path. OR you'll get an error like: `Error in readbina(bedfile, bigGeno, getCode()) :`
+  `Wrong magic number. Aborting..`
+
+```{r}
+rds <- snp_readBed("Pvirgatum_gene_PAV_2019_08_16.bed")
+
+ind_gwas <- metadata %>%
+  filter(LIB_GROWN == "Y" | LIB_BIOCLIM == "Y")
+
+kmersubset <- which(kmerfam$PLANT_ID %in% ind_gwas$PLANT_ID)
+pavsubset <- which(pavfam$PLANT_ID %in% ind_gwas$PLANT_ID)
+saveRDS(kmersubset, file = "../data/individuals_subset.rds")
+
+which(kmersubset %in% pavsubset)
+```
+
+```{r}
+pvdiv_pop_subset_bigsnp <- function(subset, selector){
+  subset_name <- paste0("Pvirgatum_4x_784g_imp_phased_", subset, "_subset")
+  snpfile_subset <- subset(snp, ind.row = selector)
+  snp_subset <- snp_attach(snpfile_subset)
+  snp_writeBed(snp_subset, bedfile = paste0(subset_name, ".bed"))
+  mac <- round(25/length(selector), digits = 2) # what should the MAF be?
+  if(mac > 0.05){
+    mac <- 0.05
+  }
+  plink <- download_plink()
+  bedfile <- snp_plinkQC(plink, prefix.in = subset_name,
+                         maf = mac, geno = 0.1, hwe = 1e-50, 
+                         prefix.out = paste0(subset_name, "_maf", mac),
+                         extra.options = "--allow-no-sex --allow-extra-chr --chr Chr01K Chr01N Chr02K Chr02N Chr03K Chr03N Chr04K Chr04N Chr05K Chr05N Chr06K Chr06N Chr07K Chr07N Chr08K Chr08N Chr09K Chr09N")
+  rdsfile <- snp_readBed(bedfile)
+}
+
+```
+
