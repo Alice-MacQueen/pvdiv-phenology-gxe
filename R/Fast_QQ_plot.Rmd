@@ -1,0 +1,130 @@
+---
+title: "Fast QQ plots"
+author: "Alice MacQueen"
+date: "3/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(bigsnpr)
+library(switchgrassGWAS)
+library(AnnotationDbi)
+library(multtest)
+library(viridis)
+library(cowplot)
+library(data.table)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+
+NCORES <- nb_cores()
+```
+
+## 
+
+```{r}
+gwas_data2 <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/all-phenotypes-two-years/GWAS_datatable_KBSM_GR50_3_PCs_.rds")
+
+```
+
+# Faster QQ plotting
+
+```{r}
+round2 <- function(x, at) ceiling(x / at) * at
+round_xy <- function(x, y, cl = NA, cu = NA, roundby = 0.001){
+  expected <- round2(x, at = roundby)
+  observed <- round2(y, at = roundby)
+  if(!is.na(cl[1]) & !is.na(cu[1])){
+    clower <- round2(cl, at = roundby)
+    cupper <- round2(cu, at = roundby)
+    tp <- cbind(expected, observed, clower, cupper)
+    return(tp[!duplicated(tp),])
+  } else {
+    tp <- cbind(expected, observed)
+    return(tp[!duplicated(tp),])
+  }
+}
+
+  # Save a QQ plot
+  ggsave(snp_qq(gwas[which(!is.na(gwas$score)),]),
+         filename = paste0("QQplot_", names(df1)[2], "_", PCdf1$NumPCs,
+                           "_PCs.png"), width = 4,
+         height = 4, path = file.path("/", "home", "alice", "Github",
+                                      "pvdiv-phenology-gxe", "analysis",
+                                      "all-phenotypes-two-years"))
+```
+
+
+```{r}
+#' Create a quantile-quantile plot with ggplot2.
+#'
+#' Assumptions:
+#'   - Expected P values are uniformly distributed.
+#'   - Confidence intervals assume independence between tests.
+#'     We expect deviations past the confidence intervals if the tests are
+#'     not independent.
+#'     For example, in a genome-wide association study, the genotype at any
+#'     position is correlated to nearby positions. Tests of nearby genotypes
+#'     will result in similar test statistics.
+#'
+#' @param ps Vector of p-values.
+#' @param ci Size of the confidence interval, 95% by default.
+#' @param lambdaGC Logical. Add the Genomic Control coefficient as subtitle to the plot?
+#' @return A ggplot2 plot.
+#' @examples
+#' library(ggplot2)
+#' gg_qqplot(runif(1e2)) + theme_grey(base_size = 24)
+gg_qqplot <- function(ps, ci = 0.95, lambdaGC = FALSE) {
+  n  <- length(ps)
+  df <- data.frame(
+    observed = -log10(sort(ps)),
+    expected = -log10(ppoints(n)),
+    clower   = -log10(qbeta(p = (1 - ci) / 2, shape1 = 1:n, shape2 = n:1)),
+    cupper   = -log10(qbeta(p = (1 + ci) / 2, shape1 = 1:n, shape2 = n:1))
+  )
+  df_round <- round_xy(df$expected, df$observed, cl = df$clower, cu = df$cupper)
+  log10Pe <- expression(paste("Expected -log"[10], plain("("), italic(p-value),
+                              plain(")")))
+  log10Po <- expression(paste("Observed -log"[10], plain("("), italic(p-value),
+                              plain(")")))
+  p1 <- ggplot(as_tibble(df_round)) +
+    geom_point(aes(expected, observed), shape = 1, size = 1) +
+    geom_abline(intercept = 0, slope = 1, size = 1.5, color = "red") +
+    geom_line(aes(expected, cupper), linetype = 2) +
+    geom_line(aes(expected, clower), linetype = 2) +
+    xlab(log10Pe) +
+    ylab(log10Po)
+
+  if (lambdaGC) {
+      xtr <- log10(ps)
+      MEDIAN <- log10(0.5)
+      f.opt <- function(x) (x - MEDIAN)
+      xtr_p <- stats::median(xtr) / stats::uniroot(f.opt, interval = range(xtr),
+                                                   check.conv = TRUE, 
+                                                   tol = tol)$root
+      lamGC <- signif(xtr_p)
+      expr <- substitute(expression(lambda[GC] == l), list(l = lamGC))
+      p1 + labs(subtitle = eval(expr))
+    } else {
+      p1
+    }
+}
+
+
+  xtr <- -stats::na.omit(gwas$log10p)
+  MEDIAN <- log10(0.5)
+  f.opt <- function(x) (x - MEDIAN)
+  stats::median(xtr) / stats::uniroot(f.opt, 
+                                              interval = range(xtr),
+                                      check.conv = TRUE, tol = tol)$root
+
+  # Save a QQ plot
+  ggsave(gg1,
+         filename = paste0("QQplot_", "test2", ".png"), width = 4,
+         height = 4, path = file.path("/", "home", "alice", "Github",
+                                      "pvdiv-phenology-gxe", "analysis",
+                                      "all-phenotypes-two-years"))
+```
+
+
+
