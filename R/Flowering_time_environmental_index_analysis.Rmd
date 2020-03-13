@@ -1,0 +1,257 @@
+---
+title: "Environmental Index"
+author: "Alice MacQueen"
+date: "3/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+library(corrplot)
+library(zoo)
+```
+
+##
+
+```{r}
+weather <- read_rds("~/Github/pvdiv-phenotypes/data/weather_10_sites_2019.rds") %>%
+  dplyr::select(DOY:DYLN) %>%
+  group_by(SITE) %>%
+  mutate(TMIN = ifelse(TMIN < -50, NA, TMIN),
+         TMAX_SM = ifelse(is.na(TMAX),
+                          (na.locf(TMAX) + na.locf(TMAX, fromLast = TRUE))/2,
+                          TMAX),
+         TMIN_SM = ifelse(is.na(TMIN),
+                          (na.locf(TMIN) + na.locf(TMIN, fromLast = TRUE))/2,
+                          TMIN),
+         RAIN_SM = ifelse(is.na(RAIN), 0, RAIN))
+
+metadata <- read_rds("~/Github/pvdiv-phenotypes/data/metadata.rds")
+phe_all <- read_rds("~/Github/pvdiv-phenotypes/data/Phenotypes_long_non_Blackwell_replants_pre_and_post_2019_replant.rds")
+sites <- read_rds("~/Github/pvdiv-phenotypes/data/sites.rds")
+fourway_sites <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL")
+```
+
+# My analysis based on Li's code (below)
+
+From my pvdiv-phenotypes repository, I already had generated a data frame of weather data for all 10 GWAS sites with daylength included. 
+
+Actually, get and load smoothed weather data from pvdiv-phenotypes.
+
+Make D2F variable which is FL50 - GR50.
+```{r}
+gwas_d2f <- phe_all %>%
+  filter(SITE %in% fourway_sites) %>%
+  filter(PHE %in% c("GR50", "FL50")) %>%
+  pivot_wider(names_from = PHE, values_from = MEAS) %>%
+  mutate(D2F = FL50 - GR50) %>%
+  filter(!is.na(D2F)) 
+
+weather <- weather %>%
+  filter(SITE %in% fourway_sites)
+```
+fourway_seven set should include these 7 site_year combinations:
+BRKG_2019
+CLMB_2019
+KBSM_2019
+KING_2019
+LINC_2019
+PKLE_2019
+STIL_2019
+
+Make GDD & PTT using a range of base temperatures
+```{r}
+
+Tbase <- seq(0, 6)
+Topt <- seq(8,30)
+
+GR_start <- gwas_d2f %>% 
+  group_by(SITE) %>%
+  summarise(GR_start = round(mean(GR50)))
+FL_end <- gwas_d2f %>% 
+  group_by(SITE) %>%
+  summarise(FL_end = round(mean(FL50)))
+
+GDD_PT <- NULL
+
+for (j in Tbase){
+  for (k in Topt){
+
+    tmp <- weather %>% 
+      left_join(GR_start, by = "SITE") %>%
+      left_join(FL_end, by = "SITE") %>%
+      group_by(SITE, Day_of_year) %>%
+      filter(between(Day_of_year, GR_start, FL_end)) %>% 
+      ungroup %>%
+      mutate(TMEAN = (TMAX_SM + TMIN_SM) / 2,
+             GDD = ifelse(TMEAN >= j, TMEAN - j, 0),
+             GDD = ifelse(TMEAN >= k, k - j, GDD),
+             PT = GDD * DYLN) %>%
+      group_by(SITE) %>%
+      summarize_at(vars(GDD, PT), funs(sum))
+    colnames(tmp)[2:3] = c(paste0('GDD_', j, "_", k), paste0('PT_', j, "_", k))
+    GDD_PT = c(GDD_PT, tmp)
+    }
+}
+
+  GDD_PT <- GDD_PT %>% 
+    as.data.frame() 
+  
+  GDD_PT <- GDD_PT %>%
+    select(SITE, starts_with("GDD"), starts_with("PT"))
+  
+  gwas_avegdd <- gwas_d2f %>%
+    left_join(GDD_PT, by = "SITE") %>%
+    ungroup()
+
+ 
+###correlation
+
+M = cor(gwas_avegdd %>% select(D2F, starts_with('GDD')) %>% filter(complete.cases(.)))
+
+# corrplot::corrplot.mixed(M)
+
+(best1 <- which(M[1,] == max(M[1,2:ncol(M)])))
+
+M[1,best1]
+
+
+M = cor(gwas_avegdd %>% select(D2F, starts_with('PT')) %>% filter(complete.cases(.)))
+
+# corrplot::corrplot.mixed(M)
+
+(best1 <- which(M[1,] == max(M[1,2:ncol(M)])))
+
+M[1,best1]
+```
+
+
+# Li's code
+
+```{r}
+rm(list=ls())
+
+dir = "~/Desktop/Phenology_4way/"
+
+ 
+
+setwd(paste0(dir,"0-data/"))
+
+library(tidyverse)
+
+###1. combine weather data together
+
+ 
+
+##function to calculate daylength
+
+day.length.hrs <- function(day, latitude) {
+
+  daylength.coeff <- asin(0.39795*cos(0.2163108 + 2*atan(0.9671396*tan(0.00860*(day - 186)))))
+
+  daylength.hrs <- 24 - (24/pi)*acos((sin(0.8333*pi/180) + sin(latitude*pi/180)*sin(daylength.coeff))/(cos(latitude*pi/180)*cos(daylength.coeff)))
+
+  return(daylength.hrs)
+
+}
+
+ 
+
+##read into the latitude of the 7 sites to calculate the day length
+
+Lat = read.csv('4WCR_GWAS_PlantingLocations.csv')
+
+ 
+
+wthfiles = list.files(pattern='[A-Z]_2019.csv')
+
+wth = lapply(wthfiles, function(x){
+
+  tmp = read.csv(x)
+
+  SITE = strsplit(x,'_',fixed = T)[[1]][1]
+
+  lat = Lat %>% filter(Site.Code==SITE)
+
+  tmp = tmp %>% dplyr::select(MONTH, DAY,DOY, TMAX, TMIN, RAIN)%>%
+
+    mutate(DL = round(day.length.hrs(DOY, lat$Latitude),2)) %>% mutate(SITE =SITE, YEAR='2019')
+
+})
+
+wth_2019 = do.call(rbind, wth)
+
+write.csv(wth_2019,'WeatherFile_2019_7_Sites.csv',row.names = F)
+
+ 
+
+###2. read in GR50, FL50 phenology data for reation norm plot
+
+FL50 = read.csv('FL50_7Sites.csv')
+
+FL50 = FL50 %>% separate(ENVI, c('SITE','YEAR'))%>% mutate(D2F = FL50-GR50)
+
+ 
+
+Tbase = seq(8, 13)
+
+Topt = seq(30, 35)
+
+ 
+
+FL50_Tbase = NULL
+
+for (i in 1:nrow(FL50)){
+
+  s = FL50$SITE[i]
+
+  gr = floor(FL50$GR50[i])
+
+  fl = floor(FL50$FL50[i])
+
+ 
+
+  GDD_PT = NULL
+
+  for (j in Tbase){
+
+    for (k in Topt){
+
+      tmp = wth_2019 %>% filter(SITE==s)%>% filter(DOY>= gr & DOY <= fl) %>%
+
+            mutate(TMEAN=(TMAX+TMIN)/2)%>%  mutate(GDD =ifelse(TMEAN>=j, TMEAN-j, 0))%>%
+
+            mutate(GDD =ifelse(TMEAN>=k, k-j, GDD) )%>% mutate(PT = GDD*DL)%>%
+
+            summarize_at(vars(GDD,PT),funs(sum))
+
+            colnames(tmp) = c(paste0('GDD_',j, k), paste0('PT_',j, k))
+
+            GDD_PT = c(GDD_PT,tmp)
+
+            }
+
+  }
+
+    GDD_PT = GDD_PT %>% as.data.frame()
+
+    FL50_Tbase = rbind(FL50_Tbase, GDD_PT)
+
+}
+
+ 
+
+FL50 = FL50 %>% bind_cols(FL50_Tbase)
+
+ 
+
+###correlation
+
+M = cor(FL50 %>% select(D2F, matches('PT')) %>% filter(complete.cases(.)))
+
+corrplot::corrplot.mixed(M)
+```
+
