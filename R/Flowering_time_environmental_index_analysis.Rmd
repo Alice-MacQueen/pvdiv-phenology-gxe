@@ -12,6 +12,7 @@ library(cowplot)
 library(viridis)
 library(corrplot)
 library(zoo)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 ```
 
 ##
@@ -33,6 +34,8 @@ metadata <- read_rds("~/Github/pvdiv-phenotypes/data/metadata.rds")
 phe_all <- read_rds("~/Github/pvdiv-phenotypes/data/Phenotypes_long_non_Blackwell_replants_pre_and_post_2019_replant.rds")
 sites <- read_rds("~/Github/pvdiv-phenotypes/data/sites.rds")
 fourway_sites <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL")
+metadata$ECOTYPE <- factor(metadata$ECOTYPE, levels = c("Upland", "Coastal", "Lowland", "Unknown"))
+metadata$GENETIC_SUBPOP_50PER <- factor(metadata$GENETIC_SUBPOP_50PER, levels = c("Midwest", "Atlantic", "Gulf", "Admixed", "Unknown"))
 ```
 
 # My analysis based on Li's code (below)
@@ -62,11 +65,11 @@ LINC_2019
 PKLE_2019
 STIL_2019
 
-Make GDD & PTT using a range of base temperatures
+# Make GDD & PTT using a range of base temperatures
 ```{r}
 
-Tbase <- seq(0, 6)
-Topt <- seq(8,30)
+Tbase <- seq(5, 13)
+Topt <- seq(24,33)
 
 GR_start <- gwas_d2f %>% 
   group_by(SITE) %>%
@@ -127,6 +130,210 @@ M = cor(gwas_avegdd %>% select(D2F, starts_with('PT')) %>% filter(complete.cases
 
 M[1,best1]
 ```
+
+# Make GDD & PTT using a range of base temperatures
+
+And starting every individual's GDD and PTT from its own GR50 time
+```{r}
+
+Tbase <- seq(5, 13)
+Topt <- seq(24,33)
+
+GR_start <- gwas_d2f %>% 
+  group_by(SITE) %>%
+  summarise(GR_start = floor(min(GR50)))
+FL_end <- gwas_d2f %>% 
+  group_by(SITE) %>%
+  summarise(FL_end = ceiling(max(FL50)))
+
+GDD_PT <- NULL
+
+tmp1 <- weather %>% 
+      left_join(GR_start, by = "SITE") %>%
+      left_join(FL_end, by = "SITE") %>%
+      group_by(SITE, Day_of_year) %>%
+      filter(between(Day_of_year, GR_start, FL_end)) %>% 
+      ungroup %>%
+  left_join(gwas_d2f)
+
+for (j in Tbase){
+  for (k in Topt){
+
+    tmp <- tmp1 %>%
+      group_by(SITE, PLANT_ID, Day_of_year) %>%
+      filter(between(Day_of_year, floor(GR50), ceiling(FL50))) %>%
+      mutate(TMEAN = (TMAX_SM + TMIN_SM) / 2,
+             GDD = ifelse(TMEAN >= j, TMEAN - j, 0),
+             GDD = ifelse(TMEAN >= k, k - j, GDD),
+             PT = GDD * DYLN) %>%
+      ungroup %>%
+      group_by(SITE, PLANT_ID) %>%
+      summarize_at(vars(GDD, PT), funs(sum))
+    colnames(tmp)[3:4] = c(paste0('GDD_', j, "_", k), paste0('PT_', j, "_", k))
+    GDD_PT = c(GDD_PT, tmp)
+    }
+}
+
+  GDD_PT <- GDD_PT %>% 
+    as.data.frame() 
+  
+  GDD_PT <- GDD_PT %>%
+    select(SITE, PLANT_ID, starts_with("GDD"), starts_with("PT"))
+  
+  gwas_avegdd <- gwas_d2f %>%
+    left_join(GDD_PT, by = c("PLANT_ID", "SITE")) %>%
+    ungroup()
+
+###correlation
+
+M = cor(gwas_avegdd %>% select(D2F, starts_with('GDD')) %>% filter(complete.cases(.)))
+
+# corrplot::corrplot.mixed(M)
+
+(best1 <- which(M[1,] == max(M[1,2:ncol(M)])))
+
+M[1,best1]
+
+
+M = cor(gwas_avegdd %>% select(D2F, starts_with('PT')) %>% filter(complete.cases(.)))
+
+# corrplot::corrplot.mixed(M[1:15,1:15])
+
+(best1 <- which(M[1,] == max(M[1,2:ncol(M)])))
+
+M[1,best1]
+
+ggplot(data = M, aes(x = D2F, y = PT_8_33)) + 
+  geom_point()
+M2 <- enframe(M[1,], name = "PT", value = "corr") %>%
+  filter(PT != "D2F") %>%
+  separate(col = PT, into = c("Var", "Tbase", "Topt")) %>%
+  dplyr::select(-Var) %>%
+  pivot_wider(names_from = Topt, values_from = corr, names_prefix = "Topt_") %>%
+  mutate(Tbase = paste0("Tbase_", Tbase))
+M3 <- M2 %>%
+  column_to_rownames(var = "Tbase") %>%
+  as.matrix(.)
+corrplot::corrplot.mixed(M3)
+```
+```{r}
+write_rds(gwas_avegdd, path = "../analysis/environmental-index/GDD_and_PTT_GWAS.rds")
+```
+
+# Do analysis just using daylength, not temperature
+
+And starting every individual's daylength received from its own GR50 time
+```{r}
+
+Tbase <- seq(5, 13)
+Topt <- seq(24,33)
+
+GR_start <- gwas_d2f %>% 
+  group_by(SITE) %>%
+  summarise(GR_start = floor(min(GR50)))
+FL_end <- gwas_d2f %>% 
+  group_by(SITE) %>%
+  summarise(FL_end = ceiling(max(FL50)))
+
+GDD_PT <- NULL
+
+tmp1 <- weather %>% 
+      left_join(GR_start, by = "SITE") %>%
+      left_join(FL_end, by = "SITE") %>%
+      group_by(SITE, Day_of_year) %>%
+      filter(between(Day_of_year, GR_start, FL_end)) %>% 
+      ungroup %>%
+  left_join(gwas_d2f)
+
+    tmp <- tmp1 %>%
+      group_by(SITE, PLANT_ID, Day_of_year) %>%
+      filter(between(Day_of_year, floor(GR50), ceiling(FL50))) %>%
+      ungroup %>%
+      group_by(SITE, PLANT_ID) %>%
+      summarize_at(vars(DYLN), funs(sum))
+    GDD_PT = c(GDD_PT, tmp)
+    
+
+
+  GDD_PT <- GDD_PT %>% 
+    as.data.frame() 
+  
+  GDD_PT <- GDD_PT %>%
+    select(SITE, PLANT_ID, starts_with("DYLN"), starts_with("PT"))
+  
+  gwas_avegdd <- gwas_d2f %>%
+    left_join(GDD_PT, by = c("PLANT_ID", "SITE")) %>%
+    ungroup()
+
+###correlation
+
+M = cor(gwas_avegdd %>% select(D2F, starts_with('DYLN')) %>% filter(complete.cases(.)))
+
+ corrplot::corrplot.mixed(M)
+
+(best1 <- which(M[1,] == max(M[1,2:ncol(M)])))
+
+M[1,best1]
+
+
+gwas_avegdd %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(PLANT_ID %in% c("AP13", "J001.B", "J005.B", "J006.B", "J016.B", "J024.A", "J026.B", "J350.C", "J499.B", "J517.B")) %>%
+  ggplot(aes(x = D2F, y = DYLN)) + 
+  geom_point(aes(color = PLANT_ID)) + 
+  geom_smooth(aes(color = PLANT_ID), se = FALSE, method = lm) +
+  scale_color_viridis(discrete = TRUE)
+
+gwas_avegdd %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(GENETIC_SUBPOP_50PER %in% c("Admixed", "Unknown", "Midwest"))) %>%
+  filter(!(ECOTYPE %in% c("Upland", "Unknown"))) %>%
+  ggplot(aes(x = D2F, y = DYLN.8)) + 
+  geom_point(aes(color = GENETIC_SUBPOP_50PER)) + 
+  geom_smooth(aes(color = GENETIC_SUBPOP_50PER), se = FALSE, method = lm) +
+  scale_color_viridis(discrete = TRUE) + ylab("One site-year of cumulative daylength") + xlab("Days to flowering (FL50 - GR50)")
+
+gwas_avegdd %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(GENETIC_SUBPOP_50PER %in% c("Admixed", "Unknown", "Midwest"))) %>%
+  filter(!(ECOTYPE %in% c("Upland", "Unknown"))) %>%
+  ggplot(aes(x = D2F, y = DYLN.8)) + 
+  geom_point(aes(color = ECOTYPE)) + 
+  geom_smooth(aes(color = ECOTYPE), se = FALSE, method = lm) +
+  scale_color_viridis(discrete = TRUE) + ylab("One site-year of cumulative daylength") + xlab("Days to flowering (FL50 - GR50)")
+```
+
+
+```{r}
+gwas_avegdd %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(GENETIC_SUBPOP_50PER %in% c("Admixed", "Unknown"))) %>%
+  filter(!(ECOTYPE %in% c("Unknown"))) %>%
+  ggplot(aes(x = D2F, y = DYLN)) + 
+  geom_point(aes(color = GENETIC_SUBPOP_50PER)) + 
+  geom_smooth(aes(color = GENETIC_SUBPOP_50PER), se = TRUE, method = "gam",
+              formula = y ~ poly(x,2)) +
+  scale_color_viridis(discrete = TRUE, end = 0.8) + ylab("One site-year of cumulative daylength") + xlab("Days to flowering (FL50 - GR50)")
+
+save_plot(filename = "../analysis/environmental-index/Days_to_flowering_by_Genetic_subpop.png", plot = last_plot())
+
+gwas_avegdd %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(!(GENETIC_SUBPOP_50PER %in% c("Admixed", "Unknown"))) %>%
+  filter(!(ECOTYPE %in% c("Unknown"))) %>%
+  ggplot(aes(x = D2F, y = DYLN)) + 
+  geom_point(aes(color = ECOTYPE)) + 
+  geom_smooth(aes(color = ECOTYPE), se = TRUE, method = "gam", 
+              formula = y ~ poly(x,2)) +
+  scale_color_viridis(discrete = TRUE, end = 0.8) + 
+  ylab("One site-year of cumulative daylength") + 
+  xlab("Days to flowering (FL50 - GR50)") + 
+  theme(legend.position = "right")
+
+save_plot(filename = "../analysis/environmental-index/Days_to_flowering_by_Ecotype.png", plot = last_plot())
+
+```
+
 
 
 # Li's code
