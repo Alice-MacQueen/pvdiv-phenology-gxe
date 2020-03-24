@@ -1,0 +1,166 @@
+---
+title: "Make Kinship Van Raden"
+author: "Alice MacQueen"
+date: "3/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(bigsnpr)
+```
+
+## 
+
+In the GAPIT numerical object, columns are SNPs and rows are individuals. It's the same for bigsnpr objects, luckily.
+
+# Making a kinship matrix using the van Raden method.
+
+If you don't need to subset by individuals or SNPs, you can use this function as-is. Otherwise see the code in the next section for options for subsetting.
+
+```{r}
+snp <- snp_attach("Pvirgatum_V5_GWAS_630g_33M_tensite_twoyear.rds")
+
+pvdiv_kinship_van_raden <- function(snp){
+  G <- snp$genotypes
+  nInd <- snp$genotypes$nrow
+  # Centered (mean of rows subtracted) transposed crossproduct of snp file.
+  K <- big_tcrossprodSelf(G, fun.scaling = big_scale(center = TRUE, 
+                                                                 scale = FALSE))
+  
+  #Extract diagonals
+  i = 1:nInd
+  j=(i-1)*nInd
+  index=i+j
+  d=K[index]
+  DL=min(d)
+  DU=max(d)
+  floor=min(K[i,i])
+  
+  K=(K[i,i]-floor)/(DL-floor)
+  MD=(DU-floor)/(DL-floor)
+  
+  rownames(K) <- snp$fam$sample.ID
+  colnames(K) <- snp$fam$sample.ID
+  
+  if(MD>2){
+    K[index]=K[index]/(MD-1)+1
+  }
+  return(K)
+}
+```
+
+# Subset to just single ecotypes, and to just single genetic subpopulations.
+
+This method could be used to remove any individuals that don't meet specific criteria.
+
+```{r}
+metadata <- read_rds("~/Github/pvdiv-phenotypes/data/metadata.rds")
+
+upeco <- metadata[which(metadata$ECOTYPE_NNET == "Upland"),]$PLANT_ID
+loeco <- metadata[which(metadata$ECOTYPE_NNET == "Lowland"),]$PLANT_ID
+coeco <- metadata[which(metadata$ECOTYPE_NNET == "Coastal"),]$PLANT_ID
+
+mgeno <- metadata[which(metadata$GENETIC_SUBPOP_50PER == "Midwest"),]$PLANT_ID
+ageno <- metadata[which(metadata$GENETIC_SUBPOP_50PER == "Atlantic"),]$PLANT_ID
+ggeno <- metadata[which(metadata$GENETIC_SUBPOP_50PER == "Gulf"),]$PLANT_ID
+
+upland_eco <- which(snp$fam$sample.ID %in% upeco)
+lowland_eco <- which(snp$fam$sample.ID %in% loeco)
+coastal_eco <- which(snp$fam$sample.ID %in% coeco)
+midwest_geno <- which(snp$fam$sample.ID %in% mgeno)
+atlantic_geno <- which(snp$fam$sample.ID %in% ageno)
+gulf_geno <- which(snp$fam$sample.ID %in% ggeno)
+
+subsets <- list(upland_eco = upland_eco, lowland_eco = lowland_eco, coastal_eco = coastal_eco, midwest_geno = midwest_geno, atlantic_geno = atlantic_geno, gulf_geno = gulf_geno)
+
+for(q in seq_along(subsets)){
+    ind.row <- subsets[[q]]
+    G <- snp$genotypes
+    nInd <- length(ind.row)
+    # Centered (mean of rows subtracted) transposed crossproduct of snp file.
+    K <- big_tcrossprodSelf(G, ind.row = ind.row, 
+                            fun.scaling = big_scale(center = TRUE, 
+                                                    scale = FALSE))
+    
+    #Extract diagonals
+    i = 1:nInd
+    j=(i-1)*nInd
+    index=i+j
+    d=K[index]
+    DL=min(d)
+    DU=max(d)
+    floor=min(K[i,i])
+    
+    K2=(K[i,i]-floor)/(DL-floor)
+    MD=(DU-floor)/(DL-floor)
+    # Name rows and columns
+    rownames(K2) <- snp$fam$sample.ID[ind.row]
+    colnames(K2) <- snp$fam$sample.ID[ind.row]
+    
+    if(MD>2){
+      K2[index]=K2[index]/(MD-1)+1
+    }
+  
+  write_rds(K2, paste0("Kinship_van_Raden_method_", nInd, "_individuals_", names(subsets)[q], "type.rds")) 
+}
+```
+
+
+Other bigstatsr commands that I didn't end up using.
+`snpSum <- big_colstats(G)# GAPIT: apply(snps,2,mean) Take the mean over columns.`
+`snpMean <- snpSum$sum / nInd # bigsnpr has a function that can center like this.`
+
+
+# GAPIT's method, for comparison purposes
+```{r}
+`GAPIT.kinship.VanRaden` <-
+function(snps,hasInbred=TRUE) {
+# Object: To calculate the kinship matrix using the method of VanRaden (2009, J. Dairy Sci. 91:4414???C4423)
+# Authors: Zhwiu Zhang
+# Last update: August 15, 2011 
+############################################################################################## 
+
+print("Calculating kinship with VanRaden method...")
+
+#snps=hm$GD 
+nSNP=ncol(snps)
+nInd=nrow(snps)
+n=nInd
+
+snpMean= apply(snps,2,mean)
+snps=snps-snpMean
+print("Getting X'X...")
+K=tcrossprod((snps), (snps))
+
+print("Adjusting...")
+#Extract diagonals
+i =1:n
+j=(i-1)*n
+index=i+j
+d=K[index]
+DL=min(d)
+DU=max(d)
+floor=min(K)
+
+K=(K-floor)/(DL-floor)
+MD=(DU-floor)/(DL-floor)
+
+#Handler of diagonals over 2
+#print("MD")
+#print(MD)
+#print(K[1:5,1:5])
+
+if(is.na(K[1,1])) stop ("GAPIT says: Missing data is not allowed for numerical genotype data")
+if(MD>2)K[index]=K[index]/(MD-1)+1
+
+#Handler of inbred
+if(MD<2 & hasInbred) K=2*K/((DU-floor)/(DL-floor))
+
+print("Calculating kinship with VanRaden method: done")
+
+return(K)
+}
+```
+
