@@ -97,7 +97,7 @@ mash_plot_pairwise_sharing(corrmatrix = covariances$ED_PCA_1)
 # Differential Sensitivity
 ```{r, cache = TRUE}
 length(get_significant_results(m))
-mash_plot_pairwise_sharing(corrmatrix = gxe$S_DS)
+mash_plot_pairwise_sharing(corrmatrix = gxe$S_all)
 max(gxe$S_DS)
 min(gxe$S_DS)
 ```
@@ -106,7 +106,81 @@ min(gxe$S_DS)
 # Antagonistic Pleiotropy
 ```{r, cache = TRUE}
 mash_plot_pairwise_sharing(corrmatrix = gxe$S_AP)
+sum(gxe$S_AP)/78411 # 510
+sum(gxe$S_DS) # 3188
+sum(gxe$S_2_no) # 118913
+sum(gxe$S_all) # 130939
+sum(gxe$S_CN) # 11516
+
+(sum(gxe$S_AP)/sum(gxe$S_all))*length(get_significant_results(m))
+(sum(gxe$S_CN)/sum(gxe$S_all))*length(get_significant_results(m))
+(sum(gxe$S_2_no)/sum(gxe$S_all))*length(get_significant_results(m))
+(sum(gxe$S_DS)/sum(gxe$S_all))*length(get_significant_results(m))
+19780+85+1915+530
+length(gxe$S_all)
+130939/81
+# 21781
+# 
+mash_plot_pairwise_sharing(corrmatrix = (gxe$S_AP/gxe$S_all))
+max((gxe$S_AP/gxe$S_all))
+max((gxe$S_CN/gxe$S_all))
+max((gxe$S_2_no/gxe$S_all))
+max((gxe$S_DS/gxe$S_all))
+mean((gxe$S_AP/gxe$S_all))
+mean((gxe$S_CN/gxe$S_all))
+mean((gxe$S_2_no/gxe$S_all)) + mean((gxe$S_DS/gxe$S_all))
+
+AP <- (gxe$S_AP)
+CN <- (gxe$S_CN)
+DS <- (gxe$S_DS)
+twono <- (gxe$S_2_no)
+all <- gxe$S_all
+diag(twono) <- NA
+diag(AP) <- NA
+diag(CN) <- NA
+diag(DS) <- NA
+diag(all) <- NA
+
+median(AP, na.rm = TRUE)
+median(CN, na.rm = TRUE)
+median(DS, na.rm = TRUE)
+median(twono, na.rm = TRUE)
+median(all, na.rm = TRUE)
+
+sum(AP, na.rm = TRUE)/sum(diag(all))
+sum(CN, na.rm = TRUE)/sum(diag(all))
+sum(DS, na.rm = TRUE)/sum(diag(all)) + sum(twono, na.rm = TRUE)/sum(diag(all))
+sum(all, na.rm = TRUE)/sum(diag(all))
+
+sum(AP, na.rm = TRUE)/(sum(all, na.rm = TRUE))
+#sum(CN, na.rm = TRUE)/(2*sum(all, na.rm = TRUE))
+sum(DS, na.rm = TRUE)/(sum(all, na.rm = TRUE))
+sum(twono, na.rm = TRUE)/(sum(all, na.rm = TRUE))
+sum(all, na.rm = TRUE)/sum(all, na.rm = TRUE)
+
+AP/diag(all)
+CN/diag(all)
+DS/diag(all)
+twono/diag(all)
+mean(diag(all))
+sum(diag(all))
+
+mean(AP, na.rm = TRUE)
+mean(CN, na.rm = TRUE)
+mean(DS + twono, na.rm = TRUE) 
+mean(twono, na.rm = TRUE)
+mean(all, na.rm = TRUE)
+7+160+44+76
+max(all, na.rm = TRUE)
+120+159+7
+
+1.5+33+9+16
 ```
+
+
 `r length(get_significant_results(m))` SNPs have significant effects in the mash analysis. Of those, between `r min(gxe$S_AP)` and `r max(gxe$S_AP)` have antagonistically pleiotropic effects between pairs of conditions.
 
 Between `r min(gxe$S_2_no)` and `r max(gxe$S_2_no)` have effects of the same magnitude and same sign between pairs of conditions.
+
+Instead, the vast majority of SNPs have common effects across sites (
+`r mean((gxe$S_2_no/gxe$S_all)) + mean((gxe$S_DS/gxe$S_all))`) or are conditionally neutral (`r mean((gxe$S_CN/gxe$S_all))`) ( e.g., having effects at some sites but not others) with only `r mean((gxe$S_AP/gxe$S_all))` showing sign change.
