@@ -12,6 +12,10 @@ library(rlang)
 ```
 
 ## 
+```{r}
+write_rds(cross, "../data/fourway_cross_data.rds", compress = "gz")
+```
+
 
 ```{r}
 # paste0(rep(c(1:9),each = 2), rep(c("K", "N"), 9))
@@ -19,7 +23,7 @@ library(rlang)
 # str(cross$geno$`2N`$data)
 
 geno_df <- cross$geno[[1]]$data
-
+as_tibble(cross$pheno)
 for(i in 2:18){
 geno_df <- geno_df %>%
   cbind(cross$geno[[i]]$data)
@@ -35,6 +39,8 @@ geno_df2 <- geno_df %>%
 
 snps <- as.matrix(geno_df2)
 # snps[1:20,1000:1005]
+snps1 <- snps[1:750,]
+snps <- snps1
 ```
 
 # GAPIT's method, for comparison purposes
@@ -92,8 +98,13 @@ return(K)
 K[1:10,1:5]
 library(switchgrassGWAS)
 
-mash_plot_pairwise_sharing(corrmatrix = K[1:30,1:30])
+mash_plot_pairwise_sharing(corrmatrix = K[1:20,1:20])
 
-write_rds(K, path = "~/Github/pvdiv-phenology-gxe/data/Kinship_van_Raden_5250g_fourway_cross.rds")
+write_rds(K, path = "~/Github/pvdiv-phenology-gxe/data/Kinship_van_Raden_750g_fourway_cross_withInbred.rds")
+```
+
+```{r}
+mash_plot_pairwise_sharing(corrmatrix = K[1:20,1:20])
+
 ```
 

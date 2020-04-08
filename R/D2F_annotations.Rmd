@@ -1,0 +1,82 @@
+---
+title: "Annos_D2F"
+author: "Alice MacQueen"
+date: "4/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## 
+
+```{r}
+anno_d2f <- read_delim("../analysis/gwas/D2Fannos.txt", delim = " ", col_names = "filename")
+inputdir <- "~/Github/pvdiv-phenology-gxe/analysis/gwas/"
+i=1
+  annos <- read_rds(paste0(inputdir, anno_d2f$filename[i]))
+  anno_overlap <- annos$top500SNPs_within0bp %>%
+  filter((CHR == c("Chr02K") & between(POS, 63687000, 64420000)) | (CHR == "Chr02N" & between(POS, 60250000, 61280000)) | (CHR == "Chr04K" & between(POS, 1950000, 5450000)) | (CHR == "Chr05N" & between(POS, 20000, 4330000)) | (CHR == "Chr05N" & between(POS, 58910000, 65260000)))
+  anno_overlap$SITE_PHE <- str_sub(anno_d2f$filename[i], start = 19, end = 26)
+
+for(i in 2:nrow(anno_d2f)){
+  annos <- read_rds(paste0(inputdir, anno_d2f$filename[i]))
+  anno_overlap1 <- annos$top500SNPs_within0bp %>%
+  filter((CHR == c("Chr02K") & between(POS, 63687000, 64420000)) | (CHR == "Chr02N" & between(POS, 60250000, 61280000)) | (CHR == "Chr04K" & between(POS, 1950000, 5450000)) | (CHR == "Chr05N" & between(POS, 20000, 4330000)) | (CHR == "Chr05N" & between(POS, 58910000, 65260000)))
+    anno_overlap1$SITE_PHE <- str_sub(anno_d2f$filename[i], start = 19, end = 26)
+  anno_overlap <- anno_overlap %>%
+    full_join(anno_overlap1)
+
+}
+  anno_overlap %>% 
+    mutate(group = ceiling(POS/1000000)) %>%
+    group_by(CHR, group, SITE_PHE) %>%
+    tally() %>% arrange(CHR, group)
+anno_overlap %>% 
+  filter(CHR == "Chr05N" & between(POS, 63800000, 65200000)) %>% arrange(POS)
+```
+Pavir.5NG107400 is a gene found in the major QTL region in the fourway cross on Chr05N. It is also found in GWAS of Gulf and Midwestern individuals in the diversity panel, and has SNPs that fall within the gene at PKLE (28d effect) & CLMB (11d effect). Pavir.5NG107400 is located on Chr05N at 64.39Mb, and is homologous to ATCPL2, a carboxyl-terminal domain (CTD) phosphatase that regulates plant growth, stress, and auxin responses. In A. thaliana, mutants in CPL2 have early flowering, low fertility, and increased salt sensitivity. In this 100kb region of Chr05N, we also see associations in the top 500 SNPs by p-value for TMPL (13d effect size, 90kb away from this gene), LINC (-13d, 3kb), KING (34d, 61kb).
+Overall there are many overlaps on Chr05N between the QTL and GWAS analyses for days to flowering (FL50 - GR50), and overlaps at single sites for Chr02K (TMPL) and Chr04K (KBSM).
+
+2K tmpl
+4k KBSM
+5N: KBSM, STIL, PKLE, CLMB, KING (early) tmpl LINC (500)
+5N (LATE) PKLE CLMB KBSM KING STIL (TOP 500: CLMB KING STIL KBSM TMPL PKLE)
+```{r}
+fourways
+```
+Chr02K_63.687871	Chr02K_64.419301    no
+Chr02N_60.251689	Chr02N_61.274395    Chr02N	60985754	60985754	
+Chr04K_1.959391	Chr04K_5.499253       no
+Chr05N_2.1318	Chr05N_4.328965         Chr05N	4568275	4568275
+Chr05N_58.916323	Chr05N_65.255869    Chr05N	58930463	58930463 and 11 SNPs to 
+Chr05N	64393503	64393503
+
+# D2F
+```{r}
+annos$FDR0.1_within0bp %>%
+  filter(CHR %in% c("Chr02K", "Chr02N", "Chr04K", "Chr05N"))
+
+annos$FDR0.1_within0bp %>%
+  filter((CHR == c("Chr02K") & between(POS, 63687000, 64420000)) | (CHR == "Chr02N" & between(POS, 60250000, 61280000)) | (CHR == "Chr04K" & between(POS, 1950000, 5450000)) | (CHR == "Chr05N" & between(POS, 20000, 4330000)) | (CHR == "Chr05N" & between(POS, 58910000, 65260000)))
+
+
+annos$FDR0.1_within50000bp %>%
+  filter(CHR %in% c("Chr05N") & between(POS, 58830460, 64493505))
+```
+Chr02N: No gene within 50kb
+```{r}
+-log10(2.03e-06)
+```
+
+```{r}
+phe <- Phenotypes_D2F_fourway_project
+
+phe %>%
+  dplyr::select(PLANT_ID, ends_with("D2F"), ends_with("FL50"),
+                ends_with("GR50")) %>%
+  write_rds("../data/Phenotypes_D2F_fourway_project.rds")
+```
+
