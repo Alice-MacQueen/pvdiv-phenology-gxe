@@ -8,12 +8,322 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(switchgrassGWAS)
 ```
 
 ## 
 
 ```{r}
+anno_all <- pvdiv_results_in_folder(path = "../analysis/gwas/", pattern = "Annotation")
 anno_d2f <- read_delim("../analysis/gwas/D2Fannos.txt", delim = " ", col_names = "filename")
+
+annos_fl <- anno_all %>% 
+  enframe(name = NULL, value = "filename") %>%
+  filter(!grepl("GR50", filename) & !grepl("SEN50", filename))
+```
+# Top 100 or so overlaps, not filtering to fourway hits
+```{r}
+inputdir <- "~/Github/pvdiv-phenology-gxe/analysis/gwas/"
+i=1
+  annos <- read_rds(paste0(inputdir, annos_fl$filename[i]))
+  anno_overlap100 <- annos$top500SNPs_within50000bp
+
+  anno_overlap100$Anno_descr <- paste0(str_sub(annos_fl$filename[i], start = 19, 
+                                          end = -12))
+
+for(i in 2:nrow(annos_fl)){
+  annos <- read_rds(paste0(inputdir, annos_fl$filename[i]))
+  anno_overlap1001 <- annos$top500SNPs_within50000bp
+
+    anno_overlap1001$Anno_descr <- str_sub(annos_fl$filename[i], start = 19, end = -12)
+  anno_overlap100 <- anno_overlap100 %>%
+    dplyr::select(-TXID) %>%
+    full_join(anno_overlap1001)
+
+}
+anno_overlap100 <- anno_overlap100 %>%
+    separate(Anno_descr, into = c("SITE", "PHE", "type", "genos", "nSNP", 
+                                  "SNP"), sep = "_") %>%
+    mutate(genos = str_sub(genos, start = 6, end = -2),
+           subpop = case_when(nSNP == "11.5M" ~ "Atlantic_Gulf",
+                              nSNP == "8.8M" ~ "Midwest",
+                              nSNP == "12.3M" ~ "Atlantic_Midwest",
+                              nSNP == "12.1M" ~ "Gulf_Midwest",
+                              nSNP == "10.3M" ~ "Gulf",
+                              nSNP == "10.6M" ~ "Atlantic",
+                              TRUE ~ "Other"),
+           Atlantic = case_when(grepl("Atlantic", subpop) ~ 1,
+                                TRUE ~ 0),
+           Midwest = case_when(grepl("Midwest", subpop) ~ 1,
+                                TRUE ~ 0),
+           Gulf = case_when(grepl("Gulf", subpop) ~ 1,
+                                TRUE ~ 0)
+           )
+
+
+anno_overlap100 %>% 
+  dplyr::select(SITE, PHE, subpop:Gulf, everything()) %>%
+  mutate(group = ceiling(POS/1000000)) %>%
+  group_by(CHR, group, SITE) %>%
+  tally() %>% tally() %>% arrange(desc(n), CHR, group)
+
+anno_overlap100 %>% 
+  dplyr::select(SITE, PHE, subpop:Gulf, everything()) %>%
+  filter(Atlantic == 0 & Midwest == 1) %>%
+  mutate(group = round(POS/1000000, digits = 1)) %>%
+  group_by(CHR, group, SITE) %>%
+  tally() %>% tally() %>% filter(n >= 5) %>% arrange(CHR, group)
+
+anno_overlap100 %>%
+  dplyr::select(PHE, SITE, subpop, POS, everything()) %>%
+  mutate(group = round(POS/1000000, digits = 1),
+         log10p = -log10(`p value`)) %>%
+  filter((CHR %in% c("Chr07K") & group %in% c(10.4)) | (CHR %in% c("Chr07N") & group %in% c(45.7))) %>%
+  dplyr::select(CHR, group, log10p, `SNP Effect`, PHE, SITE, `Gene ID`, everything()) %>%
+  arrange(CHR, group)
+```
+Chr07K	10.4	5	 	Pavir.7KG042400	 PKLE LINC CLMB FRMI KBSM KING   	Encodes a cold-activated plasma membrane protein cold-responsive protein kinase that phosphorylates 14-3-3 proteins. The phosphorylated 14-3-3 proteins shuttle from the cytosol to the nucleus, where they interact with and destabilize the key cold-responsive C-repeat-binding factor (CBF) proteins, modulate CBF stability and the response to cold stress. ~9-11d
+Chr07N	45.7	5	 LINC STIL TMPL KBSM CLMB ~6-8d 
+Pavir.7NG394500 (expressed protein in rice)
+Pavir.7NG399825
+
+##----------------------------
+KBSM & CLMB Chr07N 45.7 ~15d KBSM ~8d CLMB Gulf_Midwest	Pavir.7NG394600	AT1G30620
+HIGH SUGAR RESPONSE8, HSR8, MUR4, MURUS 4, UDP-D-XYLOSE 4-EPIMERASE 1, UXE1
+Description (?) 	  	encodes a type-II membrane protein that catalyzes 4-epimerization of UDP-D-Xylose to UDP-L-Arabinose in vitro, the nucleotide sugar used by glycosyltransferases in the arabinosylation of cell wall polysaccharides and wall-resident proteoglycans.
+Highly expressed in axis of inflorescence, flower, carpel, sensecent leaf
+
+# FL50 & D2F annos 2020-04-10
+
+As FL50 and D2F QTL regions are basically the same, just a few more FL50 QTL regions, and as the FL50 & D2F GWAS look quite similar in most cases, I will just compare annotations for all the flowering results here.
+```{r}
+inputdir <- "~/Github/pvdiv-phenology-gxe/analysis/gwas/"
+i=1
+  annos <- read_rds(paste0(inputdir, annos_fl$filename[i]))
+  anno_overlap <- annos$top500SNPs_within50000bp %>%
+  filter((CHR == "Chr02K" & between(POS, 63687000, 65490000)) | 
+           (CHR == "Chr02N" & between(POS, 58030000, 61280000)) | 
+           (CHR == "Chr03K" & between(POS, 17360000, 26180000)) | 
+           (CHR == "Chr04K" & between(POS, 1950000, 5500000)) | 
+           (CHR == "Chr05N" & between(POS, 20000, 4330000)) | 
+           (CHR == "Chr05N" & between(POS, 58240000, 66000000)) | 
+           (CHR == "Chr08N" & between(POS, 550000, 34420000)) | 
+           (CHR == "Chr09K" & between(POS, 13650000, 18180000)))
+
+  anno_overlap$Anno_descr <- paste0(str_sub(annos_fl$filename[i], start = 19, 
+                                          end = -12))
+
+for(i in 2:nrow(annos_fl)){
+  annos <- read_rds(paste0(inputdir, annos_fl$filename[i]))
+  anno_overlap1 <- annos$top500SNPs_within50000bp %>%
+    dplyr::select(-TXID) %>%
+  filter((CHR == "Chr02K" & between(POS, 63687000, 65490000)) | 
+           (CHR == "Chr02N" & between(POS, 58030000, 61280000)) | 
+           (CHR == "Chr03K" & between(POS, 17360000, 26180000)) | 
+           (CHR == "Chr04K" & between(POS, 1950000, 5500000)) | 
+           (CHR == "Chr05N" & between(POS, 20000, 4330000)) | 
+           (CHR == "Chr05N" & between(POS, 58240000, 66000000)) | 
+           (CHR == "Chr08N" & between(POS, 550000, 34420000)) | 
+           (CHR == "Chr09K" & between(POS, 13650000, 18180000)))
+
+    anno_overlap1$Anno_descr <- str_sub(annos_fl$filename[i], start = 19, end = -12)
+  anno_overlap <- anno_overlap %>%
+    full_join(anno_overlap1)
+
+}
+anno_overlap <- anno_overlap %>%
+    separate(Anno_descr, into = c("SITE", "PHE", "type", "genos", "nSNP", 
+                                  "SNP"), sep = "_") %>%
+    mutate(genos = str_sub(genos, start = 6, end = -2),
+           subpop = case_when(nSNP == "11.5M" ~ "Atlantic_Gulf",
+                              nSNP == "8.8M" ~ "Midwest",
+                              nSNP == "12.3M" ~ "Atlantic_Midwest",
+                              nSNP == "12.1M" ~ "Gulf_Midwest",
+                              nSNP == "10.3M" ~ "Gulf",
+                              nSNP == "10.6M" ~ "Atlantic",
+                              TRUE ~ "Other"),
+           Atlantic = case_when(grepl("Atlantic", subpop) ~ 1,
+                                TRUE ~ 0),
+           Midwest = case_when(grepl("Midwest", subpop) ~ 1,
+                                TRUE ~ 0),
+           Gulf = case_when(grepl("Gulf", subpop) ~ 1,
+                                TRUE ~ 0)
+           )
+
+
+anno_overlap %>% 
+  dplyr::select(SITE, PHE, subpop:Gulf, everything()) %>%
+  mutate(group = ceiling(POS/1000000)) %>%
+  group_by(CHR, group, SITE) %>%
+  tally() %>% tally() %>% arrange(desc(n), CHR, group)
+
+anno_overlap %>% 
+  dplyr::select(SITE, PHE, subpop:Gulf, everything()) %>%
+  filter(Atlantic == 0 & Midwest == 1) %>%
+  mutate(group = round(POS/1000000, digits = 1)) %>%
+  group_by(CHR, group, SITE) %>%
+  tally() %>% tally() %>% filter(n >= 3) %>% arrange(CHR, group)
+
+anno_overlap %>% 
+  mutate(group = round(POS/1000000, digits = 1)) %>%
+  filter(CHR == "Chr08N" & group %in% c(0.8, 15.6, 27.7)) %>%
+  dplyr::select(CHR, POS, subpop, `SNP Effect`, PHE, SITE, `Gene ID`, everything()) %>%
+  arrange(CHR, POS)
+```
+Chr08N 0.8Mb in Gulf Midwest LINC TMPL STIL BRKG (colder) ~13 - 14d
+Pavir.8NG355401 AT3G05550 Hypoxia responsive family protein only sort of highly expressed in early flower
+Pavir.8NG355404 AT2G30330 Protein - protein interaction with BLOS2 and also with SNX1.Located in endomembrane system and hypothesized to be involved in endomembrane transport.
+Pavir.8NG355405	AT5G05340 Pavir.8NG355404 Homolog to a peroxidase superfamily protein highly expressed only in senescent leaf petioles.
+Pavir.8NG002300	AT5G03610 highly expressed in axis of inflorescence  	GDSL-motif esterase/acyltransferase/lipase. Enzyme group with broad substrate specificity that may catalyze acyltransfer or hydrolase reactions with lipid and non-lipid substrates.
+
+I gotta say, all of these hits I've been looking at, I've been shocked by the number of hits that have very high gene expression in the axis of inflorescence (in Arabidopsis). This is almost certainly a good sign, given that I've been looking at flowering hits!
+
+Chr02N	59	8	CLMB BRKG TMPL PKLE STIL ... CLMB ... KBSM ... LINC FRMI KBSM
+Pavir.2NG496800 58.19  AT4G25230 RIN2 RPM1 interacting protein. Positive regulator of RPM1 and PRS2 mediated hypersensitive response.Functions as ubiquitin ligase and binds to RPM1. Could certainly hasten flowering if it increases a basal defense response (MacQueen et al 2016).
+
+KBSM STIL?
+Pavir.2NG491000 58.61Mb AT2G35660 CTF2A: Encodes a member of a novel gene family with homology to known proteins involved in hydroxylation and oxidation of an aromatic ring. Highly expressed in sepals, pedicel, leaves, and siliques.
+
+
+Chr02N	59	8	
+Chr03K	24	8	
+Chr03K	26	9	
+Chr04K	3	8		
+Chr04K	4	8	
+Chr05N	2	9	
+Chr05N	3	8	
+Chr05N	4	9	
+Chr05N	60	8	
+Chr05N	64	9		
+Chr05N	65	9		
+Chr05N	66	9		
+Chr08N	10	9		
+Chr08N	13	9		
+	
+Without Atlantic group:
+Chr05N	65	9		
+Chr02N	59	7		
+Chr05N	4	7		
+Chr05N	66	7	
+
+Chr08N	0.8	4		
+Chr08N	15.6	4		
+Chr08N	27.7	4	
+
+Without Midwest group:
+Chr03K	26	8		
+Chr05N	2	8		
+Chr05N	4	8		
+Chr08N	10	8		
+Chr04K	3	7		
+Chr05N	3	7		
+Chr05N	65	7	
+	
+Without Gulf group:
+Chr08N	3	6	
+
+With Gulf group:
+Chr03K	26	8		
+Chr04K	4	8		
+Chr05N	2	8		
+Chr05N	3	7		
+Chr05N	4	9		
+Chr05N	62	7		
+Chr05N	64	7		
+Chr05N	65	9		
+Chr05N	66	7		
+Chr08N	10	8	
+Chr08N	13	7	
+
+With Midwest group:
+Chr02N	59	7		
+Chr03K	24	7		
+Chr03K	26	7		
+Chr05N	4	7		
+Chr05N	5	7		
+Chr05N	64	7		
+Chr05N	65	8		
+Chr05N	66	9		
+Chr08N	13	7	
+
+Anything by 100Kb interval
+Chr03K	24.9	5		
+Chr04K	3.7	5		
+Chr05N	61.4	5		
+Chr05N	65.9	5		
+Chr08N	15.6	5		
+Chr08N	17.7	5		
+Chr08N	33.1	5
+
+Midwest & Gulf
+Chr05N	4.3	3		
+Chr08N	0.8	4		
+Chr08N	15.6	3		
+Chr08N	27.7	3	
+
+Gulf, no Atlantic
+Chr08N	0.8	4		
+Chr08N	15.6	4		
+Chr08N	27.7	4	
+
+Midwest, no Atlantic
+Chr05N	4.3	3		
+Chr05N	59.1	3		
+Chr08N	0.8	4		
+Chr08N	15.6	3		
+Chr08N	27.7	3	
+
+Other intervals to look in: 
+Ch05N 4.3
+Chr05N 59.1
+Chr05N 61.4
+Chr08N 0.8
+Chr08N 15.6
+Chr08N 27.7
+
+```{r}
+anno_overlap %>% 
+  dplyr::select(PHE, SITE, subpop, POS, everything()) %>%
+  mutate(group = round(POS/1000000, digits = 1),
+         log10p = -log10(`p value`)) %>%
+  filter((CHR %in% c("Chr05N") & group %in% c(4.3, 59.1, 61.4)) | (CHR %in% c("Chr08N") & group %in% c(0.8, 15.6, 27.7))) %>%
+  dplyr::select(CHR, group, log10p, `SNP Effect`, PHE, SITE, `Gene ID`, everything()) %>%
+  arrange(CHR, group)
+
+anno_overlap %>% 
+  dplyr::select(PHE, SITE, subpop, POS, everything()) %>%
+  mutate(group = round(POS/1000000, digits = 1),
+         log10p = -log10(`p value`)) %>%
+  filter((CHR %in% c("Chr03K") & group %in% c(24.9)) | (CHR %in% c("Chr04K") & group %in% c(3.7))) %>%
+  dplyr::select(CHR, group, log10p, `SNP Effect`, PHE, SITE, `Gene ID`, everything()) %>%
+  arrange(CHR, group)
+	
+```
+Chr03K 24.9 CLMB FRMI KBSM PKLE STIL probably Atlantic
+	AT1G34340 mature & senescent leaf; senescent flower
+Chr04K 3.7 BRKG CLMB PKLE STIL TMPL Atlantic or Gulf ~5d effect Pavir.4KG031100 homolog to AT1G71696 which is highly expressed in root, root apical meristem, axis of inflorescence, carpel, and senescing flowers. sol1 partially suppresses the short root phenotype caused by CLE19 overexpression.
+
+
+5N 4.3 Mb: TMPL, STIL, KING, CLMB. In populations with Midwest plants.
+Pavir.5N036700 (oxidation related zinc finger), to Pavir.5N037500
+Best candidate:
+Pavir.5NG037100. in A. thaliana, highly expressed in the axis of inflorescence and in dividing cells.
+Plant Aurora kinases play a role in the maintenance of primary meristems and control of endoreduplication (Petrovska et al 2011 New Phytologist)
+
+Chr05N 61.4 Mb KING & BRKG (LINC & PKLE & TMPL close) Pavir.5NG557850 is a
+homolog to AT3G17450 which is a hAT dimerization domain-containing protein that is highly expressed in the axis of inflorescence, the carpel of developing and mature flowers, and early seeds.
+AT4G10360 (less likely though is expressed in pollen germination and tube growth).
+
+Chr08N 0.8Mb LINC STIL TMPL BRKG Gulf & Midwest. ~13d effect at all sites but BRKG. Pavir.8NG355404 Homolog to a peroxidase superfamily protein highly expressed only in senescent leaf petioles.
+ 
+Chr08N 15.6Mb PKLE LINC KING KBSM CLMB 14-18 d effect. Mostly in Atlantic subpop.
+Pavir.8NG252400 (Gulf effect probably)
+
+Chr08N 27.7Mb CLMB LINC STIL TMPL. Gulf effect probably.
+
+
+# D2F annos 2020-04-08
+```{r}
 inputdir <- "~/Github/pvdiv-phenology-gxe/analysis/gwas/"
 i=1
   annos <- read_rds(paste0(inputdir, anno_d2f$filename[i]))
@@ -59,8 +369,16 @@ Chr05N	64393503	64393503
 annos$FDR0.1_within0bp %>%
   filter(CHR %in% c("Chr02K", "Chr02N", "Chr04K", "Chr05N"))
 
+# Most permissive set of FL50 & D2F hits - seeing as they all basically overlap #
 annos$FDR0.1_within0bp %>%
-  filter((CHR == c("Chr02K") & between(POS, 63687000, 64420000)) | (CHR == "Chr02N" & between(POS, 60250000, 61280000)) | (CHR == "Chr04K" & between(POS, 1950000, 5450000)) | (CHR == "Chr05N" & between(POS, 20000, 4330000)) | (CHR == "Chr05N" & between(POS, 58910000, 65260000)))
+  filter((CHR == c("Chr02K") & between(POS, 63687000, 65490000)) | 
+           (CHR == "Chr02N" & between(POS, 58030000, 61280000)) | 
+           (CHR == "Chr03K" & between(POS, 17360000, 26180000)) | 
+           (CHR == "Chr04K" & between(POS, 1950000, 5500000)) | 
+           (CHR == "Chr05N" & between(POS, 20000, 4330000)) | 
+           (CHR == "Chr05N" & between(POS, 58240000, 66000000)) | 
+           (CHR == "Chr08N" & between(POS, 550000, 34420000)) | 
+           (CHR == "Chr09K" & between(POS, 13650000, 18180000)))
 
 
 annos$FDR0.1_within50000bp %>%
