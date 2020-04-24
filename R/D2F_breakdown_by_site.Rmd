@@ -1,0 +1,494 @@
+---
+title: "Untitled"
+author: "Alice MacQueen"
+date: "4/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+```
+
+#
+
+```{r}
+phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Phenotypes_D2F_fourway_project.rds")
+metadata <- metadata %>%
+  mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
+                            !is.na(PLOIDY) ~ as.character(PLOIDY),
+                            TRUE ~ NA_character_))
+```
+
+```{r}
+lodToPval <-  function(x){
+  pchisq(x * (2 * log(10)), df = 1, lower.tail = FALSE) / 2
+}
+```
+
+```{r}
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(!(SITE %in% c("FRMI_D2F", "TMPL_D2F", "BRKG_D2F"))) %>%
+  ggplot(aes(x = D2F)) + 
+  geom_histogram() + 
+  facet_wrap(~SITE)
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("D2F")) %>%
+  pivot_longer(cols = ends_with("FL50"), names_to = "SITE", values_to = "FL50") %>%
+  #filter(!(SITE %in% c("FRMI_FL50", "TMPL_FL50", "BRKG_FL50"))) %>%
+  ggplot(aes(x = FL50)) + 
+  geom_histogram() + 
+  facet_wrap(~SITE)
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F < 30)
+```
+
+
+```{r}
+phe[1:15,] %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  ggplot(aes(x = SITE, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID))
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, GENETIC_SUBPOP_KINSHIP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE)) %>%
+  ggplot(aes(x = SITE, y = mean_D2F)) + 
+  geom_point(aes(color = GENETIC_SUBPOP_KINSHIP)) +
+  geom_line(aes(group = GENETIC_SUBPOP_KINSHIP, color = GENETIC_SUBPOP_KINSHIP)) 
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  #filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, GENETIC_SUBPOP_KINSHIP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE),
+            cv_D2F = sd_D2F/mean_D2F) %>%
+  arrange(GENETIC_SUBPOP_KINSHIP, cv_D2F) %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = cv_D2F)) + 
+  geom_point(aes(color = GENETIC_SUBPOP_KINSHIP)) +
+  geom_line(aes(group = GENETIC_SUBPOP_KINSHIP, color = GENETIC_SUBPOP_KINSHIP)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_text(aes(x = Latitude, label = SITE), y = 0.02, angle = 45) + ylim(c(0,0.6)) +
+  scale_color_viridis(discrete = TRUE, end = 0.8)
+  
+
+?sd()
+?var() # - variance (square of sd)
+  
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  ggplot(aes(x = D2F)) + 
+  geom_histogram(aes(fill = GENETIC_SUBPOP_KINSHIP)) + facet_grid(~SITE)
+```
+Very similar sites: BRKG, CLMB, LINC, (FRMI)
+STIL
+KBSM, PKLE
+KING
+...
+TMPL
+
+Let's consider the idea that the Midwest and Gulf populations are receiving extremely different environmental signals at each of the planting locations. What can I use to support this idea? Well, the days to flowering 
+
+```{r}
+sites
+```
+From Houle 1992:
+
+Crow 1958: "opportunity for selection": I = V_P / X_bar^2
+X_bar represents the population mean before selection.
+V_P phenotypic trait variance. `var()`
+
+To calculate CV (coefficient of variation) you take the standard deviation of the data and divide it by the mean of the data.  sqrt(V_P) / X_bar
+
+I is related to the phenotypic coefficient of variation, CV_P = 100*sqrt(V_P) / X_bar
+(this is just CV * 100 to be a percentage).
+
+Relative evolvability of fitness:
+
+I_A = V_A / X_bar^2 = (CV_A / 100)^2
+I_A is also an appropriate indicator of the variability of fitness as large values must be the result of powerful forces maintaining genetic variance. 
+
+A variance to mean ratio is the most appropriate measure of the evolvability of a trait.
+
+
+Compared three quantities:
+
+Residual coefficient of variation CV_R = 100 * sqrt(V_P - V_A) / X_bar
+
+h^2 narrow sense heritability = V_A / V_P
+
+CV_A = 100*sqrt(V_A) / X_bar
+
+
+
+
+
+```{r}
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  #filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, GENETIC_SUBPOP_KINSHIP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE),
+            cv_D2F = sd_D2F/mean_D2F) %>%
+  arrange(GENETIC_SUBPOP_KINSHIP, cv_D2F) %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = cv_D2F)) + 
+  geom_point(aes(color = GENETIC_SUBPOP_KINSHIP)) +
+  geom_line(aes(group = GENETIC_SUBPOP_KINSHIP, color = GENETIC_SUBPOP_KINSHIP)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_text(aes(x = Latitude, label = SITE), y = 0.02, angle = 45) + ylim(c(0,0.6)) +
+  scale_color_viridis(discrete = TRUE, end = 0.8)
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  #filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, GENETIC_SUBPOP_KINSHIP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE),
+            cv_D2F = sd_D2F/mean_D2F) %>%
+  arrange(GENETIC_SUBPOP_KINSHIP, cv_D2F) %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = mean_D2F)) + 
+  geom_point(aes(color = GENETIC_SUBPOP_KINSHIP)) +
+  geom_line(aes(group = GENETIC_SUBPOP_KINSHIP, color = GENETIC_SUBPOP_KINSHIP)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_text(aes(x = Latitude, label = SITE), y = 50, angle = 45) +
+  scale_color_viridis(discrete = TRUE, end = 0.8) +
+  geom_errorbar(aes(x = Latitude, ymin = mean_D2F - sd_D2F, ymax = mean_D2F + sd_D2F, group = GENETIC_SUBPOP_KINSHIP, color = GENETIC_SUBPOP_KINSHIP))
+
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  #filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, GENETIC_SUBPOP_KINSHIP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE),
+            cv_D2F = sd_D2F/mean_D2F) %>%
+  arrange(GENETIC_SUBPOP_KINSHIP, cv_D2F) %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = sd_D2F^2)) + 
+  geom_point(aes(color = GENETIC_SUBPOP_KINSHIP)) +
+  geom_line(aes(group = GENETIC_SUBPOP_KINSHIP, color = GENETIC_SUBPOP_KINSHIP)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_text(aes(x = Latitude, label = SITE), y = 0.02, angle = 45) +
+  scale_color_viridis(discrete = TRUE, end = 0.8)
+```
+
+# Fourway site plots
+```{r}
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, SUBPOP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE),
+            cv_D2F = sd_D2F/mean_D2F) %>%
+  arrange(SUBPOP, cv_D2F) %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(!(SITE %in% c("FRMI", "TMPL"))) %>%
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = cv_D2F)) + 
+  geom_point(aes(color = SUBPOP)) +
+  geom_line(aes(group = SUBPOP, color = SUBPOP)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_text(aes(x = Latitude, label = SITE), y = 0.02, angle = 45) + ylim(c(0,0.6)) +
+  scale_color_viridis(discrete = TRUE)
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  #filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, SUBPOP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE),
+            cv_D2F = sd_D2F/mean_D2F) %>%
+  arrange(SUBPOP, cv_D2F) %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(!(SITE %in% c("FRMI", "TMPL"))) %>%
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = mean_D2F)) + 
+  geom_line(aes(group = SUBPOP, color = SUBPOP)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_text(aes(x = Latitude, label = SITE), y = 50, angle = 45) +
+  scale_color_viridis(discrete = TRUE) +
+  geom_errorbar(aes(x = Latitude, ymin = mean_D2F - sd_D2F, ymax = mean_D2F + sd_D2F, group = SUBPOP, color = SUBPOP)) +
+  geom_point(aes(color = SUBPOP))
+
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  #filter(GENETIC_SUBPOP_KINSHIP %in% c("Midwest", "Gulf")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10) %>%
+  group_by(SITE, SUBPOP) %>%
+  summarise(mean_D2F = mean(D2F, na.rm = TRUE), 
+            median_D2F = median(D2F, na.rm = TRUE),
+            sd_D2F = sd(D2F, na.rm = TRUE),
+            cv_D2F = sd_D2F/mean_D2F) %>%
+  arrange(SUBPOP, cv_D2F) %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(!(SITE %in% c("FRMI", "TMPL"))) %>%
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = sd_D2F^2)) + 
+  geom_point(aes(color = SUBPOP)) +
+  geom_line(aes(group = SUBPOP, color = SUBPOP)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_text(aes(x = Latitude, label = SITE), y = 2000, angle = 45) + ylim(c(0, 4200)) +
+  scale_color_viridis(discrete = TRUE, end = 1)
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10 & SUBPOP == "Gulf") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(SITE %in% c("KING", "STIL")) %>%
+  ggplot(aes(x = SITE, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  theme(legend.position = "none")
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10 & SUBPOP == "Midwest") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(SITE %in% c("KING", "STIL")) %>%
+  ggplot(aes(x = SITE, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  theme(legend.position = "none")
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10 & SUBPOP == "Gulf") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(SITE %in% c("PKLE", "STIL")) %>%
+  ggplot(aes(x = SITE, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  theme(legend.position = "none")
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10 & SUBPOP == "Midwest") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(SITE %in% c("PKLE", "STIL")) %>%
+  ggplot(aes(x = SITE, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  theme(legend.position = "none")
+
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10 & SUBPOP == "Gulf") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(SITE %in% c("STIL", "CLMB", "KING", "LINC", "KBSM")) %>%   # "PKLE", "BRKG"
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 130, angle = 45)
+phe %>%
+  dplyr::select(-ends_with("GR50"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  filter(D2F > 10 & SUBPOP == "Midwest") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  filter(SITE %in% c("STIL","KING","KBSM")) %>%   # "BRKG", "CLMB", "LINC", 
+  left_join(sites) %>%
+  ggplot(aes(x = Latitude, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 130, angle = 45)
+```
+
+Instead of D2F, PTT2F? photothermal time to flowering, from greenup.
+
+```{r}
+ptt_df <- readRDS(file = "~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+
+gdd_df <- ptt_df %>%
+  mutate(GDD_0C_SM = ifelse((TMAX_SM + TMIN_SM)/2 >= 0,
+                      (TMAX_SM + TMIN_SM)/2 - 0,
+                      0)) %>%
+  dplyr::select(DOY, SITE, Day_of_year, GDD_13C_SM:GDD_8C_SM, GDD_0C_SM)
+
+GR_start <- phe %>% 
+  dplyr::select(-ends_with("D2F"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("GR50"), names_to = "SITE", values_to = "GR50") %>%
+  #filter(D2F > 10 & SUBPOP == "Midwest") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  group_by(SITE, PLANT_ID) %>%
+  summarise(GR_start = floor(min(GR50)))
+FL_end <- phe %>% 
+  dplyr::select(-ends_with("D2F"), -ends_with("GR50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("FL50"), names_to = "SITE", values_to = "FL50") %>%
+  #filter(D2F > 10 & SUBPOP == "Midwest") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  group_by(SITE, PLANT_ID) %>%
+  summarise(FL_end = ceiling(max(FL50)))
+
+GDD_PT <- NULL
+
+tmp3 <- gdd_df %>%
+  dplyr::select(DOY, SITE, Day_of_year, GDD_13C_SM:GDD_0C_SM) %>%
+  left_join(GR_start, by = "SITE") %>%
+  left_join(FL_end, by = c("SITE", "PLANT_ID")) %>%
+  group_by(SITE, Day_of_year, PLANT_ID) %>%
+  filter(between(Day_of_year, GR_start, FL_end)) %>% 
+  ungroup()
+
+tmp1 <- ptt_df %>%
+  dplyr::select(DOY, SITE, Day_of_year, PTT_8C:PTT_13C) %>%
+  left_join(GR_start, by = "SITE") %>%
+  left_join(FL_end, by = c("SITE", "PLANT_ID")) %>%
+  group_by(SITE, Day_of_year, PLANT_ID) %>%
+  filter(between(Day_of_year, GR_start, FL_end)) %>% 
+  ungroup()
+
+tmp1 %>%
+  group_by(SITE, PLANT_ID, GR_start, FL_end) %>%
+  summarise(CPTT_8C = sum(PTT_8C),
+            CPTT_9C = sum(PTT_9C),
+            CPTT_10C = sum(PTT_10C),
+            CPTT_11C = sum(PTT_11C),
+            CPTT_12C = sum(PTT_12C),
+            CPTT_13C = sum(PTT_13C)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  filter(D2F > 10) %>%
+  left_join(metadata) %>%
+  left_join(sites) %>%
+  filter(!(SITE %in% c("TMPL", "BRKG", "FRMI"))) %>%
+  filter(SUBPOP %in% c("Gulf", "Atlantic", "Midwest")) %>%
+  ggplot(aes(x = Latitude, y = CPTT_8C)) + 
+  geom_line(aes(group = PLANT_ID, color = SUBPOP)) + 
+  #theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 58000, angle = 45)
+```
+
+```{r}
+pid_all_sites <- phe %>%
+  dplyr::select(PLANT_ID, ends_with("D2F")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  group_by(PLANT_ID) %>%
+  filter(!is.na(D2F) & !(SITE %in% c("FRMI_D2F", "BRKG_D2F", "TMPL_D2F"))) %>%
+  count() %>% 
+  arrange(desc(n)) %>%
+  filter(n >= 4)
+
+tmp3 %>%
+  group_by(SITE, PLANT_ID, GR_start, FL_end) %>%
+  summarise(CGDD_0C = sum(GDD_0C_SM),
+            CGDD_8C = sum(GDD_8C_SM),
+            CGDD_13C = sum(GDD_13C_SM)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  filter(D2F > 10) %>%
+  left_join(metadata) %>%
+  left_join(sites) %>%
+  #filter(!(SITE %in% c("TMPL"))) %>%
+  filter(PLANT_ID %in% pid_all_sites$PLANT_ID & SUBPOP %in% c("Midwest", "Gulf")) %>%
+  ggplot(aes(x = Latitude, y = D2F)) + 
+  geom_line(aes(group = PLANT_ID, color = SUBPOP)) + 
+  #theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 10, angle = 45) +
+  geom_smooth(aes(group = SUBPOP), method = "lm")  +
+  #geom_smooth(aes(group = SUBPOP), color = "green") +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) +
+  ylim(c(0, 275))
+save_plot(filename = "../analysis/environmental-index/Reaction_norm_days_to_flowering_Gulf_and_Midwest_grown_4_or_more_4way_sites.png", plot = last_plot(), base_height = 6)
+
+tmp3 %>%
+  group_by(SITE, PLANT_ID, GR_start, FL_end) %>%
+  summarise(CGDD_0C = sum(GDD_0C_SM),
+            CGDD_8C = sum(GDD_8C_SM),
+            CGDD_13C = sum(GDD_13C_SM)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  filter(D2F > 10) %>%
+  left_join(metadata) %>%
+  left_join(sites) %>%
+  #filter(!(SITE %in% c("TMPL"))) %>%
+  filter(PLANT_ID %in% pid_all_sites$PLANT_ID & SUBPOP %in% c("Midwest", "Gulf")) %>%
+  ggplot(aes(x = Latitude, y = CGDD_13C)) + 
+  geom_line(aes(group = PLANT_ID, color = SUBPOP)) + 
+  #theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 100, angle = 45) +
+  geom_smooth(aes(group = SUBPOP), method = "lm")  +
+  #geom_smooth(aes(group = SUBPOP), color = "green") +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1)  + 
+  ylim(c(0,3200))
+save_plot(filename = "../analysis/environmental-index/Reaction_norm_cumulative_GDD_to_flowering_Gulf_and_Midwest_grown_4_or_more_4way_sites.png", plot = last_plot(), base_height = 6)
+```
+ 61 PLANT ID have D2F at all 6 fourway sites.  209 at 5 fourway sites.
+PTTGR2FL
