@@ -221,6 +221,8 @@ phe_all %>% left_join(metadata) %>%
             CV_P = 100*sqrt(V_P) / X_bar) %>%
   arrange(desc(I))
 
+cov
+
 BLUPs <- select(metadata, PLANT_ID, SUBPOP) %>%
   filter(SUBPOP %in% c("Midwest", "Gulf")) %>%
   left_join(dplyr::select(kinseqblup[[1]], PLANT_ID, 3))
@@ -333,13 +335,13 @@ CV_A = 100*sqrt(V_A) / X_bar
 phe_all %>% left_join(metadata) %>%
   pivot_longer(values_to = "MEAS", cols = TC_EOS:GR50, names_to = "PHE") %>%
   dplyr::select(-LIBRARY, -(GENETIC_SUBPOP_KINSHIP:PLANTED_2018)) %>%
-  filter(SUBPOP %in% c("Gulf", "Midwest")) %>%
+  filter(SUBPOP %in% c("Gulf", "Midwest", "Atlantic")) %>%
   group_by(SUBPOP, SITE, PHE) %>%
   summarise(X_bar = mean(MEAS, na.rm = TRUE),
             V_P = var(MEAS, na.rm = TRUE),
             I = V_P / X_bar^2, 
             CV_P = 100*sqrt(V_P) / X_bar) %>%
-  arrange(desc(I))
+  arrange(PHE, SITE, SUBPOP)
 
 BLUPs <- select(metadata, PLANT_ID, SUBPOP) %>%
   filter(SUBPOP %in% c("Midwest", "Gulf")) %>%
@@ -419,5 +421,87 @@ blupstable <- blupstable %>%
 
 wilcox.test(x = blupstable$count[blupstable$sigFDR == 0], y = blupstable$count[blupstable$sigFDR == 1], paired = FALSE, alternative = "l")
 wilcox.test(x = blupstable$h2[blupstable$sigFDR == 0], y = blupstable$h2[blupstable$sigFDR == 1], paired = FALSE, alternative = "l")
+```
+
+
+
+# Per subpop analysis
+
+# Analysis for pvdiv like I did for the CDBN
+```{r}
+# PHE <- list(quote(BRKG_D2F), quote(CLMB_D2F))
+PHE <- list(quote(FL50), quote(GR50), quote(BIOMASS), quote(TC_EOS), 
+            quote(HT_PAN_EOS), quote(FL1), quote(EM1), quote(EM50),
+            quote(TC_EOS_2018), quote(GR1))
+rrkinblupout <- list()
+kinseqblup <- list()
+bluptable <- list()
+
+for(i in seq_along(PHE)){
+
+  testdf <- phe_all %>%
+    left_join(metadata) %>%
+    filter(!is.na(eval(PHE[[i]])) & GENETIC_SUBPOP_KINSHIP %in% c("Midwest")) %>%
+    as.data.frame()
+  
+  bluprrk <- kin.blup(data = testdf, geno = "PLANT_ID", pheno = deparse(PHE[[i]]),
+                        K = V_g, fixed = "SITE") # , fixed = c("Location_code", "LbY")
+  
+  rrkinblupout[[i]] <- enframe(bluprrk$g, name = "PLANT_ID", 
+                               value = deparse(PHE[[i]])) 
+      
+    # Which Taxa were phenotyped for this phenotype? Just keep those for GWAS.
+  taxa_phenotyped <- testdf %>%
+    dplyr::select(PLANT_ID, !! PHE[[i]]) %>%
+    as_tibble() %>%
+    group_by(PLANT_ID) %>%
+    summarise(count = n())
+  kinseqblup[[i]] <- taxa_phenotyped %>%
+    left_join(rrkinblupout[[i]], by = "PLANT_ID")
+  
+  bluptable[[i]] <- tibble(Phenotype = deparse(PHE[[i]]), V_a = bluprrk$Vg, 
+                      V_e = bluprrk$Ve) %>%
+    mutate(h2 = V_a / (V_a + V_e))
+
+  saveRDS(bluprrk, paste0("~/Github/pvdiv-phenology-gxe/data-raw/ignore/", 
+                          PHE[[i]],
+                          "_134g_Midwest_10Site_BLUPs_kinship.rds"))
+}
+```
+
+```{r}
+BLUPs <- select(metadata, PLANT_ID, SUBPOP) %>%
+  filter(SUBPOP %in% c("Midwest")) %>%
+  left_join(dplyr::select(kinseqblup[[1]], PLANT_ID, 3))
+
+for(i in seq_along(kinseqblup)[-1]){
+  BLUPs <- BLUPs %>%
+    left_join(dplyr::select(kinseqblup[[i]], PLANT_ID, 3))
+}
+
+BLUPtable <- bluptable[[1]]
+
+for(i in seq_along(bluptable)[-1]){
+  BLUPtable <- BLUPtable %>%
+    full_join(bluptable[[i]])
+}
+
+BLUPtable
+phe_all %>% left_join(metadata) %>%
+  pivot_longer(values_to = "MEAS", cols = TC_EOS:GR50, names_to = "PHE") %>%
+  dplyr::select(-LIBRARY, -(GENETIC_SUBPOP_KINSHIP:PLANTED_2018)) %>%
+  filter(SUBPOP %in% c("Midwest")) %>%
+  group_by(PHE) %>%
+  summarise(X_bar = mean(MEAS, na.rm = TRUE),
+            V_P = var(MEAS, na.rm = TRUE),
+            I = V_P / X_bar^2, 
+            CV_P = 100*sqrt(V_P) / X_bar) %>%
+  arrange(desc(I)) %>%
+  full_join(BLUPtable, by = c("PHE" = "Phenotype")) %>%
+  mutate(I_A = V_a / X_bar^2,
+         CV_R = 100 * sqrt(V_P - V_a) / X_bar, 
+         CV_A = 100 * sqrt(V_a) / X_bar,
+         CV_E = 100 * sqrt(V_e) / X_bar) %>%
+  write_csv(., "~/Github/pvdiv-phenology-gxe/data-raw/ignore/Phenotypic_CVs_10_site_fixed_effects_134g_Midwest.csv")
 ```
 
