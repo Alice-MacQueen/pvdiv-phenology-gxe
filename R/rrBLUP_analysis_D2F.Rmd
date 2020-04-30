@@ -11,6 +11,8 @@ library(tidyverse)
 library(rlang)
 library(rrBLUP)
 library(switchgrassGWAS)
+library(viridis)
+library(cowplot)
 ```
 
 
@@ -503,5 +505,202 @@ phe_all %>% left_join(metadata) %>%
          CV_A = 100 * sqrt(V_a) / X_bar,
          CV_E = 100 * sqrt(V_e) / X_bar) %>%
   write_csv(., "~/Github/pvdiv-phenology-gxe/data-raw/ignore/Phenotypic_CVs_10_site_fixed_effects_134g_Midwest.csv")
+```
+
+# Per site analysis
+
+GR50, D2F, FL50, and CGDD_13C
+
+```{r}
+gdd_all <- tmp2 %>%
+  group_by(SITE, PLOT_GL, PLANT_ID, FL_end, GR_start) %>%
+  summarise(CGDD_0C = sum(GDD_0C_SM),
+            CGDD_8C = sum(GDD_8C_SM),
+            CGDD_13C = sum(GDD_13C_SM),
+            CDYLN = sum(DYLN)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  left_join(metadata) %>%
+  dplyr::select(-(LIBRARY:PLANTED_2018)) %>%
+  left_join(phe_all)
+```
+
+```{r}
+i=1; j = 7; k=3
+(i-1)*length(fourway_site_list)*length(subpop_list) + (k-1)*length(subpop_list) + j
+```
+15 phe (i), 7 sites (k), 3 subpops (j)
+
+Would like to compare subpops at each site and for each phe.
+so same phe number is closest together
+
+i*j*k + j*k + j
+
+```{r}
+PHE <- list(quote(CGDD_13C), quote(CGDD_8C), quote(CGDD_0C), quote(D2F), quote(FL50), quote(GR50), quote(CDYLN), quote(BIOMASS), quote(TC_EOS), 
+            quote(HT_PAN_EOS), quote(FL1), quote(EM1), quote(EM50),
+             quote(GR1))  # quote(TC_EOS_2018),
+fourway_site_list <- list(quote(BRKG), quote(CLMB), quote(KBSM), quote(KING), quote(LINC), quote(PKLE), quote(STIL))
+subpop_list <- list(Midwest_and_Gulf = c("Midwest", "Gulf"), Gulf = c("Gulf"),
+                    Midwest = c("Midwest")) #, Full = c("Atlantic", "Gulf",
+                                             #        "Midwest"))
+
+rrkinblupout <- list()
+kinseqblup <- list()
+bluptable <- list()
+
+for(i in seq_along(PHE)){
+  for(k in seq_along(fourway_site_list)){
+    for(j in seq_along(subpop_list)){
+
+      list_counter <- (i-1)*length(fourway_site_list)*length(subpop_list) + (k-1)*length(subpop_list) + j
+  testdf <- gdd_all %>%
+    left_join(metadata, by = c("PLANT_ID", "SUBPOP")) %>%
+    filter(!is.na(eval(PHE[[i]])) & 
+             GENETIC_SUBPOP_KINSHIP %in% subpop_list[[j]] & 
+             SITE %in% deparse(fourway_site_list[[k]])) %>%
+    as.data.frame()
+  
+  bluprrk <- kin.blup(data = testdf, geno = "PLANT_ID", 
+                      pheno = deparse(PHE[[i]]), K = V_g) #, fixed = c("SITE")
+  
+  rrkinblupout[[list_counter]] <- enframe(bluprrk$g, name = "PLANT_ID", 
+                               value = deparse(PHE[[i]])) 
+      
+    # Which Taxa were phenotyped for this phenotype? Just keep those for GWAS.
+  taxa_phenotyped <- testdf %>%
+    dplyr::select(PLANT_ID, !! PHE[[i]]) %>%
+    as_tibble() %>%
+    group_by(PLANT_ID) %>%
+    summarise(count = n())
+  kinseqblup[[list_counter]] <- taxa_phenotyped %>%
+    left_join(rrkinblupout[[list_counter]], by = "PLANT_ID")
+  
+  bluptable[[list_counter]] <- tibble(Phenotype = deparse(PHE[[i]]), 
+                                      V_a = bluprrk$Vg, V_e = bluprrk$Ve,
+                                      SITE = deparse(fourway_site_list[[k]]),
+                                      Subpop = names(subpop_list)[j]) %>%
+    mutate(h2 = V_a / (V_a + V_e))
+
+  #saveRDS(bluprrk, paste0("~/Github/pvdiv-phenology-gxe/data-raw/ignore/", 
+  #                        "Kinship_BLUPs_", fourway_site_list[[k]], "_",
+  #                        PHE[[i]], "_", nrow(taxa_phenotyped), "g_",
+  #                        names(subpop_list)[j], ".rds"))
+    }
+  }
+}
+
+```
+
+```{r}
+BLUPs <- select(metadata, PLANT_ID, SUBPOP) %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf")) %>%
+  left_join(dplyr::select(kinseqblup[[1]], PLANT_ID, 3))
+
+for(i in seq_along(kinseqblup)[-1]){
+  BLUPs <- BLUPs %>%
+    left_join(dplyr::select(kinseqblup[[i]], PLANT_ID, 3))
+}
+
+BLUPtable <- bluptable[[1]]
+
+for(i in seq_along(bluptable)[-1]){
+  if(!is.null(bluptable[[i]])){
+  BLUPtable <- BLUPtable %>%
+    full_join(bluptable[[i]])
+  }
+}
+
+BLUPtable
+gdd_all %>% left_join(metadata) %>%
+  pivot_longer(values_to = "MEAS", cols = c(CGDD_0C:D2F, TC_EOS:GR50), names_to = "PHE") %>%
+  dplyr::select(-LIBRARY, -(GENETIC_SUBPOP_KINSHIP:PLANTED_2018)) %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf")) %>%
+  group_by(PHE, SITE, SUBPOP) %>%
+  summarise(X_bar = mean(MEAS, na.rm = TRUE),
+            V_P = var(MEAS, na.rm = TRUE),
+            I = V_P / X_bar^2, 
+            CV_P = 100*sqrt(V_P) / X_bar) %>%
+  #arrange(desc(I)) %>%
+  full_join(BLUPtable, by = c("PHE" = "Phenotype", "SITE", "SUBPOP" = "Subpop")) %>%
+  mutate(I_A = V_a / X_bar^2,
+         CV_R = 100 * sqrt(V_P - V_a) / X_bar, 
+         CV_A = 100 * sqrt(V_a) / X_bar,
+         CV_E = 100 * sqrt(V_e) / X_bar) %>%
+  filter(SITE %in% fourway_sites) %>%
+  arrange(SUBPOP, PHE, SITE) %>%
+  write_csv(., "~/Github/pvdiv-phenology-gxe/data-raw/ignore/Phenotypic_CVs_Individual_sites.csv")
+
+gdd_all %>% left_join(metadata) %>%
+  pivot_longer(values_to = "MEAS", cols = c(CGDD_0C:D2F, TC_EOS:GR50), names_to = "PHE") %>%
+  dplyr::select(-LIBRARY, -(GENETIC_SUBPOP_KINSHIP:PLANTED_2018)) %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf")) %>%
+  group_by(PHE, SITE) %>%
+  summarise(X_bar = mean(MEAS, na.rm = TRUE),
+            V_P = var(MEAS, na.rm = TRUE),
+            I = V_P / X_bar^2, 
+            CV_P = 100*sqrt(V_P) / X_bar) %>%
+  #arrange(desc(I)) %>%
+  full_join(BLUPtable, by = c("PHE" = "Phenotype", "SITE")) %>%
+  mutate(I_A = V_a / X_bar^2,
+         CV_R = 100 * sqrt(V_P - V_a) / X_bar, 
+         CV_A = 100 * sqrt(V_a) / X_bar,
+         CV_E = 100 * sqrt(V_e) / X_bar) %>%
+  filter(SITE %in% fourway_sites) %>%
+  arrange(Subpop, PHE, SITE) %>%
+  write_csv(., "~/Github/pvdiv-phenology-gxe/data-raw/ignore/Phenotypic_CVs_Individual_sites_2.csv")
+```
+
+```{r}
+h2table <- read_csv("~/Github/pvdiv-phenology-gxe/data-raw/ignore/Phenotypic_CVs_Individual_sites_Gulf_Midwest.csv")
+
+h2table %>%
+  mutate(I_A = V_a / X_bar^2,
+         CV_R = 100 * sqrt(V_P - V_a) / X_bar, 
+         CV_A = 100 * sqrt(V_a) / X_bar,
+         CV_E = 100 * sqrt(V_e) / X_bar) %>%
+  filter(PHE == "D2F") %>%
+  ggplot(aes(x = SUBPOP, y = h2)) + 
+  geom_bar(stat = "identity") + facet_wrap(~SITE) + ylim(c(0,1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "../analysis/Heritability_D2F_by_Site_and_Subpop.png", 
+          plot = last_plot())
+
+h2table %>%
+  mutate(I_A = V_a / X_bar^2,
+         CV_R = 100 * sqrt(V_P - V_a) / X_bar, 
+         CV_A = 100 * sqrt(V_a) / X_bar,
+         CV_E = 100 * sqrt(V_e) / X_bar) %>%
+  filter(PHE == "FL50") %>%
+  ggplot(aes(x = SUBPOP, y = h2)) + 
+  geom_bar(stat = "identity") + facet_wrap(~SITE) + ylim(c(0,1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "../analysis/Heritability_FL50_by_Site_and_Subpop.png", 
+          plot = last_plot())
+
+h2table %>%
+  mutate(I_A = V_a / X_bar^2,
+         CV_R = 100 * sqrt(V_P - V_a) / X_bar, 
+         CV_A = 100 * sqrt(V_a) / X_bar,
+         CV_E = 100 * sqrt(V_e) / X_bar) %>%
+  filter(PHE == "GR50") %>%
+  ggplot(aes(x = SUBPOP, y = h2)) + 
+  geom_bar(stat = "identity") + facet_wrap(~SITE) + ylim(c(0,1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+save_plot(filename = "../analysis/Heritability_GR50_by_Site_and_Subpop.png", 
+          plot = last_plot())
+
+h2table %>%
+  mutate(I_A = V_a / X_bar^2,
+         CV_R = 100 * sqrt(V_P - V_a) / X_bar, 
+         CV_A = 100 * sqrt(V_a) / X_bar,
+         CV_E = 100 * sqrt(V_e) / X_bar) %>%
+  filter(PHE %in% c("CGDD_0C", "CGDD_8C", "CGDD_13C", "D2F", "FL50", "CDYLN", "FL1", "GR50")) %>%
+  ggplot(aes(x = PHE, y = h2)) + 
+  geom_point(aes(color = SUBPOP)) + facet_wrap(~SITE) + ylim(c(0,1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1)
+save_plot(filename = "../analysis/Heritability_Various_flowering_time_measures_by_Site_and_Subpop.png", 
+          plot = last_plot())
 ```
 
