@@ -45,20 +45,24 @@ phe_pre <- readRDS("~/Github/pvdiv-phenotypes/data/pre_replant/Phenotypes_all_pr
 phe_pre2 <- phe_pre %>% 
   mutate(PLANT_ID = case_when(grepl("AP13", PLANT_ID) ~ "AP13",
                               TRUE ~ PLANT_ID)) %>%
-  dplyr::select(SITE, PLOT_GL, PLANT_ID, TC_EOS_2018, GR1:GR50)
+  dplyr::select(SITE, PLOT_GL, PLANT_ID, TC_EOS_2018, GR1:GR50, SRV)
 
 phe_post2 <- phe_post %>%
   mutate(PLANT_ID = case_when(grepl("AP13", PLANT_ID) ~ "AP13",
                               TRUE ~ PLANT_ID)) %>%
   separate(SITE_PHE, into = c("site", "PHE"), sep = c(5)) %>%
   dplyr::select(-site) %>%
-  filter(PHE %in% c("GR50","FL1", "FL50", "BIOMASS", "TC_EOS", "HT_PAN_EOS", "EM1", "EM50")) %>%
+  filter(PHE %in% c("GR50","FL1", "FL50", "BIOMASS", "TC_EOS", "HT_PAN_EOS", "EM1", "EM50", "SRV")) %>%
    pivot_wider(names_from = "PHE", values_from = "MEAS") %>%
   group_by(PLANT_ID, SITE) %>% add_tally(name = "Per_site_count") %>%
   dplyr::select(SITE:PLANT_ID, Per_site_count, everything())
 
 phe_all <- phe_post2 %>%
   left_join(phe_pre2, by = c("SITE", "PLOT_GL", "PLANT_ID"))
+
+phe_all %>%
+  dplyr::select(SITE:PLANT_ID, BIOMASS, SRV) %>%
+  write_rds(., path = "~/Github/pvdiv-fitness-2019/data/All_phenotypes_fitness.rds")
 ```
 
 # Instead of D2F, PTT2F? photothermal time to flowering, from greenup.
