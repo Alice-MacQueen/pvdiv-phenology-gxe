@@ -59,6 +59,7 @@ phe_post2 <- phe_post %>%
 
 phe_all <- phe_post2 %>%
   left_join(phe_pre2, by = c("SITE", "PLOT_GL", "PLANT_ID"))
+write_rds(phe_all, "~/Github/pvdiv-phenology-gxe/data/All_phenotypes_flowering.rds")
 
 phe_all %>%
   dplyr::select(SITE:PLANT_ID, BIOMASS, SRV) %>%

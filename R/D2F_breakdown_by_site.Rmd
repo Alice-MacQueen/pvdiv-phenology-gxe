@@ -16,10 +16,12 @@ library(viridis)
 
 ```{r}
 phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Phenotypes_D2F_fourway_project.rds")
+metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
 metadata <- metadata %>%
   mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
                             !is.na(PLOIDY) ~ as.character(PLOIDY),
                             TRUE ~ NA_character_))
+sites <- readRDS("~/Github/pvdiv-phenotypes/data/sites.rds")
 ```
 
 ```{r}

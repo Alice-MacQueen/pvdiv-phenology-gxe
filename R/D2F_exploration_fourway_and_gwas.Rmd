@@ -1,0 +1,404 @@
+---
+title: "D2F_exploration_fourway_and_GWAS"
+author: "Alice MacQueen"
+date: "5/20/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+library(lubridate)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+# Load data
+
+```{r}
+gwas <- readRDS("~/Github/pvdiv-phenology-gxe/data/All_phenotypes_flowering.rds")
+metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
+metadata <- metadata %>%
+  mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
+                            !is.na(PLOIDY) ~ as.character(PLOIDY),
+                            TRUE ~ NA_character_))
+fourway <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/0-data/Phenology_2019_Multiple_Environment.csv")
+fwy_prev_raw <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/0-data/Phenology_2016_2018.csv")
+```
+
+# Set up phenotype data in long format for analysis and plots
+```{r}
+fwy_prev <- fwy_prev_raw %>%
+  separate(ENVI, into = c("SITE", "YEAR"), sep = "_") %>%
+  mutate(D2F = FL50 - GR50,
+         YEAR = as.numeric(YEAR),
+         WHERE = "FWCR") %>%
+  pivot_longer(cols = BIOMASS:D2F, names_to = "PHE", values_to = "MEAS") %>%
+  rename(PLANT_ID = LINE)
+fwy_2019 <- fourway %>%
+  separate(ENVI, into = c("SITE", "YEAR"), sep = "_") %>%
+  mutate(D2F = FL50 - GR50,
+         YEAR = as.numeric(YEAR),
+         WHERE = "FWCR") %>%
+  pivot_longer(cols = FL50:D2F, names_to = "PHE", values_to = "MEAS") %>%
+  rename(PLANT_ID = LINE)
+gwas_2019 <- gwas %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  dplyr::select(PLANT_ID, SITE, PLOT_GL, GENETIC_SUBPOP_KINSHIP, SUBPOP,
+                LATITUDE, LONGITUDE, TC_EOS:SRV) %>%
+  pivot_longer(cols = TC_EOS:SRV, names_to = "PHE", values_to = "MEAS") %>%
+  mutate(YEAR = 2019,
+         WHERE = "GWAS") %>%
+  filter(!is.na(MEAS))
+
+phe_all <- gwas_2019 %>%
+  full_join(fwy_2019, by = c("SITE", "YEAR", "PLANT_ID", "PHE", "MEAS",
+                             "WHERE")) %>%
+  full_join(fwy_prev, by = c("SITE", "YEAR", "PLANT_ID", "PHE", "MEAS",
+                             "WHERE")) %>%
+  filter(!is.na(MEAS))
+
+phe_all %>%
+  group_by(WHERE, PLANT_ID) %>%
+  tally()
+
+
+```
+FWCR	AP13	2921		parent - gulf
+FWCR	AxD	2124		F1
+FWCR	DAC	493		  parent - midwest
+FWCR	VS16	1135		parent - midwest
+FWCR	VxW	2242		F1
+FWCR	WBC	1945		parent - gulf
+FWCR	NA	4		
+GWAS	AP13	4410	in FWCR also
+What J #'s (if any) are DAC, VS16, WBC in the GWAS panel?
+DAC J440.A, J440.B Source_ID_2 Dacotah
+J230.A Source_ID_1  WBC
+J292.A SOURCE_ID_1 VS16 (counted as 8X in metadata, may be an issue)
+
+J045.A SOURCE_ID_2 NSL 29896, Summer
+```{r}
+phe_parents <- phe_all %>%
+  filter(PLANT_ID %in% c("DAC", "VS16", "J440.A", "J036.A", "J037.A")) 
+  filter(PLANT_ID %in% c("AP13", "WBC", "J230.A")) 
+  filter(PLANT_ID %in% c("AP13", "DAC", "VS16", "WBC", "J440.A", "J440.B", "J230.A", "J292.A", "J045.A", "J036.A", "J037.A", "J022.B", "J210.A")) 
+phe_F1 <- phe_all %>%
+  filter(PLANT_ID %in% c("AxD", "VxW")) 
+phe_F2 <- phe_all %>%
+  filter(!(WHERE == "FWCR" & PLANT_ID %in% c("AP13", "DAC", "VS16", "WBC", "AxD", "VxW"))) 
+```
+Have J230.A, J440.A (2 sites: CLMB & PKLE)
+For 440.A: J036.A at CLMB, KBSM, STIL; J037.A at 5 sites.
+For 230.A: J022.B at 8 sites. J210.A at 4 sites. J660.A at two sites. Ok, ditch 660.A.
+
+```{r}
+metadata %>% 
+  filter(KINSHIP_ORDER %in% 560:574) %>% # 278:290
+  arrange(KINSHIP_ORDER)
+  #filter(PLANT_ID %in% c("J230.A", "J440.A")) # 567, 283
+```
+Closest relatives to J440.A are J036.A and J037.A. One of these seems to have its location metadata off, or something odd has happened. 
+Closest relatives to J230.A are J022.B, J210.A, J660.A. Those are all in Texas.
+
+Looked up in PVDIV_Master Metadata File_5-20-20.xlsx which is in Dropbox/Panicum Populations/Panicum Virgatum/
+
+Are any of these J #'s phenotyped and genotyped in the diversity panel? 
+Compare phenotypic values for these guys for the FWCR and GWAS panel for 2019.
+
+# Set up 2019 weather data for plots
+```{r}
+ptt_df <- readRDS(file = "~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+
+wea_df <- ptt_df %>%
+  dplyr::select(DOY:GDD_13C_SM, PTT_13C)
+
+GR_start <- phe_all %>% 
+  ungroup() %>%
+  group_by(SITE, YEAR) %>%
+  filter(PHE == "GR50") %>%
+  summarise(GR_start = floor(min(MEAS)))
+FL_end <- phe_all %>% 
+  ungroup() %>%
+  group_by(SITE, YEAR) %>%
+  filter(PHE == "FL50") %>%
+  summarise(FL_end = ceiling(max(MEAS)))
+
+wea_gr_fl <- wea_df %>%
+  left_join(GR_start, by = "SITE", "YEAR") %>%
+  left_join(FL_end, by = c("SITE", "YEAR")) %>%
+  group_by(Day_of_year, SITE, YEAR) %>%
+  filter(between(Day_of_year, GR_start, FL_end)) %>% 
+  ungroup() # Just the weather data between the minimum GR50 and max FL50.
+# wea_df has all the weather, wea_gr_fl has the weather for the subset between
+# greenup and flowering.
+```
+
+# Remake daylength plot
+
+```{r}
+wea_gr_fl$SITE <- factor(wea_gr_fl$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+phe_all$SITE <- factor(phe_all$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+phe_parents$SITE <- factor(phe_parents$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+phe_F2$SITE <- factor(phe_F2$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+
+
+wea_gr_fl %>%
+  dplyr::select(DOY, DYLN, SITE, RAIN) %>%
+  unique() %>%
+  filter(SITE != "OVTN") %>%
+  ggplot(aes(x = DOY, y = DYLN)) + 
+  geom_point() +
+  facet_wrap(~SITE) + 
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = SUBPOP, y = 9), width = 0, height = 1, alpha = 0.1) +
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & WHERE == "FWCR"), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 6.5), width = 0, height = 1, alpha = 0.1) + 
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "FL50" & YEAR %in% c(2018,2019) & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = SUBPOP, y = 4), width = 0, height = 1, alpha = 0.1) +
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "FL50" & (YEAR %in% 2019 | YEAR == 2018 & SITE == "TMPL") & WHERE %in% c("FWCR")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 1.5), width = 0, height = 1, alpha = 0.1) +
+  ylim(c(0,16)) + 
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) + xlab("Day of year") + ylab("Daylength (hrs)") +
+  geom_vline(xintercept = as_date(365/2-8, origin = "2018-12-31"), linetype = 2) +
+  geom_text(aes(y = 1.5, x = as_date(52, origin = "2018-12-31"), label = "FWCR FL50")) +
+  geom_text(aes(y = 4, x = as_date(52, origin = "2018-12-31"), label = "GWAS FL50")) +
+  geom_text(aes(y = 6.5, x = as_date(242, origin = "2018-12-31"), label = "FWCR GR50")) +
+  geom_text(aes(y = 9, x = as_date(242, origin = "2018-12-31"), label = "GWAS GR50")) + 
+  geom_point(data = filter(wea_gr_fl, RAIN > 0 & SITE != "OVTN"), aes(y = RAIN/10), color = "blue", pch = 20)
+    
+
+save_plot(filename = "../analysis/environmental-index/Daylength_vs_GR50_FL50_GWAS_and_FWCR_longest_day_line_with_rainfall.png", plot = last_plot(), base_height = 7)
+```
+
+Would also like to plot rainfall here somehow to see if that's a factor - that some sites wait through drought until there is a big rainfall to flower, which is what Tom thinks.
+# F2 plots
+```{r}
+
+wea_gr_fl %>%
+  dplyr::select(DOY, DYLN, SITE, RAIN) %>%
+  unique() %>%
+  filter(SITE != "OVTN") %>%
+  ggplot(aes(x = DOY, y = DYLN)) + 
+  geom_point() +
+  facet_wrap(~SITE) + 
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = SUBPOP, y = 9), width = 0, height = 1, alpha = 0.1) +
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & WHERE == "FWCR"), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 6.5), width = 0, height = 1, alpha = 0.1) + 
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "FL50" & YEAR %in% c(2018,2019) & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = SUBPOP, y = 4), width = 0, height = 1, alpha = 0.1) +
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "FL50" & (YEAR %in% 2019 | YEAR == 2018 & SITE == "TMPL") & WHERE %in% c("FWCR")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 1.5), width = 0, height = 1, alpha = 0.1) +
+  ylim(c(0,16)) +
+  theme(legend.position = "right") +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) + xlab("Day of year") + ylab("Daylength (hrs)") +
+  geom_vline(xintercept = as_date(365/2-8, origin = "2018-12-31"), linetype = 2) +
+  geom_text(aes(y = 1.5, x = as_date(52, origin = "2018-12-31"), label = "FWCR FL50")) +
+  geom_text(aes(y = 4, x = as_date(52, origin = "2018-12-31"), label = "GWAS FL50")) +
+  geom_text(aes(y = 6.5, x = as_date(242, origin = "2018-12-31"), label = "FWCR GR50")) +
+  geom_text(aes(y = 9, x = as_date(242, origin = "2018-12-31"), label = "GWAS GR50")) + 
+  geom_point(data = filter(wea_gr_fl, RAIN > 0 & SITE != "OVTN"), aes(y = RAIN/10), color = "blue", pch = 20)
+    
+
+save_plot(filename = "../analysis/environmental-index/Daylength_vs_GR50_FL50_GWAS_and_FWCR_F2_only_longest_day_line_with_rainfall.png", plot = last_plot(), base_height = 7)
+```
+
+
+Maybe at some sites they flower when they get > 2.5 cm of rain. Hard to say. It'd be nice to have the 2020 data to check this for the GWAS, if we really want to say something about this.
+
+# Parent to GWAS Panel Plots
+```{r}
+
+wea_gr_fl %>%
+  dplyr::select(DOY, DYLN, SITE, RAIN) %>%
+  unique() %>%
+  filter(SITE != "OVTN") %>%
+  ggplot(aes(x = DOY, y = DYLN)) + 
+  geom_point() +
+  facet_wrap(~SITE) + 
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 9, shape = SUBPOP), width = 0, height = 1, alpha = 0.25) +
+  geom_jitter(data = filter(phe_parents, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & WHERE == "FWCR"), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 6.5, shape = PLANT_ID == "DAC"), width = 0, height = 1, alpha = 0.55) + 
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "FL50" & YEAR %in% c(2016:2019) & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 4, shape = SUBPOP), width = 0, height = 1, alpha = 0.25) +
+  geom_jitter(data = filter(phe_parents, SITE != "OVTN" & PHE == "FL50" & (YEAR %in% c(2016:2019) | YEAR == 2018 & SITE == "TMPL") & WHERE %in% c("FWCR")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 1.5, shape = PLANT_ID == "DAC"), width = 0, height = 1, alpha = 0.55) +
+  ylim(c(0,16)) + 
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) + xlab("Day of year") + ylab("Daylength (hrs)") +
+  geom_vline(xintercept = as_date(365/2-8, origin = "2018-12-31"), linetype = 2) +
+  geom_text(aes(y = 1.5, x = as_date(52, origin = "2018-12-31"), label = "FWCR FL50")) +
+  geom_text(aes(y = 4, x = as_date(52, origin = "2018-12-31"), label = "GWAS FL50")) +
+  geom_text(aes(y = 6.5, x = as_date(242, origin = "2018-12-31"), label = "FWCR GR50")) +
+  geom_text(aes(y = 9, x = as_date(242, origin = "2018-12-31"), label = "GWAS GR50")) + 
+  geom_point(data = filter(wea_gr_fl, RAIN > 0 & SITE != "OVTN"), aes(y = RAIN/10), color = "blue", pch = 20)
+```
+
+# F1 plots
+```{r}
+
+wea_gr_fl %>%
+  dplyr::select(DOY, DYLN, SITE, RAIN) %>%
+  unique() %>%
+  filter(SITE != "OVTN") %>%
+  ggplot(aes(x = DOY, y = DYLN)) + 
+  geom_point() +
+  facet_wrap(~SITE) + 
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = SUBPOP, y = 9), width = 0, height = 1, alpha = 0.45) +
+  geom_jitter(data = filter(phe_F1, SITE != "OVTN" & PHE == "GR50" & YEAR %in% c(2019) & WHERE == "FWCR"), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 6.5, shape = PLANT_ID == "VxW"), width = 0, height = 1, alpha = 0.45) + 
+  geom_jitter(data = filter(phe_all, SITE != "OVTN" & PHE == "FL50" & YEAR %in% c(2019) & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = SUBPOP, y = 4), width = 0, height = 1, alpha = 0.45) +
+  geom_jitter(data = filter(phe_F1, SITE != "OVTN" & PHE == "FL50" & (YEAR %in% c(2019) | YEAR == 2018 & SITE == "TMPL") & WHERE %in% c("FWCR")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = as_factor(YEAR), y = 1.5, shape = PLANT_ID == "VxW"), width = 0, height = 1, alpha = 0.45) +
+  ylim(c(0,16)) + 
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) + xlab("Day of year") + ylab("Daylength (hrs)") +
+  geom_vline(xintercept = as_date(365/2-8, origin = "2018-12-31"), linetype = 2) +
+  geom_text(aes(y = 1.5, x = as_date(52, origin = "2018-12-31"), label = "FWCR FL50")) +
+  geom_text(aes(y = 4, x = as_date(52, origin = "2018-12-31"), label = "GWAS FL50")) +
+  geom_text(aes(y = 6.5, x = as_date(242, origin = "2018-12-31"), label = "FWCR GR50")) +
+  geom_text(aes(y = 9, x = as_date(242, origin = "2018-12-31"), label = "GWAS GR50")) + 
+  geom_point(data = filter(wea_gr_fl, RAIN > 0 & SITE != "OVTN"), aes(y = RAIN/10), color = "blue", pch = 20)
+    
+```
+
+
+# 1.	First, introduce the diversity panel at the common gardens, and introduce what we know or hypothesize about environmental indices triggering flowering in the different subpopulations – maybe even discuss Gulf, Midwest, Atlantic, and 8X subpopulations. Point out that the Gulf and Midwest subpopulations have the most distinctive flowering responses out of all of the populations.
+
+```{r}
+phe_all %>%
+  filter(WHERE == "GWAS") %>%
+  group_by(PLANT_ID, SUBPOP) %>%
+  tally()
+```
+
+## We divided these switchgrass genotypes into five categories: tetraploid individuals in the Atlantic, Midwest, and Gulf genetic subpopulations (Lovell et al 202X), admixed tetraploid individuals, and octoploid individuals. We then explored the overall patterns of greenup and flowering within these five categories. We first explored these patterns as a function of cumulative GDD (cite some switchgrass flowering time study, and Li’s study?).  
+
+# Setup for CGDD plots
+```{r}
+phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Phenotypes_D2F_fourway_project.rds")
+sites <- readRDS("~/Github/pvdiv-phenotypes/data/sites.rds")
+
+pid_all_sites <- phe %>%
+  dplyr::select(PLANT_ID, ends_with("D2F")) %>%
+  pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
+  group_by(PLANT_ID) %>%
+  filter(!is.na(D2F) & !(SITE %in% c("FRMI_D2F", "BRKG_D2F", "TMPL_D2F"))) %>%
+  count() %>% 
+  arrange(desc(n)) %>%
+  filter(n >= 4)
+GR_start <- phe %>% 
+  dplyr::select(-ends_with("D2F"), -ends_with("FL50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("GR50"), names_to = "SITE", values_to = "GR50") %>% 
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  group_by(SITE, PLANT_ID) %>%
+  summarise(GR_start = floor(min(GR50)))
+FL_end <- phe %>% 
+  dplyr::select(-ends_with("D2F"), -ends_with("GR50")) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  pivot_longer(cols = ends_with("FL50"), names_to = "SITE", values_to = "FL50") %>%
+  #filter(D2F > 10 & SUBPOP == "Midwest") %>%
+  ungroup() %>%
+  mutate(SITE = str_sub(SITE, end = 4)) %>%
+  group_by(SITE, PLANT_ID) %>%
+  summarise(FL_end = ceiling(max(FL50)))
+tmp3 <- wea_df %>%
+  left_join(GR_start, by = "SITE") %>%
+  left_join(FL_end, by = c("SITE", "PLANT_ID")) %>%
+  group_by(SITE, Day_of_year, PLANT_ID) %>%
+  filter(between(Day_of_year, GR_start, FL_end)) %>% 
+  ungroup()
+```
+CGDD plots
+```{r}
+tmp3 %>%
+  group_by(SITE, PLANT_ID, GR_start, FL_end) %>%
+  summarise(CGDD_13C = sum(GDD_13C_SM)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  filter(D2F > 10) %>%
+  left_join(metadata) %>%
+  left_join(sites) %>%
+  filter(!(SITE %in% c("FRMI"))) %>%
+  filter(PLANT_ID %in% pid_all_sites$PLANT_ID & SUBPOP %in% c("Midwest", "Gulf")) %>%
+  ggplot(aes(x = Latitude, y = CGDD_13C)) + 
+  geom_line(aes(group = PLANT_ID, color = SUBPOP)) + 
+  #theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 100, angle = 45) +
+  geom_smooth(aes(group = SUBPOP), method = "lm")  +
+  #geom_smooth(aes(group = SUBPOP), color = "green") +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1)  + 
+  ylim(c(0,3200))
+
+tmp3 %>%
+  group_by(SITE, PLANT_ID, GR_start, FL_end) %>%
+  summarise(CGDD_13C = sum(GDD_13C_SM)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  filter(D2F > 10) %>%
+  left_join(metadata) %>%
+  left_join(sites) %>%
+  filter(!(SITE %in% c("FRMI"))) %>%
+  filter(PLANT_ID %in% pid_all_sites$PLANT_ID) %>%
+  ggplot(aes(x = Latitude, y = CGDD_13C)) + 
+  geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  facet_wrap(~SUBPOP) +
+  theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 100, angle = 45) +
+  geom_smooth(aes(group = SUBPOP), method = "lm", color = "darkorange")  +
+  #geom_smooth(aes(group = SUBPOP), color = "green") +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1)  + 
+  ylim(c(0,3200)) + ylab(label = "Cumulative GDD (13C)")
+  save_plot(filename = "../manuscript/plots/Cumulative_GDD_13C_by_site_and_subpop.png", plot = last_plot(), base_height = 8)
+  
+tmp3 %>%
+  group_by(SITE, PLANT_ID, GR_start, FL_end) %>%
+  summarise(CGDD_13C = sum(GDD_13C_SM)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  filter(D2F > 10) %>%
+  left_join(metadata) %>%
+  left_join(sites) %>%
+  filter(!(SITE %in% c("FRMI"))) %>%
+  filter(PLANT_ID %in% pid_all_sites$PLANT_ID) %>%
+  ggplot(aes(x = Latitude, y = CGDD_13C)) + 
+  #geom_line(aes(group = PLANT_ID, color = PLANT_ID)) + 
+  #facet_wrap(~SUBPOP) +
+  #theme(legend.position = "none") +
+  geom_text(aes(x = Latitude, label = SITE), y = 100, angle = 45) +
+  geom_smooth(aes(group = SUBPOP, color = SUBPOP), method = "lm")  +
+  #geom_smooth(aes(group = SUBPOP), color = "green") +
+  scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1)  + 
+  ylim(c(0,3200)) + ylab(label = "Cumulative GDD (13C)")
+  save_plot(filename = "../manuscript/plots/Cumulative_GDD_13C_smoothed_subpops.png", plot = last_plot(), base_height = 4.1, base_asp = 1.1)
+```
+
+```{r}
+lmdata <- tmp3 %>%
+  group_by(SITE, PLANT_ID, GR_start, FL_end) %>%
+  summarise(CGDD_13C = sum(GDD_13C_SM)
+            ) %>%
+  mutate(D2F = FL_end - GR_start) %>%
+  filter(D2F > 10) %>%
+  left_join(metadata) %>%
+  left_join(sites) %>%
+  filter(!(SITE %in% c("FRMI"))) %>%
+  filter(PLANT_ID %in% pid_all_sites$PLANT_ID)
+summary(lm(CGDD_13C ~ SUBPOP + Latitude:SUBPOP, data = lmdata))
+lmdata$prediction <- predict(lm(CGDD_13C ~ SUBPOP + Latitude:SUBPOP, data = lmdata))
+
+lmdata$resid <- residuals(lm(CGDD_13C ~ SUBPOP + Latitude:SUBPOP, data = lmdata))
+
+ggplot(lmdata) + 
+  geom_point(aes(x = prediction, y = resid, color = SUBPOP)) + 
+  facet_wrap(~SITE)
+
+lmdata$SITE <- factor(lmdata$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+lmdata %>%
+  group_by(SUBPOP, SITE) %>%
+  summarise(prediction = mean(prediction),
+            resid = mean(abs(resid))) %>%
+  ggplot(aes(x = SITE, y = prediction)) + 
+  geom_point() +
+  geom_errorbar(mapping = aes(x = SITE, ymin = prediction - resid, ymax = prediction + resid)) +
+  facet_wrap(~SUBPOP)
+lmdata %>%
+  group_by(SUBPOP, SITE) %>%
+  summarise(prediction = mean(prediction),
+            resid = mean(abs(resid))) %>%
+ # write_csv("Subpop_CGDD_predictions.csv")
+  summarise(prediction = mean(prediction),
+            stderr = mean(resid)) # BAD! But sd(prediction) was giving NA's
+
+
+```
+

@@ -14,3 +14,4 @@ SVD_*
 *Rplots.pdf
 *.out
 data-raw/ignore/
+*.zip
