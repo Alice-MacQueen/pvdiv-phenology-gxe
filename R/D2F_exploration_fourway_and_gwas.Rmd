@@ -80,9 +80,11 @@ J292.A SOURCE_ID_1 VS16 (counted as 8X in metadata, may be an issue)
 
 J045.A SOURCE_ID_2 NSL 29896, Summer
 ```{r}
-phe_parents <- phe_all %>%
+phe_F0_up <- phe_all %>%
   filter(PLANT_ID %in% c("DAC", "VS16", "J440.A", "J036.A", "J037.A")) 
+phe_F0_low <- phe_all %>%
   filter(PLANT_ID %in% c("AP13", "WBC", "J230.A")) 
+phe_F0 <- phe_all %>%
   filter(PLANT_ID %in% c("AP13", "DAC", "VS16", "WBC", "J440.A", "J440.B", "J230.A", "J292.A", "J045.A", "J036.A", "J037.A", "J022.B", "J210.A")) 
 phe_F1 <- phe_all %>%
   filter(PLANT_ID %in% c("AxD", "VxW")) 
@@ -140,7 +142,7 @@ wea_gr_fl <- wea_df %>%
 ```{r}
 wea_gr_fl$SITE <- factor(wea_gr_fl$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
 phe_all$SITE <- factor(phe_all$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
-phe_parents$SITE <- factor(phe_parents$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+phe_F0$SITE <- factor(phe_F0$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
 phe_F2$SITE <- factor(phe_F2$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
 
 
@@ -186,7 +188,7 @@ wea_gr_fl %>%
   ylim(c(0,16)) +
   theme(legend.position = "right") +
   scale_color_viridis(discrete = TRUE, end = 0.8, direction = -1) + xlab("Day of year") + ylab("Daylength (hrs)") +
-  geom_vline(xintercept = as_date(365/2-8, origin = "2018-12-31"), linetype = 2) +
+  geom_vline(xintercept = as_date(173, origin = "2018-12-31"), linetype = 2) +
   geom_text(aes(y = 1.5, x = as_date(52, origin = "2018-12-31"), label = "FWCR FL50")) +
   geom_text(aes(y = 4, x = as_date(52, origin = "2018-12-31"), label = "GWAS FL50")) +
   geom_text(aes(y = 6.5, x = as_date(242, origin = "2018-12-31"), label = "FWCR GR50")) +
@@ -199,6 +201,138 @@ save_plot(filename = "../analysis/environmental-index/Daylength_vs_GR50_FL50_GWA
 
 
 Maybe at some sites they flower when they get > 2.5 cm of rain. Hard to say. It'd be nice to have the 2020 data to check this for the GWAS, if we really want to say something about this.
+
+# Tie to previous research
+## DYLN at FL plots
+While the rate and extent of vegetative development is closely related to GDD, reproductive development is more tied to day-of-the-year, or photoperiod. Switchgrass is a short-day plant; it flowers when exposed to shortening days of a specific length (Benedict, 1940).
+[so what is daylength of flowering for each plant_id * site – and is it the same across sites for individual plant_ids? Or different? If the same, this is the driver; if different, something else is the driver.]
+```{r}
+fl50_dyln <- phe_all %>%
+  filter(PHE == "FL50") %>%
+  left_join(wea_gr_fl, by = c("SITE", "YEAR", "MEAS" = "Day_of_year"))
+fl50_dyln$SITE <- factor(fl50_dyln$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+
+fl1_dyln <- phe_all %>%
+  filter(PHE == "FL1") %>%
+  left_join(wea_gr_fl, by = c("SITE", "YEAR", "MEAS" = "Day_of_year"))
+fl1_dyln$SITE <- factor(fl1_dyln$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+
+fl50_dyln %>%
+  group_by(SUBPOP) %>%
+  summarise(min_dyln = min(DYLN),
+            max_dyln = max(DYLN))
+max_dyln <- fl50_dyln %>%
+  group_by(SITE) %>%
+  summarise(min_dyln = min(DYLN, na.rm = TRUE),
+            max_dyln = max(DYLN, na.rm = TRUE))
+max_dyln <- wea_gr_fl %>%
+  group_by(SITE) %>%
+  summarise(min_dyln = min(DYLN, na.rm = TRUE),
+            max_dyln = max(DYLN, na.rm = TRUE))
+ 
+fl1_dyln %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("8X", "Atlantic")) %>% # , "Gulf", "Midwest"
+  group_by(PLANT_ID) %>%
+  add_tally() %>%
+  filter(n == 8 | n > 13) %>%
+  ggplot(aes(x = PLANT_ID, y = DYLN)) + 
+  geom_point(aes(color = SITE, shape = SUBPOP)) + 
+  facet_wrap(~FL_B4_SOL) +
+  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right") + 
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
+  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+
+fl1_dyln %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("Gulf", "Midwest")) %>% # , 
+  group_by(PLANT_ID) %>%
+  add_tally() %>%
+  filter(n == 8 | n > 13) %>%
+  ggplot(aes(x = PLANT_ID, y = DYLN)) + 
+  geom_point(aes(color = SITE, shape = SUBPOP)) + 
+  facet_wrap(~FL_B4_SOL) +
+  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right", panel.spacing.x = unit(x = 5, units = "points")) + 
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
+  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+
+
+fl1_dyln %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("Gulf", "Midwest")) %>% # , 
+  group_by(PLANT_ID) %>%
+  add_tally() %>%
+  filter(n == 9 | n > 13) %>%
+  ggplot(aes(x = PLANT_ID, y = DYLN)) +
+  geom_violin(color = "grey", scale = "area") +
+  geom_jitter(aes(color = SITE, shape = SUBPOP, fill = FL_B4_SOL), stroke = 1.2, size = 1.5, height = 0, width = 0.1) + 
+  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right", panel.spacing.x = unit(x = 5, units = "points")) + 
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
+  #facet_wrap(~SUBPOP) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1)
+  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+
+fl1_dyln %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("8X", "Atlantic")) %>% # , 
+  group_by(PLANT_ID) %>%
+  add_tally() %>%
+  filter(n == 9 | n > 13) %>%
+  ggplot(aes(x = PLANT_ID, y = DYLN)) +
+  geom_violin(color = "grey", scale = "area") +
+  geom_jitter(aes(color = SITE, shape = SUBPOP, fill = FL_B4_SOL), stroke = 1.2, size = 1.5, height = 0, width = 0.1) + 
+  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right", panel.spacing.x = unit(x = 5, units = "points")) + 
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
+  #facet_wrap(~SUBPOP) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1)
+  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+
+```
+Maybe also plot the max daylength at each site? 
+Atlantic may be interesting to differentiate by ecotype or latitude of origin.
+
+
+"The photoperiod response displayed within a given strain naturally differs with its latitude of origin and can be a point of exploitation in forage and biomass production systems."
+```{r}
+
+wea_gr_fl %>%
+  dplyr::select(DOY, DYLN, SITE, RAIN) %>%
+  unique() %>%
+  filter(SITE != "OVTN") %>%
+  ggplot(aes(x = DOY, y = DYLN)) + 
+  geom_point() +
+  facet_wrap(~SITE) + 
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = LATITUDE, y = 9), width = 0, height = 1, alpha = 0.25) +
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "GR50" & YEAR == 2019 & WHERE == "FWCR"), aes(x = as_date(MEAS, origin = "2018-12-31"), y = 6.5), width = 0, height = 1, alpha = 0.1) + 
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "FL50" & YEAR %in% c(2018,2019) & SUBPOP %in% c("Midwest", "Gulf")), aes(x = as_date(MEAS, origin = "2018-12-31"), color = LATITUDE, y = 4), width = 0, height = 1, alpha = 0.25) +
+  geom_jitter(data = filter(phe_F2, SITE != "OVTN" & PHE == "FL50" & (YEAR %in% 2019 | YEAR == 2018 & SITE == "TMPL") & WHERE %in% c("FWCR")), aes(x = as_date(MEAS, origin = "2018-12-31"), y = 1.5), width = 0, height = 1, alpha = 0.1) +
+  ylim(c(0,16)) +
+  theme(legend.position = "right") +
+  scale_color_viridis(end = 0.8, direction = -1) + xlab("Day of year") + ylab("Daylength (hrs)") +
+  geom_vline(xintercept = as_date(365/2-8, origin = "2018-12-31"), linetype = 2) +
+  geom_text(aes(y = 1.5, x = as_date(52, origin = "2018-12-31"), label = "FWCR FL50")) +
+  geom_text(aes(y = 4, x = as_date(52, origin = "2018-12-31"), label = "GWAS FL50")) +
+  geom_text(aes(y = 6.5, x = as_date(242, origin = "2018-12-31"), label = "FWCR GR50")) +
+  geom_text(aes(y = 9, x = as_date(242, origin = "2018-12-31"), label = "GWAS GR50")) + 
+  geom_point(data = filter(wea_gr_fl, RAIN > 0 & SITE != "OVTN"), aes(y = RAIN/10), color = "blue", pch = 20)
+  
+```
+
+
 
 # Parent to GWAS Panel Plots
 ```{r}
