@@ -63,13 +63,13 @@ phe_all %>%
   group_by(WHERE, PLANT_ID) %>%
   tally()
 
-
+# saveRDS(phe_all, file = "../data/all_phenotype_meas_4wcr_gwas.rds")
 ```
 FWCR	AP13	2921		parent - gulf
-FWCR	AxD	2124		F1
+FWCR	AxD	2124		F1 (AxB in results)
 FWCR	DAC	493		  parent - midwest
 FWCR	VS16	1135		parent - midwest
-FWCR	VxW	2242		F1
+FWCR	VxW	2242		F1 (CxD in results)
 FWCR	WBC	1945		parent - gulf
 FWCR	NA	4		
 GWAS	AP13	4410	in FWCR also

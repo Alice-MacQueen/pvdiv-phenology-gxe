@@ -1,0 +1,218 @@
+---
+title: "Draft_figures_2020-06-02"
+author: "Alice MacQueen"
+date: "6/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+library(lubridate)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+#
+
+```{r}
+metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
+metadata <- metadata %>%
+  mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
+                            !is.na(PLOIDY) ~ as.character(PLOIDY),
+                            TRUE ~ NA_character_))
+phe_all <- read_rds("../data/all_phenotype_meas_4wcr_gwas.rds")
+sites <- readRDS("~/Github/pvdiv-phenotypes/data/sites.rds")
+```
+
+FWCR	AP13	2921		parent - gulf
+FWCR	AxD	2124		F1 (AxB in results)
+FWCR	DAC	493		  parent - midwest
+FWCR	VS16	1135		parent - midwest
+FWCR	VxW	2242		F1 (CxD in results)
+FWCR	WBC	1945		parent - gulf
+FWCR	NA	4		
+GWAS	AP13	4410	in FWCR also
+What J #'s (if any) are DAC, VS16, WBC in the GWAS panel?
+DAC J440.A, J440.B Source_ID_2 Dacotah
+J230.A Source_ID_1  WBC
+J292.A SOURCE_ID_1 VS16 (counted as 8X in metadata, may be an issue)
+
+J045.A SOURCE_ID_2 NSL 29896, Summer
+```{r}
+phe_F0_up <- phe_all %>%
+  filter(PLANT_ID %in% c("DAC", "VS16", "J440.A", "J036.A", "J037.A")) 
+phe_F0_low <- phe_all %>%
+  filter(PLANT_ID %in% c("AP13", "WBC", "J230.A")) 
+phe_F0 <- phe_all %>%
+  filter(PLANT_ID %in% c("AP13", "DAC", "VS16", "WBC", "J440.A", "J440.B", "J230.A", "J292.A", "J045.A", "J036.A", "J037.A", "J022.B", "J210.A")) 
+phe_F1 <- phe_all %>%
+  filter(PLANT_ID %in% c("AxD", "VxW")) 
+phe_F2 <- phe_all %>%
+  filter(!(WHERE == "FWCR" & PLANT_ID %in% c("AP13", "DAC", "VS16", "WBC", "AxD", "VxW"))) 
+```
+
+# Set up 2019 weather data for plots
+```{r}
+ptt_df <- readRDS(file = "~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+
+wea_df <- ptt_df %>%
+  dplyr::select(DOY:GDD_13C_SM, PTT_13C)
+
+GR_start <- phe_all %>% 
+  ungroup() %>%
+  group_by(SITE, YEAR) %>%
+  filter(PHE == "GR50") %>%
+  summarise(GR_start = floor(min(MEAS)))
+FL_end <- phe_all %>% 
+  ungroup() %>%
+  group_by(SITE, YEAR) %>%
+  filter(PHE == "FL50") %>%
+  summarise(FL_end = ceiling(max(MEAS)))
+
+wea_gr_fl <- wea_df %>%
+  left_join(GR_start, by = "SITE", "YEAR") %>%
+  left_join(FL_end, by = c("SITE", "YEAR")) %>%
+  group_by(Day_of_year, SITE, YEAR) %>%
+  filter(between(Day_of_year, GR_start, FL_end)) %>% 
+  ungroup() # Just the weather data between the minimum GR50 and max FL50.
+# wea_df has all the weather, wea_gr_fl has the weather for the subset between
+# greenup and flowering.
+```
+
+# --
+# Run all chunks above as setup
+
+# -- Plots
+
+We first evaluated the evidence that switchgrass photoperiodicity was genotype dependent – specifically, that switchgrass flowers when exposed to shortening days of a specific length. 
+```{r}
+fl50_dyln <- phe_all %>%
+  filter(PHE == "FL50") %>%
+  left_join(wea_gr_fl, by = c("SITE", "YEAR", "MEAS" = "Day_of_year"))
+fl50_dyln$SITE <- factor(fl50_dyln$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+
+fl1_dyln <- phe_all %>%
+  filter(PHE == "FL1") %>%
+  left_join(wea_gr_fl, by = c("SITE", "YEAR", "MEAS" = "Day_of_year"))
+fl1_dyln$SITE <- factor(fl1_dyln$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+
+fl50_dyln %>%
+  group_by(SUBPOP) %>%
+  summarise(min_dyln = min(DYLN),
+            max_dyln = max(DYLN))
+max_dyln <- wea_gr_fl %>%
+  group_by(SITE) %>%
+  summarise(min_dyln = min(DYLN, na.rm = TRUE),
+            max_dyln = max(DYLN, na.rm = TRUE))
+```
+
+Many genotypes flowered while days were lengthening at the three southernmost sites (Table X). 
+Specifically, at Kingsville, 107 genotypes (38.9%) had 50% of tillers flowering before the summer solstice, after which, days start shortening. At Pickle, 518 genotypes (62.3%) were flowering while days were lengthening. At Temple, 107 genotype (26.9%) were flowering while days were lengthening, while at Stillwater and Columbia, 5 and 9 genotypes (2.0%, 1.2%) flowered while days were lengthening. These observations indicated that photoperiodicity could not be the only environmental triggering flowering in this species. 
+```{r}
+fl50_dyln %>%
+  filter(WHERE == "GWAS") %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  group_by(SITE, FL_B4_SOL, PLANT_ID) %>%
+  summarise(count = n()) %>%
+  group_by(SITE, FL_B4_SOL) %>%
+  tally() %>%
+  group_by(SITE) %>%
+  mutate(frac = n/sum(n))
+
+fl50_dyln %>%
+  filter(WHERE == "GWAS") %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  group_by(SITE, FL_B4_SOL, SUBPOP, PLANT_ID) %>%
+  summarise(count = n()) %>%
+  group_by(SITE, FL_B4_SOL, SUBPOP) %>%
+  tally() %>%
+  group_by(SITE, SUBPOP) %>%
+  #mutate(frac = n/sum(n)) %>%
+  pivot_wider(names_from = SUBPOP, values_from = n) %>%
+  left_join(sites) %>%
+  write_csv("../manuscript/plots/Plant_flowering_b4_or_after_solstice.csv")
+
+fl50_dyln$SITE <- factor(fl50_dyln$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+
+daylength_change <- fl50_dyln %>%
+  filter(WHERE == "GWAS" & !(SITE %in% c("OVTN", "FRMI"))) %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "Shortening",
+                               MEAS <= 172 ~ "Lengthening",
+                               TRUE ~ NA_character_)) %>%
+  group_by(SITE, FL_B4_SOL, SUBPOP, PLANT_ID) %>%
+  summarise(count = n()) %>%
+  group_by(SITE, FL_B4_SOL, SUBPOP) %>%
+  tally() #%>%
+  #group_by(SITE, SUBPOP) %>%
+  #mutate(frac = n/sum(n)) %>%
+  #pivot_wider(names_from = SUBPOP, values_from = n) %>%
+  #left_join(sites) %>%
+dyln_change <- daylength_change %>%
+  ggplot(aes(x = FL_B4_SOL, y = n, width = 0.7)) + 
+  geom_bar(aes(fill = SUBPOP), stat = "identity", position = position_dodge()) +
+  facet_wrap(~SITE, nrow = 2) +
+  scale_fill_viridis(discrete = TRUE) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "right", panel.spacing.x = unit(x = 0.01, unit = "npc")) +
+  ylab("Count of Genotypes") +
+  xlab("Does the genotype flower when days are 
+       lengthening or shortening?") 
+save_plot(filename = "../manuscript/plots/daylength_change_subpops.png", plot = dyln_change)
+
+?unit
+?geom_bar
+```
+At Kingsville, all five subpopulations had individuals that flowered while days were lengthening. Only the admixed 4X and the Gulf subpops had a majority of individuals that flowered while days were shortening (55% and 85.3%).
+At Pickle, all five subpopulations had individuals that flowered while days were lengthening. Only the Gulf subpop had a majority of individuals that flowered while days were shortening (94.0%).
+At Temple,  all five subpopulations had individuals that flowered while days were lengthening. The admixed 4X, Atlantic, and Gulf had a majority of individuals that flowered while days were shortening (65.2%, 57.9%, and 99.5%).
+At Stillwater, 4X, Atlantic, and Midwest individuals flowered while days were lengthening, but these individuals were in the minority (5.3%, 2.3%, 3.7%).
+At Columbia, 8X and Midwest individuals flowered while days were lengthening (1.4% and 5%).
+Further north than Columbia, virtually all individuals flowered while days were shortening.
+
+```{r}
+fl50_dyln %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("Gulf", "Midwest")) %>% # , 
+  group_by(PLANT_ID) %>%
+  add_tally() %>%
+  filter(n == 9 | n > 13) %>%
+  ggplot(aes(x = PLANT_ID, y = DYLN)) +
+  geom_violin(color = "grey", scale = "area") +
+  geom_jitter(aes(color = SITE, shape = SUBPOP, fill = FL_B4_SOL), stroke = 1.2, size = 1.5, height = 0, width = 0.1) + 
+  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right", panel.spacing.x = unit(x = 5, units = "points")) + 
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
+  #facet_wrap(~SUBPOP) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1)
+  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+
+fl1_dyln %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
+                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+                               TRUE ~ NA_character_)) %>%
+  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("8X", "Atlantic")) %>% # , 
+  group_by(PLANT_ID) %>%
+  add_tally() %>%
+  filter(n == 9 | n > 13) %>%
+  ggplot(aes(x = PLANT_ID, y = DYLN)) +
+  geom_violin(color = "grey", scale = "area") +
+  geom_jitter(aes(color = SITE, shape = SUBPOP, fill = FL_B4_SOL), stroke = 1.2, size = 1.5, height = 0, width = 0.1) + 
+  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right", panel.spacing.x = unit(x = 5, units = "points")) + 
+  scale_color_viridis(discrete = TRUE, direction = -1) +
+  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
+  #facet_wrap(~SUBPOP) +
+  scale_shape_manual(values = c(21, 24)) +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1)
+  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+
+```
+
