@@ -21,9 +21,29 @@ metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
 metadata <- metadata %>%
   mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
                             !is.na(PLOIDY) ~ as.character(PLOIDY),
-                            TRUE ~ NA_character_))
+                            TRUE ~ NA_character_),
+         LATITUDE = abs(LATITUDE),
+         LONGITUDE = abs(LONGITUDE)) 
 phe_all <- read_rds("../data/all_phenotype_meas_4wcr_gwas.rds")
 sites <- readRDS("~/Github/pvdiv-phenotypes/data/sites.rds")
+phe_all$SUBPOP <- factor(phe_all$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+sites <- sites %>%
+  mutate(manu_site = case_when(State != "TX" ~ State,
+                               SITE == "KING" ~ "TX1",
+                               SITE == "PKLE" ~ "TX2",
+                               SITE == "TMPL" ~ "TX3",
+                               SITE == "OVTN" ~ "TX4"))
+sites$manu_site <- factor(sites$manu_site, levels = c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD"))
+
+subpops <- enframe(unique(metadata$SUBPOP), name = NULL, value = "SUBPOP") %>%
+  mutate(color_code = case_when(SUBPOP == "Atlantic" ~ "#6E91CB",
+                                SUBPOP == "Gulf" ~ "#F47F72",    
+                                SUBPOP == "Midwest" ~ "#442C83",
+                                SUBPOP == "4X" ~ "grey", 
+                                SUBPOP == "8X" ~ "#090906"))
+subpops$SUBPOP <- factor(subpops$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+
+# gulf: #F47F72, atlantic: #6E91CB, midwest: #442C83
 ```
 
 FWCR	AP13	2921		parent - gulf
@@ -153,21 +173,74 @@ daylength_change <- fl50_dyln %>%
   #mutate(frac = n/sum(n)) %>%
   #pivot_wider(names_from = SUBPOP, values_from = n) %>%
   #left_join(sites) %>%
+daylength_change$SUBPOP <- factor(daylength_change$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+color_code <- c("grey", "#6E91CB","#F47F72", "#442C83", "#090906")
 dyln_change <- daylength_change %>%
+  left_join(sites) %>%
+  left_join(subpops) %>%
+  dplyr::select(SITE, FL_B4_SOL, SUBPOP, n) %>%
+  ungroup() %>%
+  #add_row(SITE = "BRKG", FL_B4_SOL = "Shortening") %>%
+  #add_row(SITE = "LINC", FL_B4_SOL = "Shortening") %>%
+  complete(SITE, FL_B4_SOL, SUBPOP, fill = list(n = 0))
+delta_dyln %>%
   ggplot(aes(x = FL_B4_SOL, y = n, width = 0.7)) + 
   geom_bar(aes(fill = SUBPOP), stat = "identity", position = position_dodge()) +
-  facet_wrap(~SITE, nrow = 2) +
-  scale_fill_viridis(discrete = TRUE) +
+  facet_wrap(~manu_site, nrow = 2) +
+  scale_fill_manual(values = color_code) +
   theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
         legend.position = "right", panel.spacing.x = unit(x = 0.01, unit = "npc")) +
   ylab("Count of Genotypes") +
   xlab("Does the genotype flower when days are 
        lengthening or shortening?") 
-save_plot(filename = "../manuscript/plots/daylength_change_subpops.png", plot = dyln_change)
+save_plot(filename = "../manuscript/plots/daylength_change_subpops.png", plot = delta_dyln)
 
-?unit
-?geom_bar
+
 ```
+```{r}
+dyln_change$SUBPOP <- factor(dyln_change$SUBPOP, levels = rev(c("4X", "Atlantic", "Gulf", "Midwest", "8X")))
+color_code <- rev(c("grey", "#6E91CB","#F47F72", "#442C83", "#090906"))
+
+site_subpop_list <- list()
+eightsites <- c("KING", "PKLE", "TMPL", "STIL", "CLMB", "LINC", "KBSM", "BRKG")
+
+for(i in seq_along(eightsites)){
+p1 <- dyln_change %>%
+  filter((SITE %in% eightsites[i]) & FL_B4_SOL == "Lengthening") %>%
+  ggplot(aes(x = SUBPOP, y = n, width = 1)) + 
+  geom_col(aes(fill = SUBPOP), position = "dodge") +
+  scale_y_reverse(expand = c(0.002, 0.002), limits = c(240, 0)) + coord_flip() +
+  scale_fill_manual(values = color_code) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "none", panel.spacing.x = unit(x = 0, unit = "mm"),
+        plot.margin = unit(c(5.5, 0, 5.5, 5.5), "pt")) +
+  ylab("Genotypes") +
+  xlab("Subpopulation") + labs(subtitle = "Lengthening", title = sites$manu_site[sites$SITE == eightsites[i]])
+p2 <- dyln_change %>%
+  filter((SITE %in% eightsites[i]) & FL_B4_SOL == "Shortening") %>%
+  ggplot(aes(x = SUBPOP, y = n, width = 1)) + 
+  geom_col(aes(fill = SUBPOP), position = "dodge") +
+  scale_y_continuous(expand = c(0.002, 0.002), limits = c(0,240)) +
+  coord_flip() +
+  scale_fill_manual(values = color_code) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        axis.text.y = element_blank(), axis.title.y = element_blank(),
+        legend.position = "none", panel.spacing.x = unit(x = 0, unit = "mm"),        axis.line.y = element_blank(), axis.ticks.y = element_blank(),
+        plot.margin = unit(c(5.5, 5.5, 5.5, -3.5), "pt")) +
+  geom_hline(yintercept = 0, linetype = 2) + labs(subtitle = "Shortening", title = " ") + ylab(" ")
+
+  
+site_subpop_list[[i]] <- plot_grid(p1, p2, rel_widths = c(1.66,1))
+}
+
+subpop_dyln_plot <- plot_grid(site_subpop_list[[1]], site_subpop_list[[2]], site_subpop_list[[3]],
+          site_subpop_list[[4]], site_subpop_list[[5]], site_subpop_list[[6]],
+          site_subpop_list[[7]], site_subpop_list[[8]], nrow = 2)
+
+save_plot(filename = "../manuscript/plots/daylength_change_subpops_back_to_back.png", plot = subpop_dyln_plot, base_asp = 2.2, base_height = 5)
+```
+
+
 At Kingsville, all five subpopulations had individuals that flowered while days were lengthening. Only the admixed 4X and the Gulf subpops had a majority of individuals that flowered while days were shortening (55% and 85.3%).
 At Pickle, all five subpopulations had individuals that flowered while days were lengthening. Only the Gulf subpop had a majority of individuals that flowered while days were shortening (94.0%).
 At Temple,  all five subpopulations had individuals that flowered while days were lengthening. The admixed 4X, Atlantic, and Gulf had a majority of individuals that flowered while days were shortening (65.2%, 57.9%, and 99.5%).
@@ -175,44 +248,181 @@ At Stillwater, 4X, Atlantic, and Midwest individuals flowered while days were le
 At Columbia, 8X and Midwest individuals flowered while days were lengthening (1.4% and 5%).
 Further north than Columbia, virtually all individuals flowered while days were shortening.
 
+Latitude of origin bins for flowering while day lengthening/shortening plot
+
 ```{r}
 fl50_dyln %>%
-  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
-                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+  filter(!is.na(LATITUDE)) %>%
+  mutate(latbin = floor(abs(LATITUDE)/5)) %>%
+  filter(WHERE == "GWAS") %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "Shortening",
+                               MEAS <= 172 ~ "Lengthening",
                                TRUE ~ NA_character_)) %>%
-  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("Gulf", "Midwest")) %>% # , 
-  group_by(PLANT_ID) %>%
-  add_tally() %>%
-  filter(n == 9 | n > 13) %>%
-  ggplot(aes(x = PLANT_ID, y = DYLN)) +
-  geom_violin(color = "grey", scale = "area") +
-  geom_jitter(aes(color = SITE, shape = SUBPOP, fill = FL_B4_SOL), stroke = 1.2, size = 1.5, height = 0, width = 0.1) + 
-  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right", panel.spacing.x = unit(x = 5, units = "points")) + 
-  scale_color_viridis(discrete = TRUE, direction = -1) +
-  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
-  #facet_wrap(~SUBPOP) +
-  scale_shape_manual(values = c(21, 24)) +
-  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1)
-  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+  group_by(SITE, latbin) %>% tally()
 
-fl1_dyln %>%
-  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "DAYS_SHORTENING",
-                               MEAS <= 172 ~ "DAYS_LENGTHENING",
+dyln_latbin <- fl50_dyln %>%
+  filter(!is.na(LATITUDE)) %>%
+  mutate(latbin = floor(abs(LATITUDE))) %>%
+  filter(WHERE == "GWAS" & !(SITE %in% c("OVTN", "FRMI"))) %>%
+  mutate(FL_B4_SOL = case_when(MEAS > 173 ~ "Shortening",
+                               MEAS <= 172 ~ "Lengthening",
                                TRUE ~ NA_character_)) %>%
-  filter(YEAR == 2019 & WHERE == "GWAS" & SUBPOP %in% c("8X", "Atlantic")) %>% # , 
-  group_by(PLANT_ID) %>%
-  add_tally() %>%
-  filter(n == 9 | n > 13) %>%
-  ggplot(aes(x = PLANT_ID, y = DYLN)) +
-  geom_violin(color = "grey", scale = "area") +
-  geom_jitter(aes(color = SITE, shape = SUBPOP, fill = FL_B4_SOL), stroke = 1.2, size = 1.5, height = 0, width = 0.1) + 
-  theme(axis.text.x = element_text(hjust = 1, angle = 45), legend.position = "right", panel.spacing.x = unit(x = 5, units = "points")) + 
-  scale_color_viridis(discrete = TRUE, direction = -1) +
-  geom_hline(data = max_dyln, aes(yintercept = max_dyln, color = SITE), linetype = 2) + 
-  #facet_wrap(~SUBPOP) +
-  scale_shape_manual(values = c(21, 24)) +
-  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1)
-  geom_label(data = max_dyln, aes(x = 4, y = max_dyln, label = SITE))
+  group_by(SITE, FL_B4_SOL, latbin, PLANT_ID, SUBPOP) %>%
+  summarise(count = n()) %>%
+  dplyr::select(-PLANT_ID) %>%
+  complete(SITE, FL_B4_SOL, latbin, SUBPOP) %>%
+  group_by(SITE, FL_B4_SOL, latbin, SUBPOP) %>%
+  summarise(count = sum(!is.na(count))) %>%
+  complete(SITE, FL_B4_SOL, latbin, SUBPOP, fill = list(count = 0)) %>%
+  arrange(latbin)
 
+#dyln_change <- 
+dyln_latbin %>%
+  left_join(sites, by = "SITE") %>%
+  filter(!(SITE %in% c("FRMI", "OVTN"))) %>%
+  ggplot(aes(x = FL_B4_SOL, y = count, width = 0.8)) + 
+  geom_bar(aes(fill = as_factor(latbin)), stat = "identity", position = position_dodge()) +
+  facet_wrap(~manu_site, nrow = 2) +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "right", panel.spacing.x = unit(x = 0.01, unit = "npc")) +
+  ylab("Count of Genotypes") +
+  xlab("Do genotypes from that latitude of origin flower when days are 
+       lengthening or shortening?") 
+save_plot(filename = "../manuscript/plots/daylength_change_subpops.png", plot = dyln_change)
+dyln_latbin2 <- dyln_latbin %>% ungroup() %>% add_row(latbin = 24, count = 0) %>%
+  complete(SITE, FL_B4_SOL, latbin, SUBPOP, fill = list(count = 0)) %>%
+  filter(!is.na(FL_B4_SOL) & !is.na(SUBPOP)) %>%
+  mutate(count = case_when(latbin == 24 ~ 48,
+                           TRUE ~ count)) %>%
+  unique()
 ```
 
+```{r}
+latranges <- metadata %>%
+  group_by(SUBPOP) %>%
+  summarise(min = min(LATITUDE, na.rm = TRUE),
+            max = max(LATITUDE, na.rm = TRUE))
+
+metadata$SUBPOP <- factor(metadata$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+paneld <- metadata %>%
+  ggplot(aes(x = SUBPOP, y = LATITUDE)) +
+  geom_violin(aes(color = SUBPOP)) + geom_jitter(aes(color = SUBPOP), alpha = 0.1, height = 0, width = 0.1) + scale_color_manual(values = rev(color_code)) + theme(legend.position = "none", axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45)) + ylab("Latitude of origin") + xlab("Subpopulation") + labs(title = "", subtitle = "")
+```
+
+
+```{r}
+  
+panela <- dyln_latbin2 %>%
+  left_join(sites, by = "SITE") %>%
+  filter((SITE %in% c("KING"))) %>%
+  mutate(n = case_when(FL_B4_SOL == "Lengthening" ~ -count,
+                       TRUE ~ count)) %>%
+  ggplot(aes(x = latbin, y = n, width = 1)) + 
+  geom_col(aes(fill = as_factor(latbin)), position = "dodge") +
+  coord_flip() +
+  facet_wrap(~FL_B4_SOL, ncol = 2, scales = "free_x") +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "none", panel.spacing.x = unit(x = 0, unit = "mm")) +
+  scale_y_continuous(expand = c(0.002, 0.002), 
+    labels = function(x) signif(abs(x), 3)) +
+  ylab("Number of genotypes") +
+  xlab("Latitude of origin") + labs(title = "TX1", subtitle = "Day length change on date of flowering") +
+  xlim(c(25,45))
+panelb <- dyln_latbin2 %>%
+  left_join(sites, by = "SITE") %>%
+  filter((SITE %in% c("PKLE"))) %>%
+  mutate(n = case_when(FL_B4_SOL == "Lengthening" ~ -count,
+                       TRUE ~ count)) %>%
+  ggplot(aes(x = latbin, y = n, width = 1)) + 
+  geom_col(aes(fill = as_factor(latbin)), position = "dodge") +
+  coord_flip() +
+  facet_wrap(~FL_B4_SOL, ncol = 2, scales = "free_x") +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "none", panel.spacing.x = unit(x = 0, unit = "mm")) +
+  scale_y_continuous(expand = c(0.002, 0.002), 
+    labels = function(x) signif(abs(x), 3)) +
+  ylab("Number of genotypes") +
+  xlab("Latitude of origin") + labs(title = "TX2", subtitle = "Day length change on date of flowering") +
+  xlim(c(25,45))
+panelc <- dyln_latbin2 %>%
+  left_join(sites, by = "SITE") %>%
+  filter((SITE %in% c("TMPL"))) %>%
+  mutate(n = case_when(FL_B4_SOL == "Lengthening" ~ -count,
+                       TRUE ~ count)) %>%
+  ggplot(aes(x = latbin, y = n, width = 1)) + 
+  geom_col(aes(fill = as_factor(latbin)), position = "dodge") +
+  coord_flip() +
+  facet_wrap(~FL_B4_SOL, ncol = 2, scales = "free_x") +
+  scale_fill_viridis(option = "B", discrete = TRUE, direction = -1) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "none", panel.spacing.x = unit(x = 0, unit = "mm")) +
+  scale_y_continuous(expand = c(0.002, 0.002), 
+    labels = function(x) signif(abs(x), 3)) +
+  ylab("Number of genotypes") +
+  xlab("Latitude of origin") + labs(title = "TX3", subtitle = "Day length change on date of flowering") +
+  xlim(c(25,45))
+
+dyln_lat_plot <- plot_grid(paneld, panela, panelb, panelc, nrow = 1)
+save_plot(filename = "../manuscript/plots/Daylength_changes_flowering_date_by_latitude_of_origin_subpops.svg", plot = dyln_lat_plot, base_asp = 2.6, base_height = 4)
+```
+
+```{r}
+filter(unique(dyln_latbin2), count > 200)
+panela <- dyln_latbin2 %>%
+  left_join(sites, by = "SITE") %>%
+  filter((SITE %in% c("KING"))) %>%
+  mutate(n = case_when(FL_B4_SOL == "Lengthening" ~ -count,
+                       TRUE ~ count)) %>%
+  ggplot(aes(x = latbin, y = n, width = 1)) + 
+  geom_col(aes(fill = SUBPOP)) +
+  coord_flip() +
+  facet_wrap(~FL_B4_SOL, ncol = 2, scales = "free_x") +
+  scale_fill_manual(values = rev(color_code)) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "none", panel.spacing.x = unit(x = 0, unit = "mm")) +
+  scale_y_continuous(expand = c(0.002, 0.002), 
+    labels = function(x) signif(abs(x), 3)) +
+  ylab("Number of genotypes") +
+  xlab("Latitude of origin") + labs(title = "TX1", subtitle = "Day length change on date of flowering") +
+  xlim(c(24,45))
+panelb <- dyln_latbin2 %>%
+  left_join(sites, by = "SITE") %>%
+  filter((SITE %in% c("PKLE"))) %>%
+  mutate(n = case_when(FL_B4_SOL == "Lengthening" ~ -count,
+                       TRUE ~ count)) %>%
+  ggplot(aes(x = latbin, y = n, width = 1)) + 
+  geom_col(aes(fill = SUBPOP)) +
+  coord_flip() +
+  facet_wrap(~FL_B4_SOL, ncol = 2, scales = "free_x") +
+  scale_fill_manual(values = rev(color_code)) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "none", panel.spacing.x = unit(x = 0, unit = "mm")) +
+  scale_y_continuous(expand = c(0.002, 0.002), 
+    labels = function(x) signif(abs(x), 3)) +
+  ylab("Number of genotypes") +
+  xlab("Latitude of origin") + labs(title = "TX2", subtitle = "Day length change on date of flowering") +
+  xlim(c(24,45))
+panelc <- dyln_latbin2 %>%
+  left_join(sites, by = "SITE") %>%
+  filter((SITE %in% c("TMPL"))) %>%
+  mutate(n = case_when(FL_B4_SOL == "Lengthening" ~ -count,
+                       TRUE ~ count)) %>%
+  ggplot(aes(x = latbin, y = n, width = 1)) + 
+  geom_col(aes(fill = SUBPOP)) +
+  coord_flip() +
+  facet_wrap(~FL_B4_SOL, ncol = 2, scales = "free_x") +
+  scale_fill_manual(values = rev(color_code)) +
+  theme(axis.text.x = element_text(hjust = 1, vjust = 1, angle = 45),
+        legend.position = "right", panel.spacing.x = unit(x = 0, unit = "mm")) +
+  scale_y_continuous(expand = c(0.002, 0.002), 
+    labels = function(x) signif(abs(x), 3)) +
+  ylab("Number of genotypes") +
+  xlab("Latitude of origin") + labs(title = "TX3", subtitle = "Day length change on date of flowering") +
+  xlim(c(24,45))
+
+dyln_lat_plot <- plot_grid(panela, panelb, panelc, nrow = 1, rel_widths = c(1, 1, 1.318))
+save_plot(filename = "../manuscript/plots/Daylength_changes_flowering_date_by_latitude_of_origin_and_subpop.png", plot = dyln_lat_plot, base_asp = 2.4, base_height = 4)
+```
