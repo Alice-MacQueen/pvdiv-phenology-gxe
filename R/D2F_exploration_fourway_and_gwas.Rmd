@@ -405,7 +405,7 @@ pid_all_sites <- phe %>%
   pivot_longer(cols = ends_with("D2F"), names_to = "SITE", values_to = "D2F") %>%
   group_by(PLANT_ID) %>%
   filter(!is.na(D2F) & !(SITE %in% c("FRMI_D2F", "BRKG_D2F", "TMPL_D2F"))) %>%
-  count() %>% 
+  count() %>% a
   arrange(desc(n)) %>%
   filter(n >= 4)
 GR_start <- phe %>% 

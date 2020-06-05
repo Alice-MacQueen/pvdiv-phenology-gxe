@@ -1,0 +1,478 @@
+---
+title: "Draft models and statistics"
+author: "Alice MacQueen"
+date: "6/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(switchgrassGWAS)
+library(corpcor)
+library(viridis)
+```
+
+# ASReml-R analyses on server
+
+```{r}
+library(tidyverse)
+library(asreml)
+library(switchgrassGWAS)
+library(corpcor)
+```
+
+```{r}
+metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
+metadata <- metadata %>%
+  mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
+                            !is.na(PLOIDY) ~ as.character(PLOIDY),
+                            TRUE ~ NA_character_),
+         LATITUDE = abs(LATITUDE),
+         LONGITUDE = abs(LONGITUDE)) 
+phe_all <- read_rds("~/Github/pvdiv-phenology-gxe/data/all_phenotype_meas_4wcr_gwas.rds")
+sites <- readRDS("~/Github/pvdiv-phenotypes/data/sites.rds")
+phe_all$SUBPOP <- factor(phe_all$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+sites <- sites %>%
+  mutate(manu_site = case_when(State != "TX" ~ State,
+                               SITE == "KING" ~ "TX1",
+                               SITE == "PKLE" ~ "TX2",
+                               SITE == "TMPL" ~ "TX3",
+                               SITE == "OVTN" ~ "TX4"))
+sites$manu_site <- factor(sites$manu_site, levels = c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD"))
+
+subpops <- enframe(unique(metadata$SUBPOP), name = NULL, value = "SUBPOP") %>%
+  mutate(color_code = case_when(SUBPOP == "Atlantic" ~ "#6E91CB",
+                                SUBPOP == "Gulf" ~ "#F47F72",    
+                                SUBPOP == "Midwest" ~ "#442C83",
+                                SUBPOP == "4X" ~ "grey", 
+                                SUBPOP == "8X" ~ "#090906"))
+subpops$SUBPOP <- factor(subpops$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+
+# gulf: #F47F72, atlantic: #6E91CB, midwest: #442C83
+```
+
+```{r}
+sites %>% arrange(Latitude)
+```
+
+We observed a strong signal of latitude of origin on whether plants grown at Texas common gardens flowered in lengthening or shortening days (generalized linear model on binomial output, p-value, Supp. Figure 1). 
+```{r}
+lat_photo_cue <- phe_all %>%
+  filter(!is.na(LATITUDE) & LATITUDE > 0 & WHERE == "GWAS" & PHE == "FL50" & SITE %in% c("PKLE", "KING", "TMPL")) %>%
+  mutate(Photo_cue = case_when(MEAS > 173 ~ 1,
+                               MEAS <= 172 ~ 0,
+                               TRUE ~ NA_real_))
+lat_photo_cue$SUBPOP <- factor(lat_photo_cue$SUBPOP, levels = c("Midwest", "Gulf", "Atlantic", "4X", "8X"))
+
+lat1 <- glm(Photo_cue ~ LATITUDE:SUBPOP + SUBPOP, data = lat_photo_cue, family = "binomial")
+
+summary(lat1)
+
+#lat2 <- glm(Photo_cue ~ LATITUDE*SUBPOP, data = lat_photo_cue, family = "binomial")
+#summary(lat2)  # Think the first model is better. AIC 4610 vs 4604.5. 
+#
+#
+
+# Create some new data
+n2 <- 100
+new.df <- data.frame(LATITUDE = 26:45, SUBPOP = rep(c("Midwest", "Gulf", "Atlantic", "4X", "8X"), length(25:45)/5))
+new.df <- new.df %>% complete(LATITUDE, SUBPOP)
+ 
+# Predict the probabilities
+# predict(model, new.df) will just give you the logit (z) values
+# We want the probabilities so use the "response" type
+new.df$probs <- predict(lat1, new.df, "response")
+ 
+# Draw some random values between 0 and 1
+draws <- runif(n2)
+ 
+# Check if draw value is less than threshold probability
+new.df$results <- (draws < probs)
+
+new.df %>%
+  filter((SUBPOP == "Midwest" & between(LATITUDE, 30, 46)) | 
+           !(SUBPOP %in% c("Midwest", "Gulf")) | 
+          (SUBPOP == "Gulf" & between(LATITUDE, 25, 43)) ) %>%
+  ggplot(aes(x= SUBPOP, y = LATITUDE)) + 
+  geom_tile(aes(fill = probs)) +
+  scale_fill_viridis(option = "B")
+
+lat_photo_cue <- lat_photo_cue %>%
+  ungroup() %>%
+  mutate(predphoto = predict(lat1, ., "response"),
+         residphoto = resid(lat1))
+
+color_code <- c("#442C83", "#F47F72", "#6E91CB", "grey", "#090906")
+
+lat_photo_cue %>%
+  ggplot(aes(x = LATITUDE, y = predphoto)) + 
+  geom_point(aes(color = SUBPOP), alpha = 0.4) + 
+  scale_color_manual(values = color_code) + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_smooth(aes(color = SUBPOP)) 
+lat_photo_cue %>%
+  ggplot(aes(x = LATITUDE, y = residphoto)) + 
+  geom_point(aes(color = SUBPOP), alpha = 0.4) + 
+  scale_color_viridis(discrete = TRUE, option = "B") + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_smooth(aes(color = SUBPOP))  + 
+  facet_wrap(~SUBPOP)
+
+photo_cue_prob <- lat_photo_cue %>%
+  group_by(PLANT_ID) %>%
+  summarise(photo_prob = mean(predphoto))
+```
+
+
+# Set up weather data for 2019
+```{r}
+ptt_df <- readRDS(file = "~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+
+wea_df <- ptt_df %>%
+  dplyr::select(DOY:GDD_12C_SM, PTT_12C)
+
+GR_start <- phe_all %>% 
+  filter(WHERE == "GWAS") %>%
+  ungroup() %>%
+  group_by(SITE, YEAR, PLANT_ID, PLOT_GL) %>%
+  filter(PHE == "GR50") %>%
+  summarise(GR_start = floor(min(MEAS)))
+FL_end <- phe_all %>% 
+  filter(WHERE == "GWAS") %>%
+  ungroup() %>%
+  group_by(SITE, YEAR, PLANT_ID, PLOT_GL) %>%
+  filter(PHE == "FL50") %>%
+  summarise(FL_end = ceiling(max(MEAS)))
+
+wea_gr_fl <- wea_df %>%
+  left_join(GR_start) %>%
+  left_join(FL_end) %>%
+  group_by(Day_of_year, SITE, YEAR, PLANT_ID, PLOT_GL) %>%
+  filter(between(Day_of_year, GR_start, FL_end)) %>% 
+  ungroup() # Just the weather data between the minimum GR50 and max FL50.
+# wea_df has all the weather, wea_gr_fl has the weather for the subset between
+# greenup and flowering.
+# 
+gdd_12c_cue <- wea_gr_fl %>%
+  group_by(SITE, YEAR, PLANT_ID, PLOT_GL, FL_end) %>%
+  summarise(CGDD_13C = sum(GDD_13C_SM),
+            CGDD_12C = sum(GDD_12C_SM),
+            CPTT_12C = sum(PTT_12C)) %>%
+  rename(FL50 = FL_end) %>%
+  left_join(metadata)
+
+
+```
+
+# daylength cue
+
+Additionally, we observed no evidence for any specific day length that triggered flowering (model: DYLN at FL50 ~ SUBPOP + PLANT_ID + SUBPOP:LATITUDE does not explain much variance). 
+```{r}
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+dyln_cue <- wea_gr_fl %>%
+  filter(Day_of_year == FL_end) %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP, LATITUDE)) %>%
+  mutate(Photo_cue = case_when(FL_end > 173 ~ 1,
+                               FL_end <= 172 ~ 0,
+                               TRUE ~ NA_real_)) %>%
+  filter(Photo_cue == 1) %>%
+  filter(!is.na(SUBPOP) & !is.na(LATITUDE)) %>%
+  filter(PLANT_ID %in% row.names(k_full)) %>%
+  mutate(PLANT_ID = as_factor(PLANT_ID),
+         SITE = as_factor(SITE)) %>%
+  as.data.frame()
+dyln_cue$SUBPOP <- factor(dyln_cue$SUBPOP, levels = c("Midwest", "Gulf", "Atlantic", "4X", "8X"))
+
+asr_dyln <- asreml(DYLN ~ 1, random = 
+                     ~idv(SITE) + 
+                    ~vm(PLANT_ID, k_full),
+                  residual = ~idv(units), data = dyln_cue, 
+                  workspace = "3gb")
+
+summary(asr_dyln)$varcomp %>%
+  as_tibble(rownames = "Effect") %>%
+  mutate(`%Var` = (component*100)/sum(component),
+         `VarSE` = (std.error*100)/sum(component),
+         lowVar = `%Var` - VarSE,
+         hiVar = `%Var` + VarSE,
+         loglik = asr_dyln$loglik) %>%
+  write_csv(., "manuscript/plots/Variance_components_dyln_fl50_by_site_and_k_full.csv",
+            col_names = TRUE)
+
+dyln_cue$predicted <- asr_dyln$linear.predictors
+dyln_cue %>% 
+  as_tibble() %>%
+  group_by(SUBPOP) %>%
+  summarise(meanpred = mean(predicted),
+            fivepred = quantile(predicted, 0.025),
+            ninefivepred = quantile(predicted, 0.975),
+            fiveobs = quantile(DYLN, 0.025),
+            ninefiveobs = quantile(DYLN, 0.975))
+
+blup <- summary(asr_dyln, coef=TRUE)$coef.random %>% as_tibble(rownames = "Effect")
+int <- summary(asr_dyln, coef=TRUE)$coef.fixed %>% as_tibble(rownames = "Effect") %>% rename(std.error = `std error`)
+
+write_csv(int, "manuscript/plots/Effects_dyln_fl50_by_site_and_k_full.csv", col_names = TRUE)
+write_csv(blup, "manuscript/plots/Effects_dyln_fl50_by_site_and_k_full.csv", col_names = TRUE, append = TRUE)
+```
+
+
+To identify an additional environmental cue for flowering, we evaluated flowering date as a function of cumulative GDD between greenup and flowering at the northern seven sites (Kiniry et al 2005, Behrman 2013). A model with effects of subpopulation and an interaction between subpopulation and latitude of origin (linear model table) explained 55% of the variation in flowering GDD. The Midwest required the smallest GDD before flowering (585 +/- 12 GDD), and the Gulf required the largest before flowering (1238 +/- 378 GDD), with the other three subpopulations falling in between (708 – 750 +/- 106-123 GDD). 
+```{r}
+gdd_12c_7site <- filter(gdd_12c_cue, !(SITE %in% c("PKLE", "TMPL", "KING", "OVTN"))) %>%
+  dplyr::select(-(LIBRARY:PLANTED_2018), LATITUDE) %>%
+  filter(!is.na(SUBPOP) & !is.na(LATITUDE)) %>%
+  left_join(photo_cue_prob)
+```
+
+```{r}
+
+# gdd3 is the best model
+gdd_12c_cue$SUBPOP <- factor(gdd_12c_cue$SUBPOP, levels = c("Midwest", "Gulf", "Atlantic", "4X", "8X"))
+gdd1 <- lm(CGDD_12C ~ SUBPOP+LATITUDE:SUBPOP, data = filter(gdd_12c_cue, !(SITE %in% c("OVTN"))))
+summary(gdd1)
+gdd9site <- filter(gdd_12c_cue, !(SITE %in% c("OVTN")) & !is.na(LATITUDE) &
+                     !is.na(SUBPOP)) %>%
+  ungroup() %>%
+  mutate(pred9 = predict(gdd1, .),
+         resid9 = resid(gdd1))
+gdd9site %>% 
+  dplyr::select(SUBPOP:resid9, everything()) %>%
+  ggplot(aes(x = LATITUDE, y = resid9)) + 
+  geom_point(aes(color = SUBPOP), alpha = 0.4) + 
+  scale_color_viridis(discrete = TRUE, option = "B") + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_smooth(aes(color = SUBPOP)) + 
+  facet_wrap(~SUBPOP)
+gdd9site %>% 
+  dplyr::select(SUBPOP:resid9, everything()) %>%
+  ggplot(aes(x = pred9, y = resid9)) + 
+  geom_jitter(aes(color = SUBPOP), alpha = 0.4) + 
+  scale_color_viridis(discrete = TRUE, option = "B") + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_smooth(aes(color = SUBPOP)) + 
+  facet_wrap(~SUBPOP)
+```
+# ASReml
+```{r}
+gdd_12c_7site <- filter(gdd_12c_cue, !(SITE %in% c("OVTN"))) %>%
+  left_join(select(sites, SITE:Latitude)) %>%
+  left_join(photo_cue_prob) %>%
+  dplyr::select(-(LIBRARY:PLANTED_2018), LATITUDE) %>%
+  filter(!is.na(SUBPOP) & !is.na(LATITUDE)) %>%
+  filter(!(photo_prob > 0.5 & SITE %in% c("KING", "TMPL", "PKLE", "STIL"))) %>%
+    as.data.frame()
+
+gdd_12c_7site$SUBPOP <- factor(gdd_12c_7site$SUBPOP, levels = c("Midwest", "Gulf", "Atlantic", "4X", "8X"))
+
+asr_gdd <- asreml(CGDD_12C ~ 1, random = ~idv(SUBPOP) +
+                    ~id(LATITUDE):idv(SUBPOP),
+                  residual = ~idv(units), data = gdd_12c_7site, 
+                  workspace = "3gb")
+
+summary(asr_gdd)$varcomp %>%
+  as_tibble(rownames = "Effect") %>%
+  mutate(`%Var` = (component*100)/sum(component),
+         `VarSE` = (std.error*100)/sum(component),
+         lowVar = `%Var` - VarSE,
+         hiVar = `%Var` + VarSE,
+         loglik = asr_gdd$loglik) %>%
+  write_csv(., "manuscript/plots/Variance_components_CGDD_12C_Subpop_LatofOrigin_filteredphoto_cue.csv",
+            col_names = TRUE)
+
+gdd_12c_7site$predicted <- asr_gdd$linear.predictors
+gdd_12c_7site %>% 
+  as_tibble() %>%
+  group_by(SUBPOP) %>%
+  summarise(meanpred = mean(predicted),
+            fivepred = quantile(predicted, 0.025),
+            ninefivepred = quantile(predicted, 0.975),
+            fiveobs = quantile(CGDD_12C, 0.025),
+            ninefiveobs = quantile(CGDD_12C, 0.975))
+
+ blup <- summary(asr_gdd, coef=TRUE)$coef.random %>% as_tibble(rownames = "Effect")
+int <- summary(asr_gdd, coef=TRUE)$coef.fixed %>% as_tibble(rownames = "Effect") %>% rename(std.error = `std error`)
+
+write_csv(int, "manuscript/plots/Effects_CGDD_12C_Subpop_LatofOrigin_filteredphoto_cue.csv", col_names = TRUE)
+write_csv(blup, "manuscript/plots/Effects_CGDD_12C_Subpop_LatofOrigin_filteredphoto_cue.csv", col_names = TRUE, append = TRUE)
+
+gdd_12c_7site %>%
+   as_tibble() %>%
+   filter(SUBPOP == "Midwest") %>% 
+  filter(LATITUDE > quantile(LATITUDE, 0.8)) %>%
+   summarise(meanpred = mean(predicted))
+gdd_12c_7site %>%
+   as_tibble() %>%
+   filter(SUBPOP == "Midwest") %>%
+  filter(LATITUDE < quantile(LATITUDE, 0.2) & CGDD_12C < 1095) %>%
+   summarise(meanpred = mean(predicted))
+
+gdd_12c_7site %>%
+   as_tibble() %>%
+   filter(SUBPOP == "Gulf") %>% 
+  filter(LATITUDE > quantile(LATITUDE, 0.8)) %>%
+   summarise(meanpred = mean(predicted))
+gdd_12c_7site %>%
+   as_tibble() %>%
+   filter(SUBPOP == "Gulf") %>%
+  filter(LATITUDE < quantile(LATITUDE, 0.2)) %>%
+   summarise(meanpred = mean(predicted))
+
+```
+
+# K GDD ASReml
+```{r}
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+gdd_12c_h2 <- filter(gdd_12c_cue, !(SITE %in% c("OVTN"))) %>%
+  left_join(select(sites, SITE:Latitude)) %>%
+  left_join(photo_cue_prob) %>%
+  dplyr::select(-(LIBRARY:PLANTED_2018), LATITUDE) %>%
+  filter(!is.na(SUBPOP) & !is.na(LATITUDE)) %>%
+  filter(PLANT_ID %in% row.names(k_full)) %>%
+  filter(!(photo_prob > 0.5 & SITE %in% c("KING", "TMPL", "PKLE", "STIL"))) %>%
+  ungroup() %>%
+  mutate(PLANT_ID = as_factor(PLANT_ID),
+         SITE = as_factor(SITE)) %>%
+    as.data.frame()
+
+gdd_12c_h2$SUBPOP <- factor(gdd_12c_h2$SUBPOP, levels = c("Midwest", "Gulf", "Atlantic", "4X", "8X"))
+
+asr_gddh2 <- asreml(CGDD_12C ~ 1, random = ~idv(SITE) + ~vm(PLANT_ID, k_full),
+                  residual = ~idv(units), data = gdd_12c_h2, 
+                  workspace = "3gb")
+
+summary(asr_gddh2)$varcomp %>%
+  as_tibble(rownames = "Effect") %>%
+  mutate(`%Var` = (component*100)/sum(component),
+         `VarSE` = (std.error*100)/sum(component),
+         lowVar = `%Var` - VarSE,
+         hiVar = `%Var` + VarSE,
+         loglik = asr_gddh2$loglik) %>%
+  write_csv(., "manuscript/plots/Variance_components_gdd12c_fl50_by_site_and_k_full.csv",
+            col_names = TRUE)
+```
+
+# K flowering date ASReml
+```{r}
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+fl50_h2 <- filter(gdd_12c_cue, !(SITE %in% c("OVTN"))) %>%
+  left_join(select(sites, SITE:Latitude)) %>%
+  left_join(photo_cue_prob) %>%
+  dplyr::select(-(LIBRARY:PLANTED_2018), LATITUDE) %>%
+  filter(!is.na(SUBPOP) & !is.na(LATITUDE)) %>%
+  filter(PLANT_ID %in% row.names(k_full)) %>%
+  filter(!(photo_prob > 0.5 & SITE %in% c("KING", "TMPL", "PKLE", "STIL"))) %>%
+  ungroup() %>%
+  mutate(PLANT_ID = as_factor(PLANT_ID),
+         SITE = as_factor(SITE)) %>%
+    as.data.frame()
+
+fl50_h2$SUBPOP <- factor(fl50_h2$SUBPOP, levels = c("Midwest", "Gulf", "Atlantic", "4X", "8X"))
+
+asr_fl50 <- asreml(FL50 ~ 1, random = ~idv(SITE) + ~vm(PLANT_ID, k_full),
+                  residual = ~idv(units), data = fl50_h2, 
+                  workspace = "3gb")
+
+summary(asr_fl50)$varcomp %>%
+  as_tibble(rownames = "Effect") %>%
+  mutate(`%Var` = (component*100)/sum(component),
+         `VarSE` = (std.error*100)/sum(component),
+         lowVar = `%Var` - VarSE,
+         hiVar = `%Var` + VarSE,
+         loglik = asr_fl50$loglik) %>%
+  write_csv(., "manuscript/plots/Variance_components_fl50_photo_insensitive_only_by_site_and_k_full.csv",
+            col_names = TRUE)
+```
+
+
+```{r}
+gdd2 <- lm(CGDD_12C ~ SUBPOP:LATITUDE + LATITUDE, data = gdd_12c_7site)
+summary(gdd2)
+gdd3 <- lm(CGDD_12C ~ LATITUDE:SUBPOP + SUBPOP, data = gdd_12c_7site)
+summary(gdd3)
+
+
+gdd4 <- lm(CGDD_12C ~ LATITUDE*photo_prob*SUBPOP, data = gdd_12c_7site)
+summary(gdd4)
+
+gdd7site <- gdd_12c_7site %>%
+  filter(!is.na(LATITUDE) & !is.na(SUBPOP)) %>%
+  ungroup() %>%
+  mutate(pred7lat = predict(gdd2, .),
+         resid7lat = resid(gdd2),
+         pred7int = predict(gdd3,.),
+         resid7int = resid(gdd3))
+
+         
+gdd7photo <- gdd_12c_7site %>%
+  ungroup() %>%
+  filter(!is.na(LATITUDE) & !is.na(SUBPOP) & !is.na(photo_prob)) %>%
+  mutate(pred7photo = predict(gdd4, .),
+         resid7photo = resid(gdd4))
+         
+
+gdd7site %>%
+  filter((SUBPOP == "Midwest" & between(LATITUDE, 30, 46)) | 
+           !(SUBPOP %in% c("Midwest", "Gulf")) | 
+          (SUBPOP == "Gulf" & between(LATITUDE, 25, 43)) ) %>%
+  ggplot(aes(x= SUBPOP, y = LATITUDE)) + 
+  geom_jitter(aes(color = pred7int)) +
+  scale_color_viridis(option = "B")
+gdd7site %>% 
+  ggplot(aes(x = LATITUDE, y = resid7int)) + 
+  geom_point(aes(color = SUBPOP), alpha = 0.4) + 
+  scale_color_viridis(discrete = TRUE, option = "B") + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_smooth(aes(color = SUBPOP)) + 
+  facet_wrap(~SUBPOP) # int better than lat in terms of residuals
+
+gdd7site %>% 
+  ggplot(aes(x = pred7int , y = resid7int)) + 
+  geom_point(aes(color = SUBPOP), alpha = 0.4) + 
+  scale_color_viridis(discrete = TRUE, option = "B") + 
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_smooth(aes(color = SUBPOP)) + 
+  facet_wrap(~SUBPOP) # int better than lat in terms of residuals
+```
+
+```{r}
+
+gdd7site %>%
+  group_by(SUBPOP) %>%
+  summarise(meanpred = mean(pred7int),
+            fivepred = quantile(pred7int, 0.05),
+            ninefivepred = quantile(pred7int, 0.95),
+            fiveobs = quantile(CGDD_12C, 0.05),
+            ninefiveobs = quantile(CGDD_12C, 0.95))
+```
+
+
+```{r}
+
+gdddf <- data.frame(LATITUDE = 26:45, SUBPOP = rep(c("Midwest", "Gulf", "Atlantic", "4X", "8X"), length(25:45)/5))
+gdddf <- gdddf %>% complete(LATITUDE, SUBPOP)
+ 
+# Predict the probabilities
+gdddf$pred9 <- predict(gdd1, gdddf)
+gdddf$pred7int <- predict(gdd3, gdddf)
+gdddf$pred7lat <- predict(gdd2, gdddf)
+resid(gdd2)
+
+
+  
+gdddf %>%
+  filter((SUBPOP == "Midwest" & between(LATITUDE, 30, 46)) | 
+           !(SUBPOP %in% c("Midwest", "Gulf")) | 
+          (SUBPOP == "Gulf" & between(LATITUDE, 25, 43)) ) %>%
+  ggplot(aes(x= SUBPOP, y = LATITUDE)) + 
+  geom_tile(aes(fill = pred7int)) +
+  scale_fill_viridis(option = "B")
+
+gdddf %>%
+  mutate(diff = pred7int-pred7lat) %>%
+  ggplot(aes(x= SUBPOP, y = LATITUDE)) + 
+  geom_tile(aes(fill = diff)) +
+  scale_fill_viridis(option = "B")
+```
+
