@@ -1,0 +1,147 @@
+---
+title: "Data_Setup"
+author: "Alice MacQueen"
+date: "6/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+# metadata (germplasm)
+```{r}
+metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
+metadata <- metadata %>%
+  mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
+                            !is.na(PLOIDY) ~ as.character(PLOIDY),
+                            TRUE ~ NA_character_))
+write_rds(metadata, "../data/metadata.rds")
+fourway <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/0-data/Phenology_2019_Multiple_Environment.csv")
+```
+
+# common gardens
+```{r}
+sites <- readRDS("~/Github/pvdiv-phenotypes/data/sites.rds")
+
+sites <- sites %>%
+  mutate(manu_site = case_when(State != "TX" ~ State,
+                               SITE == "KING" ~ "TX1",
+                               SITE == "PKLE" ~ "TX2",
+                               SITE == "TMPL" ~ "TX3",
+                               SITE == "OVTN" ~ "TX4"))
+sites$manu_site <- factor(sites$manu_site, levels = c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD"))
+write_rds(sites, "../data/sites.rds")
+```
+
+# Subpop color coding
+```{r}
+subpops <- enframe(unique(metadata$SUBPOP), name = NULL, value = "SUBPOP") %>%
+  mutate(color_code = case_when(SUBPOP == "Atlantic" ~ "#6E91CB",
+                                SUBPOP == "Gulf" ~ "#F47F72",    
+                                SUBPOP == "Midwest" ~ "#442C83",
+                                SUBPOP == "4X" ~ "grey", 
+                                SUBPOP == "8X" ~ "#090906"))
+subpops$SUBPOP <- factor(subpops$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+write_rds(subpops, path = "../data/subpop_color_coding.rds")
+```
+
+
+# Make phenotypes for flowering time paper from all the cleaned phenotypes.
+
+Specifically using GR50 & FL50 Julian dates from 2019. And using them to make cGDD between greenup and flowering for another GWAS phenotype.
+```{r}
+phenotypes <- read_rds("~/Github/pvdiv-phenotypes/data/Phenotypes_cleaned.rds")
+ptt_df <- read_rds("~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+fourway <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/0-data/Phenology_2019_Multiple_Environment.csv")
+fwy_prev_raw <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/0-data/Phenology_2016_2018.csv")
+```
+
+Also made a year-specific "PLOT_GL" for the 4WCR. Can use this to calculate cGDD by specific plant, when a GR50 and FL50 measurement are linked for the same plant for a F0 or F1, for example.
+```{r}
+phe_gwas <- phenotypes %>%
+  filter(PHE %in% c("EM1", "EM50", "FL1", "FL50", "GR1", "GR50", "GR100")) %>%
+  mutate(YEAR = 2019,
+         WHERE = "GWAS") %>%
+  select(-manu_site)
+
+fwy_prev <- fwy_prev_raw %>%
+  separate(ENVI, into = c("SITE", "YEAR"), sep = "_") %>%
+  group_by(LINE, SITE, YEAR) %>%
+  mutate(PLOT_GL = paste0(str_sub(SITE, end = 1), str_sub(YEAR, start =3, end = 4), "_", row_number())) %>%
+  mutate(YEAR = as.numeric(YEAR),
+         WHERE = "FWCR") %>%
+  pivot_longer(cols = BIOMASS:HT, names_to = "PHE", values_to = "MEAS") %>%
+  rename(PLANT_ID = LINE) %>%
+  filter(PHE %in% c("FL50", "GR50"))
+fwy_2019 <- fourway %>%
+  separate(ENVI, into = c("SITE", "YEAR"), sep = "_") %>%
+  group_by(LINE, SITE, YEAR) %>%
+  mutate(PLOT_GL = paste0(str_sub(SITE, end = 1), str_sub(YEAR, start =3, end = 4), "_", row_number())) %>%
+  mutate(YEAR = as.numeric(YEAR),
+         WHERE = "FWCR") %>%
+  pivot_longer(cols = FL50:HT, names_to = "PHE", values_to = "MEAS") %>%
+  rename(PLANT_ID = LINE) %>%
+  filter(PHE %in% c("FL50", "GR50"))
+
+phe_all <- phe_gwas %>%
+  full_join(fwy_2019, by = c("SITE", "PLOT_GL", "PLANT_ID", "YEAR", "PHE", "MEAS", "WHERE")) %>%
+  full_join(fwy_prev, by = c("SITE", "PLOT_GL", "PLANT_ID", "YEAR", "PHE", "MEAS", "WHERE")) %>%
+  filter(!is.na(MEAS))
+
+phe_all %>%
+  group_by(PLOT_GL, SITE, PLANT_ID, YEAR) %>%
+  tally() %>% arrange((n))
+
+write_rds(phe_all, path = "../data/Phenology_phenotypes_4wcr_and_gwas.rds")
+```
+
+cGDD between GR50 and FL50 for each YEAR, each PLANT_ID (and PLOT_GL)
+```{r}
+wea_df <- ptt_df %>%
+  dplyr::select(DOY:GDD_12C_SM, PTT_12C)
+
+fl_timing <- phe_all %>% 
+  filter(YEAR == 2019 & PHE %in% c("GR50", "FL50")) %>%
+  pivot_wider(names_from = PHE, values_from = MEAS) %>%
+  select(-SUBPOP) %>%
+  drop_na()
+
+
+wea_gr_fl <- wea_df %>%
+  left_join(fl_timing)
+
+
+wea_gr_fl2 <- wea_gr_fl %>%
+  group_by(Day_of_year, PLOT_GL, PLANT_ID) %>%
+  filter(between(Day_of_year, GR50, FL50)) %>% 
+  ungroup() 
+
+cgdd_df <- wea_gr_fl2 %>%
+  group_by(SITE, PLANT_ID, PLOT_GL, GR50, FL50) %>%
+  summarise(CGDD_12C = sum(GDD_12C_SM),
+            PTT_12C = sum(PTT_12C),
+            CRAIN = sum(RAIN_SM)
+            )
+
+write_rds(cgdd_df, path = "../data/Julian_date_and_GDD_phenotypes_4wcr_and_gwas.rds")
+
+wea_gr_fl3 <- wea_gr_fl %>%
+  group_by(Day_of_year, PLOT_GL, PLANT_ID) %>%
+  filter(between(Day_of_year, FL50-5, FL50)) %>% 
+  ungroup() 
+crain_df <- wea_gr_fl3 %>%
+  group_by(SITE, PLANT_ID, PLOT_GL, GR50, FL50) %>%
+  summarise(CGDD_12C_5d = sum(GDD_12C_SM),
+            PTT_12C_5d = sum(PTT_12C),
+            CRAIN_5d = sum(RAIN_SM)
+            )
+
+cumweadf <- cgdd_df %>%
+  left_join(crain_df)
+
+write_rds(cumweadf, path = "../data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+
+```
+

@@ -1,0 +1,22 @@
+---
+title: "Flowering_GWAS_Phenotypes"
+author: "Alice MacQueen"
+date: "6/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+phenotypes <- read_rds("~/Github/pvdiv-phenotypes/data/Phenotypes_cleaned.rds")
+```
+
+
+
+# Make phenotypes for flowering time paper from all the cleaned phenotypes.
+
+Specifically using GR50 & FL50 Julian dates from 2019. And using them to make cGDD between greenup and flowering for another GWAS phenotype.
+```{r}
+
+```
+
