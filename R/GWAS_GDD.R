@@ -5,7 +5,7 @@ library(AnnotationDbi)
 txdb <- loadDb(file = file.path("~", "Github", "pvdiv-genome",
                                 "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
 
-outputdir <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", "gwas")
+outputdir <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", "gwas", "GDD")
 
 inputfiles <- read_delim("~/Github/pvdiv-phenology-gxe/analysis/gwas/inputkinship.txt", delim = " ", col_names = "SNPfiles") # Midwest, Gulf, Atlantic, Midwest & Gulf
 
