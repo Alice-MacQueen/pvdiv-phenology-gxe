@@ -15,33 +15,75 @@ source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 ```
 
 #
+```{r}
+metadata <- read_rds("../data/metadata.rds")
+subpops <- read_rds("../data/subpop_color_coding.rds")
+phenotypes <- 
+  read_rds("../data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
+sites <- read_rds("../data/sites.rds")
+```
+```{r}
+phe_df <- phenotypes %>%
+  filter(WHERE == "GWAS" & !(SITE %in% c("OVTN", "FRMI"))) %>%
+  unite(col = "SITE_PHE", SITE, PHE) %>%
+  filter(SUBPOP %in% c("Atlantic", "Midwest", "Gulf")) %>%
+  select(-PLOT_GL, -WHERE, -YEAR) %>%
+  pivot_wider(names_from = SITE_PHE, values_from = MEAS, values_fn = mean) 
+  
+fwcr_df <- phenotypes %>%
+  filter(WHERE == "FWCR" & !(SITE %in% c("OVTN", "FRMI", "MNHT")) & YEAR == 2019) %>%
+  unite(col = "SITE_PHE", SITE, PHE) %>%
+  select( -WHERE, -SUBPOP, -PLOT_GL) %>%
+  pivot_wider(names_from = SITE_PHE, values_from = MEAS, values_fn = mean)
+
+phe_df %>%
+  ggplot(aes(x = PKLE_CRAIN, TMPL_CRAIN)) + geom_point(aes(color = SUBPOP)) + geom_abline(slope = 1, linetype = 2) +
+  scale_color_manual(values = subpops$color_code)
+
+fwcr_df %>%
+  ggplot(aes(x = PKLE_CRAIN, TMPL_CRAIN)) + geom_point() + geom_abline(slope = 1, linetype = 2)
+
+fwcr_df %>%
+  filter(PKLE_CGDD_12C > 1200)
+fwcr_df %>%
+  filter(KBSM_CGDD_12C < 200)
+
+gddcor <- phe_df %>%
+  select(matches("CRAIN$")) %>%
+  cor(., use = "pairwise")
+
+gddcor %>%
+  as_tibble(rownames = "SITE") %>%
+  pivot_longer(cols = -SITE, names_to = "SITE2", values_to = "COR") %>%
+  ggplot(aes(x = SITE, y = SITE2)) + 
+  geom_tile(aes(fill = COR)) +
+  scale_fill_viridis(option = "B") +
+  theme(legend.position = "right", axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+phe_df <- phe_df %>% select(PLANT_ID, SUBPOP, matches("GDD"), matches("GR50"), matches("FL50"), matches("CRAIN"), matches("PTT"), everything())
+
+atl_df <- phe_df %>% filter(SUBPOP == "Atlantic") 
+atl_df <- atl_df %>%
+  select(names(which(colSums(!is.na(atl_df)) > 100)))
+midw_df <- phe_df %>% filter(SUBPOP == "Midwest") 
+midw_df <- midw_df %>%
+  select(names(which(colSums(!is.na(midw_df)) > 100)))
+gulf_df <- phe_df %>% filter(SUBPOP == "Gulf") 
+gulf_df <- gulf_df %>%
+  select(names(which(colSums(!is.na(gulf_df)) > 100)))
+midwgulf_df <- phe_df %>% filter(SUBPOP %in% c("Gulf", "Midwest")) 
+midwgulf_df <- midwgulf_df %>%
+  select(names(which(colSums(!is.na(midwgulf_df)) > 100)))
+
+
+```
+I've messed up making CGDD for the fourway cross somehow. especially for KBSM. Ugh.
+
+KBSM & LINC most similar. CLMB, BRKG, LINC, and KBSM (and less so STIL) very similar. All corr > 0.6 though.
 
 ```{r}
-metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
-metadata <- metadata %>%
-  mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
-                            !is.na(PLOIDY) ~ as.character(PLOIDY),
-                            TRUE ~ NA_character_),
-         LATITUDE = abs(LATITUDE),
-         LONGITUDE = abs(LONGITUDE)) 
-phe_all <- read_rds("../data/all_phenotype_meas_4wcr_gwas.rds")
-sites <- readRDS("~/Github/pvdiv-phenotypes/data/sites.rds")
+phe_all <- read_rds("../data/older/all_phenotype_meas_4wcr_gwas.rds")
 phe_all$SUBPOP <- factor(phe_all$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
-sites <- sites %>%
-  mutate(manu_site = case_when(State != "TX" ~ State,
-                               SITE == "KING" ~ "TX1",
-                               SITE == "PKLE" ~ "TX2",
-                               SITE == "TMPL" ~ "TX3",
-                               SITE == "OVTN" ~ "TX4"))
-sites$manu_site <- factor(sites$manu_site, levels = c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD"))
-
-subpops <- enframe(unique(metadata$SUBPOP), name = NULL, value = "SUBPOP") %>%
-  mutate(color_code = case_when(SUBPOP == "Atlantic" ~ "#6E91CB",
-                                SUBPOP == "Gulf" ~ "#F47F72",    
-                                SUBPOP == "Midwest" ~ "#442C83",
-                                SUBPOP == "4X" ~ "grey", 
-                                SUBPOP == "8X" ~ "#090906"))
-subpops$SUBPOP <- factor(subpops$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
 
 # gulf: #F47F72, atlantic: #6E91CB, midwest: #442C83
 ```

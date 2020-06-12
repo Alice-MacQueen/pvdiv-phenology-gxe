@@ -16,9 +16,10 @@ metadata <- readRDS("~/Github/pvdiv-phenotypes/data/metadata.rds")
 metadata <- metadata %>%
   mutate(SUBPOP = case_when(!is.na(GENETIC_SUBPOP_KINSHIP) ~ as.character(GENETIC_SUBPOP_KINSHIP),
                             !is.na(PLOIDY) ~ as.character(PLOIDY),
-                            TRUE ~ NA_character_))
+                            TRUE ~ NA_character_),
+         LATITUDE = abs(LATITUDE),
+         LONGITUDE = abs(LONGITUDE))
 write_rds(metadata, "../data/metadata.rds")
-fourway <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/0-data/Phenology_2019_Multiple_Environment.csv")
 ```
 
 # common gardens
@@ -143,5 +144,73 @@ cumweadf <- cgdd_df %>%
 
 write_rds(cumweadf, path = "../data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
 
+```
+# All phenotypes
+```{r}
+phe_all <- read_rds("../data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+phenology <- read_rds("../data/Phenology_phenotypes_4wcr_and_gwas.rds")
+```
+
+```{r}
+phenology %>%
+  pivot_wider(names_from = PHE, values_from = MEAS) %>%
+  left_join(phe_all) %>%
+  dplyr::select(-CGDD_12C_5d, -PTT_12C_5d) %>%
+  pivot_longer(cols = EM1:CRAIN_5d, names_to = "PHE", values_to = "MEAS") %>%
+  filter(!is.na(MEAS)) %>%
+  group_by(PHE, WHERE, YEAR) %>%
+  tally() %>% arrange(desc(YEAR))
+
+phenology %>%
+  pivot_wider(names_from = PHE, values_from = MEAS) %>%
+  left_join(phe_all) %>%
+  dplyr::select(-CGDD_12C_5d, -PTT_12C_5d) %>%
+  pivot_longer(cols = EM1:CRAIN_5d, names_to = "PHE", values_to = "MEAS") %>%
+  filter(!is.na(MEAS)) %>%
+  write_rds("../data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
+```
+
+# Phenotypes for GWAS
+```{r}
+phenotypes <- 
+  read_rds("../data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
+
+phe_df <- phenotypes %>%
+  filter(WHERE == "GWAS" & !(SITE %in% c("OVTN", "FRMI"))) %>%
+  unite(col = "SITE_PHE", SITE, PHE) %>%
+  filter(SUBPOP %in% c("Atlantic", "Midwest", "Gulf")) %>%
+  select(-PLOT_GL, -WHERE, -YEAR) %>%
+  pivot_wider(names_from = SITE_PHE, values_from = MEAS, values_fn = mean) %>%
+  select(PLANT_ID, SUBPOP, matches("GDD"), matches("GR50"), matches("FL50"),
+         matches("CRAIN"), matches("PTT"), everything())
+
+midwgulf_df <- phe_df %>% filter(SUBPOP %in% c("Gulf", "Midwest")) 
+midwgulf_df <- midwgulf_df %>%
+  select(names(which(colSums(!is.na(midwgulf_df)) > 100))) %>%
+  select(-SUBPOP)
+midw_df <- phe_df %>% filter(SUBPOP == "Midwest") 
+midw_df <- midw_df %>%
+  select(names(which(colSums(!is.na(midw_df)) > 100))) %>%
+  select(-SUBPOP)
+gulf_df <- phe_df %>% filter(SUBPOP == "Gulf") 
+gulf_df <- gulf_df %>%
+  select(names(which(colSums(!is.na(gulf_df)) > 100))) %>%
+  select(-SUBPOP)
+atl_df <- phe_df %>% filter(SUBPOP == "Atlantic") 
+atl_df <- atl_df %>%
+  select(names(which(colSums(!is.na(atl_df)) > 100))) %>%
+  select(-SUBPOP)
+midwatl_df <- phe_df %>% filter(SUBPOP %in% c("Atlantic", "Midwest")) 
+midwatl_df <- midwatl_df %>%
+  select(names(which(colSums(!is.na(midwatl_df)) > 100))) %>%
+  select(-SUBPOP)
+gulfatl_df <- phe_df %>% filter(SUBPOP %in% c("Gulf", "Atlantic")) 
+gulfatl_df <- gulfatl_df %>%
+  select(names(which(colSums(!is.na(gulfatl_df)) > 100))) %>%
+  select(-SUBPOP)
+
+phe_subsets <- list(Midwest_and_Gulf = midwgulf_df, Midwest = midw_df, Gulf = gulf_df, Atlantic = atl_df, Midwest_and_Atlantic = midwatl_df, Gulf_and_Atlantic = gulfatl_df)
+write_rds(phe_subsets, "../data/Phenotype_Subsets_for_Subpop_GWAS.rds")
+names(phe_subsets)
 ```
 
