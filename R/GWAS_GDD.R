@@ -15,6 +15,5 @@ for(i in 1:nrow(inputfiles)){
   phe_df <- phe_subsets[i]
   snp <- snp_attach(inputfiles$SNPfiles[i])
   pvdiv_standard_gwas(snp, df = phe_df, type = "linear", outputdir = outputdir,
-                      savegwas = TRUE, saveannos = TRUE, txdb = txdb,
-                      minphe = 100)
+                      savegwas = TRUE, saveannos = FALSE, minphe = 100)
 }
