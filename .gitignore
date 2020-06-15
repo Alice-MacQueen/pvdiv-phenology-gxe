@@ -16,3 +16,4 @@ SVD_*
 data-raw/ignore/
 *.zip
 data/older/
+analysis/gwas/GDD/Lambda*
