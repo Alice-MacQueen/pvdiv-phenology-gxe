@@ -1,0 +1,143 @@
+---
+title: "Analyze Univariate GWAS"
+author: "Alice MacQueen"
+date: "6/15/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+#
+```{r}
+summary <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/gwas/GDD/Bonferroni/GWAS_summary.csv",
+                    col_names = "filename")
+
+summary %>%
+  separate(col = "filename", into = c("path", "site", "phe", NA, NA, "individuals", "SNPs", NA, "PCs", NA, NA, "date_run", "time_run"), sep = "_") %>%
+  separate(individuals, into = c("individuals", NA), sep = -1, convert = TRUE) %>%
+  mutate(subpop = case_when(SNPs == "12.1M" ~ "Midwest_Gulf",
+                            SNPs == "10.6M" ~ "Atlantic",
+                            SNPs == "8.8M" ~ "Midwest",
+                            SNPs == "10.3M" ~ "Gulf",
+                            SNPs == "12.3M" ~ "Midwest_Atlantic",
+                            SNPs == "11.5M" ~ "Atlantic_Gulf",
+                       TRUE ~ NA_character_)) %>%
+  write_csv("~/Github/pvdiv-phenology-gxe/analysis/gwas/GDD/Bonferroni/GWAS_summary.csv", 
+            col_names = TRUE)
+
+```
+
+```{r}
+summary1 <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/gwas/GDD/GWAS_summary_Bonferroni.csv", col_names = TRUE)
+summary2 <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/gwas/GDD/Bonferroni/GWAS_summary.csv", col_names = TRUE)
+
+summary2 %>%
+  rename(Manh_time = time_run) %>%
+  select(-path) %>%
+  left_join(summary1) %>%
+  mutate(time_run = coalesce(time_run, Manh_time),
+         time_run = str_sub(time_run, end = -5)) %>%
+  select(-Qqplot_order, -path, -Manh_time) %>%
+  write_csv("~/Github/pvdiv-phenology-gxe/analysis/gwas/GDD/Bonferroni/GWAS_summary.csv", 
+            col_names = TRUE, na = "")
+```
+
+```{r}
+summary <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/gwas/GDD/Bonferroni/GWAS_summary_Bonferroni_mash_decisions.csv", col_names = TRUE)
+
+summary %>%
+  filter(grepl("GR", phe)) %>%
+  group_by(subpop, site, qqplot) %>%
+  add_tally(sort = FALSE) %>%
+  select(indv:notes, n, everything()) %>%
+  arrange(subpop, site, phe)
+
+
+summary %>%
+  filter(grepl("GR", phe), qqplot != "drop", qqplot != "iffy") %>%
+  mutate(bonferroni = as.numeric(bonferroni)) %>%
+  arrange(subpop, site, phe) %>%
+  filter(qqplot == "signal" & bonferroni > 0) %>%
+  group_by(subpop) %>% 
+  tally()
+
+```
+
+```{r}
+summary %>%
+  filter(grepl("FL50$", phe), qqplot != "drop", qqplot != "iffy") %>%
+  mutate(bonferroni = as.numeric(bonferroni)) %>%
+  arrange(subpop, site, phe) %>%
+  filter(qqplot == "signal" & bonferroni > 0) %>%
+  group_by(subpop) %>% 
+  tally()
+summary %>%
+  filter(grepl("FL50$", phe))
+summary %>%
+  filter(grepl("FL50$", phe), qqplot != "drop", qqplot != "iffy") %>%
+  mutate(bonferroni = as.numeric(bonferroni)) %>%
+  arrange(subpop, site, phe) %>%
+  filter(qqplot == "signal" & bonferroni > 0)
+
+summary %>%
+  filter(qqplot != "drop", qqplot != "iffy", notes != "structure") %>%
+  mutate(bonferroni = as.numeric(bonferroni)) %>%
+  group_by(subpop, phe) %>%
+  summarise(sum = sum(bonferroni, na.rm = TRUE))
+```
+CGDD: 37 total. 14 have signal in QQplot & hits above Bonferroni
+Atlantic	1			
+Atlantic_Gulf	4			
+Gulf	1			
+Midwest	2			
+Midwest_Atlantic	2			
+Midwest_Gulf	5	
+PTT: 37 total. 13 have signal & hits above BOnferroni.
+Atlantic	1			
+Atlantic_Gulf	3			
+Midwest	1			
+Midwest_Atlantic	3			
+Midwest_Gulf	5	
+CRAIN: 17 of 37.
+Atlantic	2			
+Atlantic_Gulf	4			
+Gulf	3			
+Midwest	1			
+Midwest_Atlantic	3			
+Midwest_Gulf	4	
+CRAIN.5d: 16 of 37. 
+Atlantic	3			
+Atlantic_Gulf	3			
+Gulf	2			
+Midwest	1			
+Midwest_Atlantic	4			
+Midwest_Gulf	3	
+
+
+Very few GR have signal in QQplot & hits above Bonferroni. 
+GR1 13 of 40. GR50 12 of 40. GR100 5 of 38.
+Atlantic	3			
+Atlantic_Gulf	5			
+Gulf	7			
+Midwest 0 
+Midwest_Atlantic	7			
+Midwest_Gulf	8	
+
+EM has more: 33 out of 70. EM1 16 of 35.  EM50 17 of 35.
+Atlantic	6			
+Atlantic_Gulf	6			
+Gulf	5			
+Midwest	1			
+Midwest_Atlantic	7			
+Midwest_Gulf	8	
+
+FL also has more: 33 out of 76. FL1 17 of 39. FL50 16 of 37.
+Atlantic	4			
+Atlantic_Gulf	10			
+Gulf	4			
+Midwest	2			
+Midwest_Atlantic	7			
+Midwest_Gulf	6	
