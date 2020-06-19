@@ -1,0 +1,86 @@
+---
+title: "Draft_models_and_stats_2020-06-19"
+author: "Alice MacQueen"
+date: "6/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(switchgrassGWAS)
+library(cowplot)
+library(corpcor)
+library(viridis)
+```
+
+# ASReml-R analyses on server
+
+```{r}
+library(tidyverse)
+library(asreml)
+library(switchgrassGWAS)
+library(cowplot)
+library(viridis)
+library(corpcor)
+```
+
+# Load data
+
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "manuscript", "plots")
+metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
+sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
+subpops <- read_rds(file.path(workingdir, "data", "subpop_color_coding.rds"))
+phe <- read_rds(file.path(workingdir, "data",
+                          "Phenology_CGDD_PTT_and_rainfall_phenotypes.rds"))
+```
+
+
+Unfortunately, no parents flowered exclusively during shortening days at the three Texas sites; WBC flowered during shortening days in the majority years in the Texas common gardens.
+```{r}
+phe %>%
+  filter(WHERE == "FWCR" & PLANT_ID %in% c("AP13", "WBC", "DAC", "VS16", "VxW", "AxD")) %>%
+  filter(PHE == "FL50" & SITE %in% c("PKLE", "TMPL", "KING", "OVTN", "STIL")) %>%
+  group_by(PLANT_ID, SITE, MEAS >= 173) %>%
+  tally() 
+```
+AxD KING 0 / 41
+PKLE 0 / 39
+TMPL 0/39
+
+VxW 
+PKLE 2 / 43
+TMPL: 21 / 41
+KING: 0 / 43
+
+AP13:
+TMPL: 56 / 66 >= 173
+PKLE: 52 / 67 
+KING: 0 / 40
+
+WBC: 
+TMPL: 40/40
+PKLE: 39 / 46
+KING: 10 / 18
+
+DAC: 0% of 15
+VS16: 3.6% of 56
+
+```{r}
+56/66
+52/67
+0
+(56+52)/(66+67+40)
+
+100
+39/46
+10/18
+(40+39+10)/(40+46+18)
+2/56
+23/(43+41+43)
+41+39+39
+```
+
+
