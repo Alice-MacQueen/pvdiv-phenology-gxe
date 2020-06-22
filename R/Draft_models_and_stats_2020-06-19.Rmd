@@ -83,4 +83,118 @@ VS16: 3.6% of 56
 41+39+39
 ```
 
+# daylength cue
 
+Additionally, we observed no evidence for any specific day length that triggered flowering (model: DYLN at FL50 ~ SUBPOP + PLANT_ID + SUBPOP:LATITUDE does not explain much variance). 
+```{r}
+ptt_df <- readRDS(file = "~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+
+wea_df <- ptt_df %>%
+  dplyr::select(DOY:GDD_12C_SM, PTT_12C)
+
+GR_start <- phe %>% 
+  filter(WHERE == "GWAS") %>%
+  ungroup() %>%
+  group_by(SITE, YEAR, PLANT_ID, PLOT_GL) %>%
+  filter(PHE == "GR50") %>%
+  summarise(GR_start = floor(min(MEAS)))
+FL_end <- phe %>% 
+  filter(WHERE == "GWAS") %>%
+  ungroup() %>%
+  group_by(SITE, YEAR, PLANT_ID, PLOT_GL) %>%
+  filter(PHE == "FL50") %>%
+  summarise(FL_end = ceiling(max(MEAS)))
+
+wea_gr_fl <- wea_df %>%
+  left_join(GR_start) %>%
+  left_join(FL_end) %>%
+  group_by(Day_of_year, SITE, YEAR, PLANT_ID, PLOT_GL) %>%
+  filter(between(Day_of_year, GR_start, FL_end)) %>% 
+  ungroup() #
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+
+wea_gr_fl %>%
+  filter(Day_of_year == FL_end & FL_end == 175)
+```
+
+```{r}
+dyln_cue <- wea_gr_fl %>%
+  filter(Day_of_year == FL_end) %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP, LATITUDE)) %>%
+  mutate(Photo_cue = case_when(FL_end >= 174 ~ 1,
+                               FL_end <= 173 ~ 0,
+                               TRUE ~ NA_real_)) %>%
+  filter(Photo_cue == 1) %>%
+  filter(!is.na(SUBPOP) & !is.na(LATITUDE)) %>%
+  filter(PLANT_ID %in% row.names(k_full)) %>%
+  arrange(SITE) %>%
+  mutate(PLANT_ID = as_factor(PLANT_ID),
+         SITE = as_factor(SITE),
+         PLOT_GL = as_factor(PLOT_GL)) %>%
+  as.data.frame()
+dyln_cue$SUBPOP <- factor(dyln_cue$SUBPOP, levels = c("Midwest", "Gulf",
+                                                      "Atlantic", "4X", "8X"))
+
+asr_dyln <- asreml(DYLN ~ 1, random = 
+                    ~vm(PLANT_ID, k_full) + ~idv(SITE),
+                  residual = ~dsum(~units|SITE), data = dyln_cue, 
+                  workspace = "3gb")
+summary(asr_dyln)$varcomp
+summary(asr_dyln)$bic
+vpredict(asr_dyln, h2 ~ V2/(V1+V2+V3+V4+V5+V6+V7+V8+V9+V10+V11))
+save_plot(filename=file.path(outputdir, "dyln_asreml_1.png"), 
+          plot = plot(asr_dyln))
+
+asr_dsum <- asreml(DYLN ~ 1,
+                   random = ~vm(PLANT_ID, k_full) +
+                     ~idv(SITE),
+                   residual = ~idv(units),
+                   data = dyln_cue, 
+                   workspace = "3gb")
+summary(asr_dsum)$varcomp
+summary(asr_dsum)$bic
+vpredict(asr_dsum, h2 ~ V2/(V1+V2+V3))
+save_plot(filename=file.path(outputdir, "dyln_asreml_dsum.png"), 
+          plot = plot(asr_dsum))
+
+summary(asr_dyln)$bic    # first model is better
+summary(asr_dsum)$bic
+
+asr_corv <- asreml(DYLN ~ SITE,
+                   random = ~vm(PLANT_ID, k_full),
+                   residual = ~id(units):corv(SITE),
+                   data = dyln_cue,
+                   workspace = "3gb"
+                   )
+
+model.corv <- asreml(fixed = RESP ~ TIME,
+                     residual = ~id(RAT):corv(TIME),
+                     data = LUNG)
+
+
+summary(asr_dyln)$varcomp %>%
+  as_tibble(rownames = "Effect") %>%
+  mutate(`%Var` = (component*100)/sum(component),
+         `VarSE` = (std.error*100)/sum(component),
+         lowVar = `%Var` - VarSE,
+         hiVar = `%Var` + VarSE,
+         loglik = asr_dyln$loglik) %>%
+  write_csv(., "manuscript/plots/Variance_components_dyln_fl50_by_site_and_k_full.csv",
+            col_names = TRUE)
+
+dyln_cue$predicted <- asr_dyln$linear.predictors
+dyln_cue %>% 
+  as_tibble() %>%
+  group_by(SUBPOP) %>%
+  summarise(meanpred = mean(predicted),
+            fivepred = quantile(predicted, 0.025),
+            ninefivepred = quantile(predicted, 0.975),
+            fiveobs = quantile(DYLN, 0.025),
+            ninefiveobs = quantile(DYLN, 0.975))
+
+blup <- summary(asr_dyln, coef=TRUE)$coef.random %>% as_tibble(rownames = "Effect")
+int <- summary(asr_dyln, coef=TRUE)$coef.fixed %>% as_tibble(rownames = "Effect") %>% rename(std.error = `std error`)
+
+write_csv(int, "manuscript/plots/Effects_dyln_fl50_by_site_and_k_full.csv", col_names = TRUE)
+write_csv(blup, "manuscript/plots/Effects_dyln_fl50_by_site_and_k_full.csv", col_names = TRUE, append = TRUE)
+```
