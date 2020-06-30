@@ -180,8 +180,8 @@ indv,subpop,site,phe,bonferroni,qqplot,notes,peak info,mash_decision,SNPs,PCs,da
 446,Atlantic_Gulf,PKLE,PTT.12C,100,signal,nice,"6K, 8K",,11.5M,12,2020-06-16,02.10.14,320,,
 168,Atlantic_Gulf,STIL,PTT.12C,0,low sig,,,,11.5M,12,2020-06-16,03.34.32,365,,
 297,Atlantic_Gulf,TMPL,PTT.12C,1,signal,nice,8N,,11.5M,12,2020-06-16,03.48.14,412,,
-148,Gulf,CLMB,CGDD.12C,0,ok,nice,5N,,10.3M,2,2020-06-13,18.20.32,44,,
-191,Gulf,KBSM,CGDD.12C,100,signal,nice,"8N, 4K, 1N",,10.3M,4,2020-06-13,18.45.57,110,,
+148,Gulf,CLMB,CGDD.12C,0,ok,nice,5N,,10.3M,2,2020-06-13,18.20.32,44,,Gulf
+191,Gulf,KBSM,CGDD.12C,100,signal,nice,"8N, 4K, 1N",,10.3M,4,2020-06-13,18.45.57,110,,"CGDD12C, FL50 x 5"
 111,Gulf,KING,CGDD.12C,0,ok,,,,10.3M,8,2020-06-13,18.33.18,175,,
 184,Gulf,PKLE,CGDD.12C,10,ok,,,,10.3M,14,2020-06-13,18.07.43,256,,
 194,Gulf,TMPL,CGDD.12C,0,low sig,,,,10.3M,7,2020-06-13,18.58.39,368,,
@@ -238,8 +238,8 @@ indv,subpop,site,phe,bonferroni,qqplot,notes,peak info,mash_decision,SNPs,PCs,da
 111,Gulf,KING,PTT.12C,0,ok,,,,10.3M,8,2020-06-13,23.58.30,208,,
 184,Gulf,PKLE,PTT.12C,1,ok,nice,3N,,10.3M,14,2020-06-13,23.33.34,316,,
 194,Gulf,TMPL,PTT.12C,0,ok,,,,10.3M,4,2020-06-14,00.23.47,410,,
-119,Midwest,CLMB,CGDD.12C,10,signal,nice,8N,,8.8M,9,2020-06-13,11.57.03,43,,
-108,Midwest,KBSM,CGDD.12C,1,ok,nice,Chr04K,,8.8M,8,2020-06-13,12.08.46,109,,
+119,Midwest,CLMB,CGDD.12C,10,signal,nice,8N,,8.8M,9,2020-06-13,11.57.03,43,,Midwest
+108,Midwest,KBSM,CGDD.12C,1,ok,nice,Chr04K,,8.8M,8,2020-06-13,12.08.46,109,,"CGDD.12C, FL50 x3"
 120,Midwest,PKLE,CGDD.12C,10,signal,nice,"Chr02N, 6N",,8.8M,13,2020-06-13,11.45.17,255,,
 119,Midwest,CLMB,CRAIN,0,ok,,,,8.8M,11,2020-06-13,13.51.44,55,,
 108,Midwest,KBSM,CRAIN,0,low sig,,,,8.8M,5,2020-06-13,14.14.28,121,,
@@ -336,8 +336,8 @@ indv,subpop,site,phe,bonferroni,qqplot,notes,peak info,mash_decision,SNPs,PCs,da
 382,Midwest_Atlantic,PKLE,PTT.12C,10,signal,nice,1N,,12.3M,14,2020-06-15,06.07.53,319,,
 141,Midwest_Atlantic,STIL,PTT.12C,100,signal,nice,"4N, 6K, 6N, 8K",,12.3M,4,2020-06-15,07.21.08,364,,
 163,Midwest_Atlantic,TMPL,PTT.12C,1,ok,,,,12.3M,4,2020-06-15,07.35.21,409,,
-111,Midwest_Gulf,BRKG,CGDD.12C,1,ok,,,,12.1M,12,2020-06-12,16.00.54,2,,
-267,Midwest_Gulf,CLMB,CGDD.12C,10,signal,nice,5N,,12.1M,15,2020-06-12,16.15.08,46,,
+111,Midwest_Gulf,BRKG,CGDD.12C,1,ok,,,,12.1M,12,2020-06-12,16.00.54,2,,Midwest_Gulf
+267,Midwest_Gulf,CLMB,CGDD.12C,10,signal,nice,5N,,12.1M,15,2020-06-12,16.15.08,46,,"CGDD_12C, FL50 8 sites"
 299,Midwest_Gulf,KBSM,CGDD.12C,100,signal,nice,lots,,12.1M,8,2020-06-12,16.59.16,112,,
 135,Midwest_Gulf,KING,CGDD.12C,1,signal,,,,12.1M,4,2020-06-12,16.29.50,176,,
 132,Midwest_Gulf,LINC,CGDD.12C,100,signal,nice,"Chr04K, Chr05N, 8K",,12.1M,6,2020-06-12,16.44.31,212,,
