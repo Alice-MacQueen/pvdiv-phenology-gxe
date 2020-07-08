@@ -165,3 +165,9 @@ Atlantic hardly any significant effects for GDD/FL50. 10. 2N, 5K, 5N, 7K, 9K, 9N
 ED_PCA_1.
 
 Try CRAIN and other stuff? FL50 & GDD alone? Hmm.
+
+
+```{r}
+install_github("alice-macqueen/switchgrassGWAS")
+```
+

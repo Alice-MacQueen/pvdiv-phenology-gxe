@@ -1,0 +1,212 @@
+---
+title: "Make_mash_U_hyp"
+author: "Alice MacQueen"
+date: 2020-07-07
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+library(geosphere)
+library(spdep)
+library(rlist)
+sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
+sitedf <- as.data.frame(sites)
+coordinates(sitedf) <- c("Longitude", "Latitude")
+```
+
+# Covariance matrices for mash
+
+Want to make these based on the inverse of the distance between sites, and also 
+on the covariances
+
+```{r}
+sitenb <- tri2nb(sitedf, row.names = sitedf$manu_site)
+summary(sitenb)
+wm <- nb2mat(sitenb, style = 'W')
+ww <- nb2listw(sitenb, style = 'W')
+moran(sitedf$Elevation, ww, n=length(ww$neighbours), S0=Szero(ww), NAOK = TRUE)
+moran.test(sitedf$Elevation, ww, randomisation=FALSE, na.action = na.omit)
+moran.mc(sitedf$Elevation, ww, nsim=499)
+
+wmw <- nb2mat(sitenb, style = 'W')
+colnames(wmw) <- rownames(wmw)
+
+
+U1 <- as_tibble(wmw, .name_repair = "unique") %>%
+    mutate(rowU = sitedf$manu_site) %>%
+    pivot_longer(cols = -.data$rowU, names_to = "colU",
+                 values_to = "covar") %>%
+    filter(!is.na(.data$covar))
+
+  U1 %>%
+    ggplot(aes(x = .data$rowU, y = .data$colU)) +
+    CDBNgenomics::theme_oeco +
+    geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+    scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                    "#27AD81FF", "#5DC863FF", "#FDE725FF")) +
+    geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+    theme(legend.position = "right",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    xlab("") + ylab("")
+```
+
+## Inverse distances between sites, in 100km
+```{r}
+distsites <- distm(sitedf)
+colnames(distsites) <- sites$SITE
+rownames(distsites) <- sites$SITE
+W <- 1 / (distsites/100000) # 100km distance measure
+W[is.infinite(W)] <- NA
+diag(W) <- max(W, na.rm = TRUE) + min(W, na.rm = TRUE)
+U_dist <- W
+U1 <- as_tibble(W, .name_repair = "unique") %>%
+    mutate(rowU = rownames(W)) %>%
+    pivot_longer(cols = -.data$rowU, names_to = "colU",
+                 values_to = "covar") %>%
+    filter(!is.na(.data$covar))
+
+  U1 %>%
+    ggplot(aes(x = .data$rowU, y = .data$colU)) +
+    CDBNgenomics::theme_oeco +
+    geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+    scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                    "#27AD81FF", "#5DC863FF", "#FDE725FF")) +
+    geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+    theme(legend.position = "right",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    xlab("") + ylab("")
+```
+
+## Weather covariances in the time period between greenup and flowering, plus in the 5d before flowering
+```{r}
+phe_wea <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+
+weadf_cov <- phe_wea %>%
+  pivot_longer(cols = GR50:CRAIN_5d, names_to = "phe", values_to = "MEAS") %>%
+  unite(col = "site_phe", SITE, phe, sep = ".") %>%
+  pivot_wider(id_cols = PLANT_ID, names_from = site_phe, values_from = MEAS, values_fn = mean)
+
+weadf_cov2 <- cov(weadf_cov[-1], use = "pairwise")
+colnames(weadf_cov2)
+
+pattern <- c("GR50", "FL50", "CGDD_12C$", "CGDD_12C_5d", "PTT_12C$", 
+             "PTT_12C_5d", "CRAIN$", "CRAIN_5d" )
+Ureturn <- list()
+
+for(i in seq_along(pattern)){
+  U_wea <- weadf_cov2 %>%
+    as_tibble(rownames = "rowU") %>%
+    dplyr::select(rowU, matches(pattern[i])) %>%
+    filter(grepl(pattern[i], rowU)) %>%
+    separate(rowU, into = c("site", "phe"), sep = 4) %>%
+    dplyr::select(-phe) %>%
+    column_to_rownames(var = "site") %>%
+    as.data.frame()
+  colnames(U_wea) <- str_sub(colnames(U_wea), end = 4)
+  
+  Ureturn <- list.append(Ureturn, U_wea = U_wea)
+  names(Ureturn)[i] <- paste0("U_", str_extract(pattern[i], "[^$]+")) # matches one or more characters other than $
+}
+names(Ureturn)
+Ureturn <- list.append(Ureturn, U_dist = U_dist)
+```
+
+
+# Use these U_hyp in mash_standard_run....
+# mash runs
+
+Midwest: CLMB, KBSM, PKLE
+Gulf: CLMB KBSM KING PKLE TMPL
+Midwest_Gulf: BRKG CLMB KBSM KING LINC PKLE STIL TMPL
+Atlantic: CLMB KBSM LINC PKLE TMPL
+always in alphabetical order, so that's good.
+Also, each location is repeated twice. Once for CGDD and once for FL50. So covar matrices should be duplicated also? Ehhhh might also consider running these separately first! Honestly. And join them in a mash analysis later if I want to compare them. But just duplicate them now to test??
+
+```{r}
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                  "gwas", "GDD")
+phe_suffix <- c("midwest", "gulf", "midwest_gulf", "atlantic")
+numSNPs <- c(28000, 10000, 4000, 10000)
+
+gulf_loc <- c("CLMB", "KBSM", "KING", "PKLE", "TMPL")
+midw_loc <- c("CLMB", "KBSM", "PKLE")
+atl_loc <- c("CLMB", "KBSM", "LINC", "PKLE", "TMPL")
+midwgulf_loc <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL",
+                  "TMPL")
+
+Ugulf <- list()
+i = 1 
+for(i in seq_along(names(Ureturn))){
+  Utest <- Ureturn[[i]][which(rownames(Ureturn[[i]]) %in% gulf_loc),
+                 which(colnames(Ureturn[[i]]) %in% gulf_loc)]
+  
+  Urow <- rep(Utest, each = 2)
+  Utr <- matrix(unlist(Urow), nrow = nrow(Utest), ncol = ncol(Utest)*2)
+  Ut <- rep(Utr, each = 2)
+  Udup <- matrix(unlist(Ut), nrow = nrow(Utr)*2, ncol = ncol(Utr))
+  colnames(Udup) <- rep(gulf_loc, each = 2)
+  rownames(Udup) <- rep(gulf_loc, each = 2)
+  Ugulf <- list.append(Ugulf, Udup = Udup)
+  names(Ugulf)[i] <- names(Ureturn)[i]
+}
+
+write_rds(Ugulf, path = file.path(path, "U_hyp_gulf.rds"))
+```
+
+```{r}
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                  "gwas", "GDD")
+phe_suffix <- c("midwest", "gulf", "midwest_gulf", "atlantic")
+numSNPs <- c(28000, 10000, 4000, 10000)
+
+gulf_loc <- c("CLMB", "KBSM", "KING", "PKLE", "TMPL")
+midw_loc <- c("CLMB", "KBSM", "PKLE")
+atl_loc <- c("CLMB", "KBSM", "LINC", "PKLE", "TMPL")
+midwgulf_loc <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL",
+                  "TMPL")
+U_gulf <- read_rds(file.path(path, "U_hyp_gulf.rds"))
+i = 2
+  m_out <- mash_standard_run(path = path, numSNPs = numSNPs[i], U_hyp = U_gulf,
+                             suffix = paste0(phe_suffix[i], "_U_hyp_v1"),
+                             saveoutput = TRUE)
+```
+
+## Look at old mash_standard_runs
+
+Need to rerun these without using ref = 'mean'. Then I'll be able to look at the covariance matrices.
+```{r}
+library(switchgrassGWAS)
+
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                  "gwas", "GDD")
+phe_suffix <- c( "atlantic", "gulf", "midwest", "midwest_gulf")
+numSNPs <- c(10000, 10000, 28000, 4000)
+
+gulf_loc <- c("CLMB", "KBSM", "KING", "PKLE", "TMPL")
+midw_loc <- c("CLMB", "KBSM", "PKLE")
+atl_loc <- c("CLMB", "KBSM", "LINC", "PKLE", "TMPL")
+midwgulf_loc <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL",
+                  "TMPL")
+mash_rds <- pvdiv_results_in_folder(path = path, pattern = "^Strong_Effects")
+mash_suffix <- str_sub(mash_rds, start = 24, end = -5) %>%
+  str_replace(., "^_", "")
+
+i = 2
+for(i in seq_along(mash_rds)){
+  m <- readRDS(file.path(path, mash_rds[i]))
+  suffix <- mash_suffix[i]
+  p1 <- mash_plot_manhattan_by_condition(m, saveoutput = TRUE, suffix = suffix)
+  p2 <- mash_plot_sig_by_condition(m, saveoutput = TRUE, suffix = suffix)
+  p3 <- mash_plot_pairwise_sharing(m, saveoutput = TRUE, suffix = suffix)
+  p4 <- mash_plot_effects(m, n = 1, saveoutput = TRUE, suffix = suffix)
+  p5 <- mash_plot_effects(m, n = 2, saveoutput = TRUE, suffix = suffix)
+  p6 <- mash_plot_covar(m, saveoutput = TRUE, suffix = suffix)
+  p7 <- mash_plot_Ulist(m, range = get_U_by_mass(m), saveoutput = TRUE, 
+                  suffix = suffix)
+}
+```
+
