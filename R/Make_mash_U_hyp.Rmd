@@ -322,12 +322,14 @@ for(i in seq_along(names(Ureturn))){
   Umidw1 <- Ureturn[[i]][which(rownames(Ureturn[[i]]) %in% midw_loc),
                  which(colnames(Ureturn[[i]]) %in% midw_loc)]
 
-  Ugulfhyp <- list.append(Ugulfhyp, Ugulf1 = Ugulf1)
-  Umidwhyp <- list.append(Umidwhyp, Umidw1 = Umidw1)
+  Ugulfhyp <- list.append(Ugulfhyp, Ugulf1 = as.matrix(Ugulf1))
+  Umidwhyp <- list.append(Umidwhyp, Umidw1 = as.matrix(Umidw1))
   names(Ugulfhyp)[i] <- names(Ureturn)[i]
   names(Umidwhyp)[i] <- names(Ureturn)[i]
 }
 str(Umidwhyp)
+is.matrix(Umidwhyp$U_GR50)
+isSymmetric(Umidwhyp$U_GR50)
 write_rds(Ugulfhyp, path = file.path(path, "U_hyp_gulf_1phe.rds"))
 write_rds(Umidwhyp, path = file.path(path, "U_hyp_midw_1phe.rds"))
 ```
@@ -338,8 +340,51 @@ path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis",
 numSNPs <- 20000
 suffix = "midwest_uhyp1"
 Umidwhyp <- read_rds(path = file.path(path, "U_hyp_midw_1phe.rds"))
+Udist <- Umidwhyp$U_dist
+
+m <- mash_standard_run(path = path, numSNPs = numSNPs, U_hyp = Udist, 
+                       suffix = suffix, saveoutput = TRUE)
 
 m <- mash_standard_run(path = path, numSNPs = numSNPs, U_hyp = Umidwhyp, 
                        suffix = suffix, saveoutput = TRUE)
+```
+Error in mashr::mash_set_data(Bhat_random, Shat_random) :
+  Shat cannot contain NaN/Inf values
+  problem for midwest...
+  
+U_hyp must be matrices. They must be symmetric, in the same order as Bhat etc, and with the same # rows and cols as Bhat etc.
+
+```{r}
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                       "gwas", "GDD", "Uhyp")
+numSNPs <- 30000
+suffix = "gulf_uhyp1"
+Ugulfhyp <- read_rds(path = file.path(path, "U_hyp_gulf_1phe.rds"))
+Udistg <- Ugulfhyp$U_dist
+U_h1 <- list(Udist = as.matrix(Udistg))
+isSymmetric(U_h1$Udist)
+typeof(Udistg)
+
+U_ed <- file.path(path, "Mash_data_driven_covariances_30000_gulf_uhyp1.rds")
+
+m <- mash_standard_run(path = path, numSNPs = numSNPs, U_ed = U_ed,
+                       U_hyp = U_h1, suffix = suffix, saveoutput = TRUE)
+```
+
+```{r}
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                       "gwas", "GDD", "Uhyp")
+m <- readRDS(file.path(path, "Strong_Effects30000SNPs_gulf_uhyp1.rds"))
+suffix = "gulf_uhyp1"
+mash_plot_covar(m, saveoutput = TRUE, suffix = suffix)
+mash_plot_Ulist(m, range = get_U_by_mass(m), saveoutput = TRUE, 
+                  suffix = suffix)
+mash_plot_sig_by_condition(m, saveoutput = TRUE, suffix = suffix)
+mash_plot_pairwise_sharing(m, saveoutput = TRUE, suffix = suffix)
+mash_plot_effects(m, n = 1, saveoutput = TRUE, suffix = suffix)
+mash_plot_effects(m, n = 2, saveoutput = TRUE, suffix = suffix)
+mash_plot_effects(m, n = 8)
+
+mash_plot_manhattan_by_condition(m, saveoutput = TRUE, suffix = suffix)
 ```
 
