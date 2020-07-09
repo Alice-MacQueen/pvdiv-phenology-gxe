@@ -201,10 +201,11 @@ midw_loc <- c("CLMB", "KBSM", "PKLE")
 atl_loc <- c("CLMB", "KBSM", "LINC", "PKLE", "TMPL")
 midwgulf_loc <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL",
                   "TMPL")
-U_gulf <- read_rds(file.path(path, "U_hyp_gulf_symmetric.rds"))
+U_gulf <- read_rds(file.path(path, "U_hyp_gulf.rds"))
 i = 2
-  m_out <- mash_standard_run(path = path, numSNPs = numSNPs[i], U_hyp = U_gulf,
-                             suffix = phe_suffix[i],
+U_ed <- file.path(path, "Mash_data_driven_covariances_10000_gulf.rds")
+  m_out <- mash_standard_run(path = path, numSNPs = numSNPs[i], U_ed = U_ed,
+                             U_hyp = U_gulf, suffix = phe_suffix[i],
                              saveoutput = TRUE)
 ```
 
@@ -241,5 +242,104 @@ for(i in seq_along(mash_rds)){
   p7 <- mash_plot_Ulist(m, range = get_U_by_mass(m), saveoutput = TRUE, 
                   suffix = suffix)
 }
+load_all("~/Github/switchgrassGWAS")
+```
+
+
+# Test mash with U_hyp
+
+I got lots of errors the first time I ran mash to completion with U_hyp, and I am not yet certain why. I'd like to run mash on just FL50 in the gulf, and GDD in the midwest maybe, to see if I can diagnose what's going on or what the covariance matrices should look like. 
+
+## Rerun bigsnp2mashr
+
+```{r}
+trim_name <- function(x){
+    for(i in seq_along(x)){
+  if((str_sub(x[i], start = -1) %in% c("_")))
+  { x[i] <- str_sub(x[i], end = -2) }
+    }
+  return(x)
+}
+
+pathin <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                       "gwas", "GDD")
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                       "gwas", "GDD", "Uhyp")
+
+inputfiles <- read_delim(file.path("~", "Github", "pvdiv-phenology-gxe", 
+                                   "analysis", "gwas", "inputkinship.txt"), 
+                         delim = " ", col_names = "SNPfiles") 
+# Midwest & Gulf, Midwest, Gulf, Atlantic, Midwest & Atlantic, Gulf & Atlantic
+
+
+# Midwest
+snp <- snp_attach(inputfiles$SNPfiles[2])
+gwas_rds <- pvdiv_results_in_folder(path = pathin, 
+                                    pattern = paste0("GWAS_datatable_",
+                                                     "(KBSM|PKLE|CLMB)", ".+",
+                                                     "(CGDD_12C)", 
+                                                     ".+",
+                                                     "\\d+g_8.8M"))
+
+site_phe <- trim_name(str_sub(gwas_rds, start = 16, end = -41))
+numSNPs <- 20000 #ceiling((1000000 / length(site_phe)^2)/1000)*1000
+
+midwest_mashin <- 
+  pvdiv_bigsnp2mashr(path = pathin, snp = snp,
+                    gwas_rds = gwas_rds, phenotypes = site_phe, 
+                    numSNPs = numSNPs, scale = FALSE, 
+                    suffix = "midwest_uhyp1", saveoutput = TRUE)
+# Gulf [3]
+snp <- snp_attach(inputfiles$SNPfiles[3])
+gwas_rds <- pvdiv_results_in_folder(path = pathin, 
+                                    pattern = paste0("GWAS_datatable_", ".+",
+                                                     "(FL50)", 
+                                                     ".+",
+                                                     "\\d+g_10.3M"))
+
+site_phe <- trim_name(str_sub(gwas_rds, start = 16, end = -42))
+numSNPs <- 30000 #ceiling((1000000 / length(site_phe)^2)/1000)*1000
+
+gulf_mashin <- 
+  pvdiv_bigsnp2mashr(path = pathin, snp = snp,
+                    gwas_rds = gwas_rds, phenotypes = site_phe, 
+                    numSNPs = numSNPs, scale = FALSE, suffix = "gulf_uhyp1", 
+                    saveoutput = TRUE)
+```
+
+# Uhyp for midwest and gulf
+
+```{r}
+gulf_loc <- c("CLMB", "KBSM", "KING", "PKLE", "TMPL")
+midw_loc <- c("CLMB", "KBSM", "PKLE")
+
+Ugulfhyp <- list()
+Umidwhyp <- list()
+
+for(i in seq_along(names(Ureturn))){
+  Ugulf1 <- Ureturn[[i]][which(rownames(Ureturn[[i]]) %in% gulf_loc),
+                 which(colnames(Ureturn[[i]]) %in% gulf_loc)]
+  Umidw1 <- Ureturn[[i]][which(rownames(Ureturn[[i]]) %in% midw_loc),
+                 which(colnames(Ureturn[[i]]) %in% midw_loc)]
+
+  Ugulfhyp <- list.append(Ugulfhyp, Ugulf1 = Ugulf1)
+  Umidwhyp <- list.append(Umidwhyp, Umidw1 = Umidw1)
+  names(Ugulfhyp)[i] <- names(Ureturn)[i]
+  names(Umidwhyp)[i] <- names(Ureturn)[i]
+}
+str(Umidwhyp)
+write_rds(Ugulfhyp, path = file.path(path, "U_hyp_gulf_1phe.rds"))
+write_rds(Umidwhyp, path = file.path(path, "U_hyp_midw_1phe.rds"))
+```
+
+```{r}
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                       "gwas", "GDD", "Uhyp")
+numSNPs <- 20000
+suffix = "midwest_uhyp1"
+Umidwhyp <- read_rds(path = file.path(path, "U_hyp_midw_1phe.rds"))
+
+m <- mash_standard_run(path = path, numSNPs = numSNPs, U_hyp = Umidwhyp, 
+                       suffix = suffix, saveoutput = TRUE)
 ```
 
