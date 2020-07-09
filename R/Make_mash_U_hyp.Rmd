@@ -112,7 +112,12 @@ for(i in seq_along(pattern)){
   names(Ureturn)[i] <- paste0("U_", str_extract(pattern[i], "[^$]+")) # matches one or more characters other than $
 }
 names(Ureturn)
+
+
+Ureturn$U_dist <- Ureturn$U_dist %>% as.data.frame()
 Ureturn <- list.append(Ureturn, U_dist = U_dist)
+
+str(Ureturn)
 ```
 
 
@@ -153,11 +158,12 @@ for(i in seq_along(names(Ureturn))){
   Ugulf <- list.append(Ugulf, Udup = Udup)
   names(Ugulf)[i] <- names(Ureturn)[i]
 }
-
+str(Ugulf)
 write_rds(Ugulf, path = file.path(path, "U_hyp_gulf.rds"))
 
 Ugulf$U_GR50
 U_gulf_sym <- list()
+isSymmetric(Ugulf$U_dist)
 i = 2
 for(i in seq_along(names(Ugulf))){
   Usym <- Ugulf[[i]]
@@ -195,7 +201,7 @@ midw_loc <- c("CLMB", "KBSM", "PKLE")
 atl_loc <- c("CLMB", "KBSM", "LINC", "PKLE", "TMPL")
 midwgulf_loc <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL",
                   "TMPL")
-U_gulf <- read_rds(file.path(path, "U_hyp_gulf.rds"))
+U_gulf <- read_rds(file.path(path, "U_hyp_gulf_symmetric.rds"))
 i = 2
   m_out <- mash_standard_run(path = path, numSNPs = numSNPs[i], U_hyp = U_gulf,
                              suffix = phe_suffix[i],
