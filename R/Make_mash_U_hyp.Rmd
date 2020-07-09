@@ -352,7 +352,13 @@ Error in mashr::mash_set_data(Bhat_random, Shat_random) :
   Shat cannot contain NaN/Inf values
   problem for midwest...
   
-U_hyp must be matrices. They must be symmetric, in the same order as Bhat etc, and with the same # rows and cols as Bhat etc.
+U_hyp must be numeric matrices. They must be symmetric, square, in the same order as Bhat etc, and with the same # rows and cols as Bhat etc.
+
+They can't contain NaN, NA, Inf values. And it might help if they're positive definite. 
+
+That's all the info in the mash package that I can find. 
+
+I suppose that I want them to be on the same scale as the mash input data, not the same scale as whatever weather or distance data they came from. This is a sense in which correlation matrices would be better. Take a look at the U_ed. Rescale to a similar scale as ED_PCA_1. But then...
 
 ```{r}
 path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
@@ -365,10 +371,14 @@ U_h1 <- list(Udist = as.matrix(Udistg))
 isSymmetric(U_h1$Udist)
 typeof(Udistg)
 
+U_h2 <- list(Udist = Ugulfhyp$U_dist, UGDD = Ugulfhyp$U_CGDD_12C)
+
 U_ed <- file.path(path, "Mash_data_driven_covariances_30000_gulf_uhyp1.rds")
 
 m <- mash_standard_run(path = path, numSNPs = numSNPs, U_ed = U_ed,
                        U_hyp = U_h1, suffix = suffix, saveoutput = TRUE)
+m <- mash_standard_run(path = path, numSNPs = numSNPs, U_ed = U_ed,
+                       U_hyp = U_h2, suffix = suffix, saveoutput = TRUE)
 ```
 
 ```{r}
@@ -377,8 +387,7 @@ path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis",
 m <- readRDS(file.path(path, "Strong_Effects30000SNPs_gulf_uhyp1.rds"))
 suffix = "gulf_uhyp1"
 mash_plot_covar(m, saveoutput = TRUE, suffix = suffix)
-mash_plot_Ulist(m, range = get_U_by_mass(m), saveoutput = TRUE, 
-                  suffix = suffix)
+mash_plot_Ulist(m, range = get_U_by_mass(m))
 mash_plot_sig_by_condition(m, saveoutput = TRUE, suffix = suffix)
 mash_plot_pairwise_sharing(m, saveoutput = TRUE, suffix = suffix)
 mash_plot_effects(m, n = 1, saveoutput = TRUE, suffix = suffix)
@@ -388,3 +397,70 @@ mash_plot_effects(m, n = 8)
 mash_plot_manhattan_by_condition(m, saveoutput = TRUE, suffix = suffix)
 ```
 
+
+```{r}
+load_all("~/Github/switchgrassGWAS")
+fitted_g <- list(Ulist = u_ed)
+m_mock <- list(fitted_g = fitted_g)
+mash_plot_Ulist(m_mock, limits = FALSE)
+
+bhat %>% as_tibble() %>%
+  colMeans()
+summary(bhat)
+
+# CLMB_FL50 KBSM_FL50 KING_FL50 PKLE_FL50 TMPL_FL50 
+240.7987 - 173  
+261.9135 - 173   
+209.8265 - 173  
+210.2195 - 173  
+240.0100 - 173  
+
+B_hat_strong_df_30000topSNPs_gulf_solstice <- bhat %>%
+  mutate(Bhat_CLMB_FL50 = Bhat_CLMB_FL50 + (240.7987 - 173),
+         Bhat_KING_FL50 = Bhat_KING_FL50 + (209.8265 - 173 ),
+         Bhat_KBSM_FL50 = Bhat_KBSM_FL50 + (261.9135 - 173),
+         Bhat_PKLE_FL50 = Bhat_PKLE_FL50 + (210.2195 - 173),
+         Bhat_TMPL_FL50 = Bhat_TMPL_FL50 + (240.0100 - 173),
+         ) #%>%
+  #summary()
+write_rds(B_hat_strong_df_30000topSNPs_gulf_solstice, file.path(path, "B_hat_strong_df_30000topSNPs_gulf_solstice.rds"))
+
+B_hat_random_df_30000topSNPs_gulf_solstice <- B_hat_random_df_30000topSNPs_gulf_uhyp1 %>%
+  mutate(Bhat_CLMB_FL50 = Bhat_CLMB_FL50 + (240.7987 - 173),
+         Bhat_KING_FL50 = Bhat_KING_FL50 + (209.8265 - 173 ),
+         Bhat_KBSM_FL50 = Bhat_KBSM_FL50 + (261.9135 - 173),
+         Bhat_PKLE_FL50 = Bhat_PKLE_FL50 + (210.2195 - 173),
+         Bhat_TMPL_FL50 = Bhat_TMPL_FL50 + (240.0100 - 173),
+         ) 
+write_rds(B_hat_random_df_30000topSNPs_gulf_solstice, file.path(path, "B_hat_random_df_30000topSNPs_gulf_solstice.rds"))
+```
+what is each site's mean FL50? Just for Gulf plants.
+
+For interpretability of the mash results... may want to scale all these effects so that 0 is, say, the summer solstice? Instead of the mean flowering time at that site for that pop.
+```{r}
+phe_gulf <- phenotypes$Gulf %>%
+  select(PLANT_ID, ends_with("FL50"))
+
+sd(phe_gulf$CLMB_FL50, na.rm = TRUE)
+sd(phe_gulf$KBSM_FL50, na.rm = TRUE)
+sd(phe_gulf$KING_FL50, na.rm = TRUE)
+sd(phe_gulf$PKLE_FL50, na.rm = TRUE)
+sd(phe_gulf$TMPL_FL50, na.rm = TRUE)
+
+summary(phe_gulf$CLMB_FL50, na.rm = TRUE)
+summary(phe_gulf$KBSM_FL50, na.rm = TRUE)
+summary(phe_gulf$KING_FL50, na.rm = TRUE)
+summary(phe_gulf$PKLE_FL50, na.rm = TRUE)
+summary(phe_gulf$TMPL_FL50, na.rm = TRUE)
+summary(phe_gulf)
+
+
+```
+CLMB_FL50 KBSM_FL50 KING_FL50 PKLE_FL50 TMPL_FL50 
+240.7987   261.9135  209.8265  210.2195 240.0100 
+
+241 +/- 18.6
+262 +/- 10.5
+210 +/- 34
+210 +/- 35
+240 +/- 28
