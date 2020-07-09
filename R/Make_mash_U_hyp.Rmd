@@ -155,6 +155,33 @@ for(i in seq_along(names(Ureturn))){
 }
 
 write_rds(Ugulf, path = file.path(path, "U_hyp_gulf.rds"))
+
+Ugulf$U_GR50
+U_gulf_sym <- list()
+i = 2
+for(i in seq_along(names(Ugulf))){
+  Usym <- Ugulf[[i]]
+  Usym1 <- Usym
+  Usym2 <- Usym
+  for(j in nrow(Usym1)){
+    for(k in ncol(Usym1)){
+      if(j < k){
+        Usym1[j, k] <- Usym[j, k]
+        Usym2[j, k] <- Usym[k, j]
+      } else {
+        Usym1[j, k] <- Usym[k, j]
+        Usym2[j, k] <- Usym[j, k]
+      }
+    }
+  }
+  U_gulf_sym <- list.append(U_gulf_sym, U1 = Usym1, U2 = Usym2)
+  length(names(U_gulf_sym))
+  names(U_gulf_sym)[length(names(U_gulf_sym))-1] <- paste0(names(Ugulf)[i], "_1")
+  names(U_gulf_sym)[length(names(U_gulf_sym))] <- paste0(names(Ugulf)[i], "_2")
+}
+
+write_rds(U_gulf_sym, path = file.path(path, "U_hyp_gulf_symmetric.rds"))
+
 ```
 
 ```{r}
@@ -171,7 +198,7 @@ midwgulf_loc <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL",
 U_gulf <- read_rds(file.path(path, "U_hyp_gulf.rds"))
 i = 2
   m_out <- mash_standard_run(path = path, numSNPs = numSNPs[i], U_hyp = U_gulf,
-                             suffix = paste0(phe_suffix[i], "_U_hyp_v1"),
+                             suffix = phe_suffix[i],
                              saveoutput = TRUE)
 ```
 
