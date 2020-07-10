@@ -392,7 +392,7 @@ mash_plot_sig_by_condition(m, saveoutput = TRUE, suffix = suffix)
 mash_plot_pairwise_sharing(m, saveoutput = TRUE, suffix = suffix)
 mash_plot_effects(m, n = 1, saveoutput = TRUE, suffix = suffix)
 mash_plot_effects(m, n = 2, saveoutput = TRUE, suffix = suffix)
-mash_plot_effects(m, n = 8)
+mash_plot_effects(m, n = 8, saveoutput = TRUE)
 
 mash_plot_manhattan_by_condition(m, saveoutput = TRUE, suffix = suffix)
 ```
@@ -437,6 +437,8 @@ write_rds(B_hat_random_df_30000topSNPs_gulf_solstice, file.path(path, "B_hat_ran
 what is each site's mean FL50? Just for Gulf plants.
 
 For interpretability of the mash results... may want to scale all these effects so that 0 is, say, the summer solstice? Instead of the mean flowering time at that site for that pop.
+
+No, this doesn't work, because then there are no "0" effects in the random effects. Humm.
 ```{r}
 phe_gulf <- phenotypes$Gulf %>%
   select(PLANT_ID, ends_with("FL50"))
@@ -464,3 +466,90 @@ CLMB_FL50 KBSM_FL50 KING_FL50 PKLE_FL50 TMPL_FL50
 210 +/- 34
 210 +/- 35
 240 +/- 28
+
+```{r}
+path <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", 
+                       "gwas", "GDD", "Uhyp")
+numSNPs <- 30000
+suffix = "gulf_solstice"
+Ugulfhyp <- read_rds(path = file.path(path, "U_hyp_gulf_1phe.rds"))
+U_h2 <- list(Udist = Ugulfhyp$U_dist, UGDD = Ugulfhyp$U_CGDD_12C)
+
+#U_ed <- file.path(path, "Mash_data_driven_covariances_30000_gulf_uhyp1.rds")
+
+m <- mash_standard_run(path = path, numSNPs = numSNPs, suffix = suffix,
+                       saveoutput = TRUE)
+```
+
+
+Maybe... I could scale everything by the maximum value across the whole dataset. This would be a different type of scaling that could not handle multiple different phenotypes. But, for the same phenotype, it would 1) allow covariance matrices to be scaled from -1 to 1; 2) allow us to still visualize the fact that effect sizes are different at different sites - that there is variance-changing GxE. I think. Hopefully. 
+
+I should think a little more on how mash is dealing with this... and look into the mash code...
+
+## Plot eigenvectors to capture predominant patterns in covariance matrices.
+```{r}
+sum(m$fitted_g$pi)
+m$fitted_g$pi[which(m$fitted_g$pi > 0.005)]
+
+
+v <- m$fitted_g$Ulist$ED_PCA_1
+b1=svd(v)
+for(g in 1){
+barplot(b1$v[,g]/v[which.max(abs(v[,g])),g])
+}
+
+b1$d # the top eigenvector captures the predominant pattern in the ED_PCA_1 covariance matrix. 
+
+m$fitted_g$grid
+```
+Plot eigenvectors capturing predominant patterns
+
+The eigenvectors capture the predominant patterns in the Uk3 covariance matrix.
+```
+col = as.character(color.gtex[,2])
+for(g in 1:3){
+  v=svd(covmat[[k]])$v[h,];d=svd(covmat[[k]])$d
+  par(mar=c(8,4.1,4.1,2.1))
+  barplot(v[,g]/v[which.max(abs(v[,g])),g],las=2,
+          main=paste("Eigenvector",g,"of Uk",k),
+          cex.names = 0.5,col=col[h],names=names[h])
+}
+```
+# Matrix math with V_j
+
+Each covariance matrix Vj is specified as Vj = SjCSj, where C is a correlation matrix that accounts for correlations among the measurements in the R conditions, and Sj is the R x R diagonal matrix with diagonal elements s^j1, … , s^jR.  If the measurements in the R conditions are independent, one would set C = IR, the R x R identity matrix, and therefore Vj = Sj2.
+
+
+Interestingly, they assume row-wise normal distribution of effect sizes, so a SNP has effects taken from a normal distribution. They assume b^j is normally distributed about bj with variance-covariance matrix Vj. The more highly correlated two conditions are, the 
+```{r}
+Sj <- matrix(data = c(3, 0 , 0, 2), nrow = 2, ncol = 2)
+Clo <- matrix(data = c(1, 0.1, 0.1, 1), nrow = 2, ncol = 2)
+isSymmetric(Clo)
+Cid <- matrix(data = c(1, 0, 0, 1), nrow = 2, ncol = 2)
+Chi <- matrix(data = c(1, 1, 1, 1), nrow = 2, ncol = 2)
+
+Sj %*% Cid %*% Sj
+Sj %*% Clo %*% Sj
+Sj %*% Chi %*% Sj
+?cov2cor
+
+```
+
+```{r}
+dataf = list(Bhat = B_hat_random_df_30000topSNPs_gulf_uhyp1, Shat = S_hat_random_df_30000topSNPs_gulf_uhyp1)
+estimate_null_correlation_simple = function(dataf, z_thresh=2, est_cor = TRUE){
+  z = dataf$Bhat/dataf$Shat
+  max_absz = apply(abs(z),1, max)
+  nullish = which(max_absz < z_thresh)
+  if(length(nullish)<n_conditions(dataf)){
+    stop("not enough null data to estimate null correlation")
+  }
+  nullish_z = z[nullish,]
+  Vhat = cov(nullish_z)
+  if(est_cor){
+    Vhat = cov2cor(Vhat)
+  }
+  return(Vhat)
+}
+```
+
