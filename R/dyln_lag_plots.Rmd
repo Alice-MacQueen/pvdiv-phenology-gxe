@@ -1,0 +1,254 @@
+---
+title: "DYLN lag plots"
+author: "Alice MacQueen"
+date: "7/13/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+library(lubridate)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+#
+
+```{r}
+wea_df <- readRDS("~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+metadata <- readRDS("~/Github/pvdiv-phenology-gxe/data/metadata.rds")
+sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
+phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
+jday_phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+```
+
+```{r}
+jday_phe <- wea_df %>%
+  group_by(SITE) %>%
+  mutate(dyln_change_sec = (DYLN - lag(DYLN))*60*60,
+         FL50 = yday(DOY)) %>%
+  select(DOY, DYLN, dyln_change_sec, everything(), -PTT_12C) %>%
+  right_join(jday_phe, by = c("SITE", "FL50"))
+  
+jday_phe <- jday_phe %>%
+  select(-(TMAX:CPTT_11C))
+
+sites <- wea_df %>%
+  group_by(SITE) %>%
+  filter(DOY == "2019-06-22") %>%
+  select(SITE, DYLN) %>%
+  rename(Longest_dyln = DYLN) %>%
+  right_join(sites)
+
+sites <- wea_df %>%
+  group_by(SITE) %>%
+  filter(DOY <= "2019-06-22") %>%
+  summarise(CGDD_solstice = sum(GDD_12C_SM)) %>%
+  right_join(sites)
+```
+
+
+
+```{r}
+jday_phe <- metadata %>%
+  rename(Lat_origin = LATITUDE, Long_origin = LONGITUDE) %>%
+  select(PLANT_ID, SUBPOP, Lat_origin, Long_origin) %>%
+  right_join(jday_phe)
+jday_phe <- jday_phe %>%
+  left_join(sites)
+
+jday_phe$SUBPOP <- factor(jday_phe$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+jday_phe$SITE <- factor(jday_phe$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+jday_phe$manu_site <- factor(jday_phe$manu_site, levels = rev(c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD")))
+```
+
+```{r}
+color_code <- c("grey", "#6E91CB","#F47F72", "#442C83", "#090906", "grey")
+col1 <- jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI")) & !is.na(SUBPOP)) %>%
+  ggplot(aes(x = dyln_change_sec)) + 
+  geom_density(aes(group = SUBPOP, color = SUBPOP), size = 0.75) + 
+  facet_wrap(~manu_site, scales = "free", nrow = 8) + 
+  geom_vline(xintercept = 0, linetype = 2) +
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_color_manual(values = color_code) + 
+  xlim(c(-200, 150)) +
+  xlab("Daylength change (s) at 
+       flowering") + 
+  ylab("Density")
+save_plot("../manuscript/plots/Dyln_change_by_site.png", plot = col1, base_height = 8, base_asp = 0.3)
+
+col2 <- jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI")) & !is.na(SUBPOP)) %>%
+  ggplot(aes(x = DYLN)) + 
+  geom_density(aes(group = SUBPOP, color = SUBPOP), size = 0.75) + 
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  geom_vline(data = filter(sites, !(SITE %in% c("OVTN", "FRMI"))),
+             aes(xintercept = Longest_dyln), linetype = 2) +
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_color_manual(values = color_code) + 
+  xlim(c(10, 16)) +
+  xlab("Daylength (hrs) at 
+       flowering") + 
+  ylab("Density")
+save_plot("../manuscript/plots/Dyln_by_site.png", plot = col2, base_height = 8, base_asp = 0.3)
+  
+col3 <- jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI")) & !is.na(SUBPOP)) %>%
+  ggplot(aes(x = CRAIN_5d)) + 
+  geom_density(aes(group = SUBPOP, color = SUBPOP), size = 0.75) + 
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_color_manual(values = color_code) + 
+  xlab("Rainfall (mm) five days
+       before flowering") + 
+  ylab("Density")
+save_plot("../manuscript/plots/CRAIN_5d_by_site.png", plot = col3, base_height = 8, base_asp = 0.3)
+ 
+col4 <- jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI")) & !is.na(SUBPOP)) %>%
+  ggplot(aes(x = CGDD_12C)) + 
+  geom_density(aes(group = SUBPOP, color = SUBPOP), size = 0.75) + 
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_color_manual(values = color_code) + 
+  xlab("Cumulative GDD 
+       (12C) at flowering") + 
+  ylab("Density")
+save_plot("../manuscript/plots/CGDD_by_site.png", plot = col4, base_height = 8, base_asp = 0.3)
+
+col5 <- jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI")) & !is.na(SUBPOP)) %>%
+  ggplot(aes(x = as_date(FL50, origin = "2019-01-01"))) + 
+  geom_density(aes(group = SUBPOP, color = SUBPOP), size = 0.75) + 
+  geom_vline(xintercept = as_date(173, origin = "2019-01-01"), linetype = 2) +
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_color_manual(values = color_code) + 
+  xlab("Flowering 
+       Date") + 
+  ylab("Density")
+save_plot("../manuscript/plots/FL50_by_site.png", plot = col5, base_height = 8, base_asp = 0.3)
+
+FL50_1 <- plot_grid(col5, col2, col1, col4, col3, nrow = 1)
+save_plot("../manuscript/plots/Five_FL50_weather_cues_by_site.png", plot = FL50_1, base_height = 8, base_width = 9.85)
+```
+
+Same plots but histograms for just Gulf and Midwest
+consign all the other groups to the supplement
+```{r}
+hist_phe <- jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI"))  & SUBPOP %in% c("Gulf", "Midwest"))
+color_code <- c("#F47F72", "#442C83")
+col1 <- hist_phe %>%
+  ggplot(aes(x = dyln_change_sec)) + 
+  geom_histogram(aes(group = SUBPOP, fill = SUBPOP), binwidth = 10) + 
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  geom_vline(xintercept = 0, linetype = 2) +
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_fill_manual(values = color_code) + 
+  xlim(c(-200, 105)) +
+  xlab("Daylength change (s) at 
+       flowering") + 
+  ylab("")
+save_plot("../manuscript/plots/Dyln_change_by_site_histogram.png", plot = col1, base_height = 7.5, base_asp = 0.27)
+
+col2 <- hist_phe %>%
+  ggplot(aes(x = DYLN)) + 
+  geom_histogram(aes(group = SUBPOP, fill = SUBPOP), binwidth = 0.15) + 
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  geom_vline(data = filter(sites, !(SITE %in% c("OVTN", "FRMI"))),
+             aes(xintercept = Longest_dyln), linetype = 2) +
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_fill_manual(values = color_code) + 
+  xlim(c(11, 15.55)) +
+  xlab("Daylength (hrs) at 
+       flowering") + 
+  ylab("")
+save_plot("../manuscript/plots/Dyln_by_site_histogram.png", plot = col2, base_height = 7.5, base_asp = 0.27)
+  
+col3 <- hist_phe %>%
+  ggplot(aes(x = CRAIN_5d)) + 
+  geom_histogram(aes(group = SUBPOP, fill = SUBPOP), binwidth = 5) + 
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_fill_manual(values = color_code) + 
+  xlab("Rainfall (mm) five days
+       before flowering") + 
+  ylab("")
+save_plot("../manuscript/plots/CRAIN_5d_by_site_histogram.png", plot = col3, base_height = 7.5, base_asp = 0.27)
+ 
+col4 <- hist_phe %>%
+  ggplot(aes(x = CGDD_12C)) + 
+  geom_histogram(aes(group = SUBPOP, fill = SUBPOP), binwidth = 100) + 
+  geom_vline(data = filter(sites, !(SITE %in% c("OVTN", "FRMI"))),
+             aes(xintercept = CGDD_solstice), linetype = 2) +
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_fill_manual(values = color_code) + 
+  xlab("Cumulative GDD 
+       (12C) at flowering") + 
+  ylab("")
+save_plot("../manuscript/plots/CGDD_by_site_histogram.png", plot = col4, base_height = 7.5, base_asp = 0.27)
+
+col5 <- hist_phe %>%
+  ggplot(aes(x = as_date(FL50, origin = "2019-01-01"))) + 
+  geom_histogram(aes(group = SUBPOP, fill = SUBPOP), binwidth = 8) + 
+  geom_vline(xintercept = as_date(173, origin = "2019-01-01"), linetype = 2) +
+  facet_wrap(~manu_site, scales = "free_y", nrow = 8) + 
+  theme(legend.position = "none", axis.text = element_text(size = 8)) +
+  scale_fill_manual(values = color_code) + 
+  xlab("Flowering 
+       Date") + 
+  ylab("Number of Individuals")
+save_plot("../manuscript/plots/FL50_by_site_histogram.png", plot = col5, base_height = 7.5, base_asp = 0.27)
+
+FL50_1 <- plot_grid(col5, col2, col1, col4, col3, nrow = 1)
+save_plot("../manuscript/plots/Five_FL50_weather_cues_by_site_histogram.png", plot = FL50_1, base_height = 7.5, base_asp = 1.3)
+```
+
+
+
+
+also dyln at flowering
+also dyln change as a function of latitude of origin
+also dyln as a function of lat of origin?
+
+```{r}
+jday_phe <- jday_phe %>%
+  mutate(Lat_origin_1 = round(Lat_origin))
+
+jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI")) & !is.na(SUBPOP)) %>%
+  ggplot(aes(x = dyln_change_sec, y = Lat_origin)) + 
+  geom_point(aes(group = SUBPOP, color = SUBPOP), alpha = 0.75) + 
+  facet_grid(manu_site~SUBPOP, scales = "free") + geom_vline(xintercept = 0, linetype = 2) +
+  theme(legend.position = "right") +
+  scale_color_manual(values = color_code) + xlim(c(-200, 150)) +
+  xlab("Daylength change on day of flowering (s)")
+
+
+jday_phe %>%
+  filter(!(SITE %in% c("OVTN", "FRMI")) & !is.na(SUBPOP)) %>%
+  ggplot(aes(x = DYLN, y = Lat_origin)) + 
+  geom_point(aes(group = manu_site, color = manu_site), alpha = 0.4) + 
+  facet_wrap(~SUBPOP, scales = "free_y", nrow = 2) + geom_vline(xintercept = 0, linetype = 2) +
+  theme(legend.position = "right") +
+  scale_color_viridis(discrete = TRUE, end = 0.95) + xlim(c(10.5, 16.5))
+  xlab("Daylength on day of flowering")
+  
+  jday_phe %>%
+  filter((manu_site %in% c("TX1", "TX2", "TX3")) & SUBPOP %in% c("Gulf", "Midwest")) %>%
+  ggplot(aes(x = dyln_change_sec, y = Lat_origin_1)) + 
+  geom_boxplot(aes(group = Lat_origin_1), orientation = "y") + 
+    geom_point(aes(y = Lat_origin, color = SUBPOP), alpha = 0.3) +
+  facet_wrap(~manu_site, scales = "free") + geom_vline(xintercept = 0, linetype = 2) +
+  theme(legend.position = "right") +
+  scale_color_manual(values = color_code[3:4]) + 
+  xlab("Daylength change on day of flowering (s)")
+
+  ?geom_boxplot
+```
+

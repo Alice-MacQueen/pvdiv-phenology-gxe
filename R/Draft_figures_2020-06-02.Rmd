@@ -22,6 +22,8 @@ phenotypes <-
   read_rds("../data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
 sites <- read_rds("../data/sites.rds")
 ```
+
+
 ```{r}
 phe_df <- phenotypes %>%
   filter(WHERE == "GWAS" & !(SITE %in% c("OVTN", "FRMI"))) %>%
