@@ -17,3 +17,5 @@ data-raw/ignore/
 *.zip
 data/older/
 analysis/gwas/GDD/Lambda*
+analysis/heritability/single_sites/
+analysis/heritability/nine_sites/
