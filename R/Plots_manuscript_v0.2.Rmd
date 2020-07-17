@@ -1,0 +1,217 @@
+---
+title: "Analyses v0.2"
+author: "Alice MacQueen"
+date: "7/17/2020"
+output: html_document
+---
+
+Add any libraries/scripts that need to be loaded for these analyses here.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+library(lubridate)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+# Load data
+Add any data that needs to be loaded for these analyses here.
+```{r}
+wea_df <- readRDS("~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+metadata <- readRDS("~/Github/pvdiv-phenology-gxe/data/metadata.rds")
+sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
+phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
+jday_phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+```
+```{r}
+jday_phe <- wea_df %>%
+  group_by(SITE) %>%
+  mutate(dyln_change_sec = (DYLN - lag(DYLN))*60*60,
+         FL50 = yday(DOY)) %>%
+  select(DOY, DYLN, dyln_change_sec, everything(), -PTT_12C) %>%
+  right_join(jday_phe, by = c("SITE", "FL50")) %>%
+  select(-(TMAX:CPTT_11C))
+jday_phe <- metadata %>%
+  rename(Lat_origin = LATITUDE, Long_origin = LONGITUDE) %>%
+  select(PLANT_ID, SUBPOP, Lat_origin, Long_origin) %>%
+  right_join(jday_phe) %>%
+  left_join(sites)
+
+jday_phe$SUBPOP <- factor(jday_phe$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+jday_phe$SITE <- factor(jday_phe$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+jday_phe$manu_site <- factor(jday_phe$manu_site, levels = rev(c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD")))
+```
+
+
+# Overview
+Here I'm putting the code for any new analyses that I'm running to do new writeup for the manuscript v0.2.
+
+# Greenup h2
+Greenup as a function of Julian date had extremely low heritability within subpopulations (0.005 +/- 0.003 Gulf; 0.021 +/0 0.011 for Midwest) across all eight common gardens, but high heritability across both subpopulations (h2 = 0.987 +/- 0.006).
+
+<did any environmental cue beat GR50 to estimate greenup?>.
+
+## define environmental cues for greenup
+Probably all CGDD related.
+```{r}
+
+asreml_fl <- jday_phe %>%
+  select(PLANT_ID:Long_origin, PLOT_GL, SITE, FL50, GR50, CGDD_12C, CRAIN, CRAIN_5d, DYLN, dyln_change_sec) %>%
+  rename(dyln_fl50 = DYLN, cgdd_12c_gr2fl = CGDD_12C, crain_gr2fl = CRAIN) %>%
+  left_join(wea_df) %>%
+  group_by(SITE, PLOT_GL) %>%
+  filter(between(DOY, as_date(FL50, origin = "2019-01-01") - 6, as_date(FL50, origin = "2019-01-01"))) %>%
+  mutate(crain_2d = RAIN_SM + lag(RAIN_SM),
+         crain_3d = RAIN_SM + lag(RAIN_SM) + lag(RAIN_SM, n = 2),
+         crain_7d = sum(RAIN_SM)) %>%
+  filter(DOY == as_date(FL50, origin = "2019-01-01")) %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf", "Atlantic") & !(SITE %in% c("OVTN"))) %>%
+  select(-(TMAX:TMIN_SM), -(GDD_13C_SM:CPTT_13C)) %>%
+  rename(crain_1d = RAIN_SM, crain_5d = CRAIN_5d)
+saveRDS(asreml_fl, file = "../data/Weather_related_phe_for_asreml_h2_FL50.rds")
+asreml_gr <- jday_phe %>%
+  select(PLANT_ID:Long_origin, PLOT_GL, SITE, GR50) %>%
+  left_join(wea_df) %>%
+  group_by(SITE, PLOT_GL) %>%
+  filter(DOY <= as_date(GR50, origin = "2019-01-01")) %>%
+  mutate(cgdd_12c_jan2gr = sum(GDD_12C_SM),
+         cgdd_8c_jan2gr = sum(GDD_8C_SM)
+         ) %>%
+  select(-(GDD_13C_SM:CPTT_13C), -(TMAX:Longitude), GDD_12C_SM) %>%
+  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 17, as_date(GR50, origin = "2019-01-01"))) %>%
+  mutate(tmax_18d = mean(TMAX_SM),
+         tmin_18d = mean(TMIN_SM),
+         tave_18d = (tmax_18d + tmin_18d)/2,
+         cgdd_12c_18d = mean(GDD_12C_SM)) %>%
+  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 9, as_date(GR50, origin = "2019-01-01"))) %>%
+  mutate(tmax_10d = mean(TMAX_SM),
+         tmin_10d = mean(TMIN_SM),
+         tave_10d = (tmax_10d + tmin_10d)/2,
+         cgdd_12c_10d = mean(GDD_12C_SM)) %>%
+  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 4, as_date(GR50, origin = "2019-01-01"))) %>%
+  mutate(tmax_5d = mean(TMAX_SM),
+         tmin_5d = mean(TMIN_SM),
+         tave_5d = (tmax_5d + tmin_5d)/2,
+         cgdd_12c_5d = mean(GDD_12C_SM))%>%
+  filter(DOY == as_date(GR50, origin = "2019-01-01")) %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf", "Atlantic") & !(SITE %in% c("OVTN"))) %>%
+  select(-(TMAX_SM:RAIN_SM), -Day_of_year)
+saveRDS(asreml_gr, file = "../data/Weather_related_phe_for_asreml_h2_GR50.rds")
+```
+
+## ASReml h2 greenup analysis
+```{r}
+library(tidyverse)
+library(asreml)
+library(switchgrassGWAS)
+library(cowplot)
+```
+
+```{r}
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "heritability")
+metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
+sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
+subpops <- read_rds(file.path(workingdir, "data", "subpop_color_coding.rds"))
+phe_gr_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_GR50.rds"))
+phe_fl_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_FL50.rds"))
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+
+```
+
+### loop to make heritability table using ASReml mixed models and vpredict.
+```{r}
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", IL = "IL", MI = "MI", SD = "SD", eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), nine_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"), Atlantic = "Atlantic", three_subpops = c("Atlantic", "Gulf", "Midwest"))
+phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl",
+           "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d",
+           "crain_7d")
+phe_gr <- c("GR50", "DYLN", "cgdd_12c_jan2gr", "cgdd_8c_jan2gr", "tmax_18d", 
+            "tmin_18d", "tave_18d", "cgdd_12c_18d", "tmax_10d", "tmin_10d",
+            "tave_10d", "cgdd_12c_10d", "tmax_5d", "tmin_5d", "tave_5d",
+            "cgdd_12c_5d")
+phe_dfs <- list(phe_gr_df, phe_fl_df)
+phe_lists <- list(phe_gr, phe_fl)
+h2_table <- tibble()
+
+for(p in seq_along(phe_dfs)){
+  phe_v <- phe_lists[[p]]
+  phe <- phe_dfs[[p]]
+  
+  for(i in seq_along(site_v)){
+    for(j in seq_along(subpop_v)){
+      for(k in seq_along(phe_v)){
+        phe_single <- phe %>%
+    left_join(sites) %>%
+    filter(manu_site %in% site_v[[i]] & SUBPOP %in% subpop_v[[j]]) %>%
+    rename(phenotype = eval(phe_v[k])) %>%
+    mutate(PLANT_ID = as_factor(PLANT_ID),
+           SITE = as_factor(SITE),
+           PLOT_GL = as_factor(PLOT_GL)) %>%
+    as.data.frame()
+  
+  if(length(site_v[[i]]) > 1){  # need to add site as a random factor if 
+    # there is more than one site included in the dataset.
+     asr_out <- asreml(phenotype ~ 1,
+                       random = ~vm(PLANT_ID, k_full) +
+                         ~idv(SITE),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+  
+    h2_est <- vpredict(asr_out, h2 ~ V2/(V1+V2+V3)) %>% as_tibble() %>%
+      mutate(site = site_v[i],
+             subpop = subpop_v[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik)
+  } else {
+    asr_out <- asreml(phenotype ~ 1,
+                       random = ~vm(PLANT_ID, k_full),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+    
+    h2_est <- vpredict(asr_out, h2 ~ V1/(V1+V2)) %>% as_tibble() %>%
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik)
+  }
+  
+  if(i == 1 & j == 1 & k == 1){
+    h2_table <- h2_est
+  } else {
+    h2_table <- add_row(h2_table, h2_est)
+  }
+  tryCatch({
+      save_plot(filename=file.path(outputdir, paste0("ASReml_performance_",
+                                                 names(site_v)[i], "_",
+                                                 names(subpop_v)[j],
+                                                 "_", phe_v[k], ".png")), 
+            plot = plot(asr_out))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  
+      }
+    }
+  }
+  write_csv(h2_table, file.path(outputdir, paste0("h2_df_", phe_v[1],
+                                                  "_related_", 
+                                                  "functions_of_weather.csv")))
+}
+
+```
+
+
+
+
+
+
+# Make new environmental variables for Li to use?
+Can I estimate heritability for the fourway cross?
