@@ -12,6 +12,7 @@ library(tidyverse)
 library(cowplot)
 library(viridis)
 library(lubridate)
+library(switchgrassGWAS)
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 ```
 
@@ -143,11 +144,11 @@ for(p in seq_along(phe_dfs)){
   phe_v <- phe_lists[[p]]
   phe <- phe_dfs[[p]]
   
-  for(i in seq_along(site_v)){
+  for(i in 6:9){
     for(j in seq_along(subpop_v)){
       for(k in seq_along(phe_v)){
         phe_single <- phe %>%
-    left_join(sites) %>%
+    left_join(sites, by = "SITE") %>%
     filter(manu_site %in% site_v[[i]] & SUBPOP %in% subpop_v[[j]]) %>%
     rename(phenotype = eval(phe_v[k])) %>%
     mutate(PLANT_ID = as_factor(PLANT_ID),
@@ -157,6 +158,7 @@ for(p in seq_along(phe_dfs)){
   
   if(length(site_v[[i]]) > 1){  # need to add site as a random factor if 
     # there is more than one site included in the dataset.
+    tryCatch({
      asr_out <- asreml(phenotype ~ 1,
                        random = ~vm(PLANT_ID, k_full) +
                          ~idv(SITE),
@@ -165,12 +167,14 @@ for(p in seq_along(phe_dfs)){
                        workspace = "3gb")
   
     h2_est <- vpredict(asr_out, h2 ~ V2/(V1+V2+V3)) %>% as_tibble() %>%
-      mutate(site = site_v[i],
-             subpop = subpop_v[j],
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
              phe = phe_v[k],
              bic = summary(asr_out)$bic[1],
              loglik = summary(asr_out)$loglik)
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   } else {
+    tryCatch({
     asr_out <- asreml(phenotype ~ 1,
                        random = ~vm(PLANT_ID, k_full),
                        residual = ~idv(units),
@@ -183,6 +187,7 @@ for(p in seq_along(phe_dfs)){
              phe = phe_v[k],
              bic = summary(asr_out)$bic[1],
              loglik = summary(asr_out)$loglik)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   
   if(i == 1 & j == 1 & k == 1){
@@ -203,15 +208,187 @@ for(p in seq_along(phe_dfs)){
   }
   write_csv(h2_table, file.path(outputdir, paste0("h2_df_", phe_v[1],
                                                   "_related_", 
-                                                  "functions_of_weather.csv")))
+                                                  "functions_of_weather_v2.csv")))
 }
 
+```
+
+## BLUPs for G 
+
+We next evaluated genetic effects of greenup as functions of GDD and minimum temperature 10 days prior to greenup, and genetic effects of flowering as functions of daylength at flowering and GDD between greenup and flowering. To do this, we calculated BLUPs for each individual using mixed models with common garden and a kinship matrix as random effects. We then conducted genome-wide association on these BLUPs both within and between genetic subpopulations.
+```{r}
+site_v <- list(eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl")
+phe_gr <- c("GR50", "tmin_10d", "cgdd_12c_10d")
+phe_dfs <- list(phe_gr_df, phe_fl_df)
+phe_lists <- list(phe_gr, phe_fl)
+h2_table <- tibble()
+
+i = 1
+j = 1
+k = 1
+p = 2
+
+for(p in seq_along(phe_dfs)){
+  phe_v <- phe_lists[[p]]
+  phe <- phe_dfs[[p]]
+  
+  for(i in seq_along(site_v)){
+    for(j in seq_along(subpop_v)){
+      for(k in seq_along(phe_v)){
+        phe_single <- phe %>%
+    left_join(sites, by = "SITE") %>%
+    filter(manu_site %in% site_v[[i]] & SUBPOP %in% subpop_v[[j]]) %>%
+    rename(phenotype = eval(phe_v[k])) %>%
+    mutate(PLANT_ID = as_factor(PLANT_ID),
+           SITE = as_factor(SITE),
+           PLOT_GL = as_factor(PLOT_GL)) %>%
+    as.data.frame()
+  
+  if(length(site_v[[i]]) > 1){  # need to add site as a random factor if 
+    # there is more than one site included in the dataset.
+    tryCatch({
+     asr_out <- asreml(phenotype ~ 1,
+                       random = ~vm(PLANT_ID, k_full) +
+                         ~idv(manu_site),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+  
+    h2_est <- vpredict(asr_out, h2 ~ V2/(V1+V2+V3)) %>% as_tibble() %>%
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik)
+    blup <- summary(asr_out, coef=TRUE)$coef.random %>% as_tibble(rownames = "Effect")
+    write_csv(blup, file.path(outputdir, paste0("blups_", names(site_v)[i], "_",
+                                                 names(subpop_v)[j],
+                                                 "_", phe_v[k], ".csv")))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  } else {
+    tryCatch({
+    asr_out <- asreml(phenotype ~ 1,
+                       random = ~vm(PLANT_ID, k_full),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+    
+    h2_est <- vpredict(asr_out, h2 ~ V1/(V1+V2)) %>% as_tibble() %>%
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  }
+  
+  if(i == 1 & j == 1 & k == 1){
+    h2_table <- h2_est
+  } else {
+    h2_table <- add_row(h2_table, h2_est)
+  }
+  tryCatch({
+      save_plot(filename=file.path(outputdir, paste0("ASReml_performance_",
+                                                 names(site_v)[i], "_",
+                                                 names(subpop_v)[j],
+                                                 "_", phe_v[k], ".png")), 
+            plot = plot(asr_out))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  
+      }
+    }
+  }
+  
+}
+
+```
+
+After this I'll need to select from each csv just the individuals in the subpop that I included phenotypes for, to do GWAS on. Then do GWAS with bigsnpr, and go ahead and look at those results. 
+
+# gwas
+
+set up phenotype df for gwas
+```{r}
+site_v <- list(eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl")
+phe_gr <- c("GR50", "tmin_10d", "cgdd_12c_10d")
+phe_dfs <- list(phe_gr_df, phe_fl_df)
+phe_lists <- list(phe_gr, phe_fl)
+
+i = 1
+j = 1
+k = 1
+p = 2
+phe_gwas <- tibble()
+
+for(j in seq_along(subpop_v)){
+  for(p in seq_along(phe_dfs)){
+    phe_v <- phe_lists[[p]]
+    phe <- phe_dfs[[p]]
+    for(i in seq_along(site_v)){
+      for(k in seq_along(phe_v)){
+        phe_raw <- read_csv(file.path(outputdir, paste0("blups_",
+                                                        names(site_v)[i], "_",
+                                                        names(subpop_v)[j],
+                                                        "_", phe_v[k],
+                                                        ".csv")))
+        names(phe_raw)[2] <- paste0(phe_v[k], "_G_BLUP")
+        phe_proc <- phe_raw %>%
+          separate(Effect, into = c("factor", "PLANT_ID"), sep = "\\)_") %>%
+          filter(!is.na(PLANT_ID)) %>%
+          left_join(metadata, by = "PLANT_ID") %>%
+          filter(SUBPOP %in% subpop_v[[j]]) %>%
+          select(PLANT_ID, 3)
+        if(i == 1 & k == 1 & p == 1){
+          phe_gwas <- phe_proc
+        } else {
+          phe_gwas <- phe_gwas %>%
+            left_join(phe_proc, by = "PLANT_ID")
+        }
+      }
+    }
+  }
+write_csv(phe_gwas, path = file.path(outputdir, paste0("G_BLUP_phenotypes_",
+                                                       "for_gwas_GR_FL_",
+                                                       names(subpop_v)[j],
+                                                       ".csv")))
+}
+```
+
+```{r}
+library(bigsnpr)
+library(tidyverse)
+library(switchgrassGWAS)
+library(AnnotationDbi)
+txdb <- loadDb(file = file.path("~", "Github", "pvdiv-genome",
+                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+inputdir <- file.path(workingdir, "analysis", "heritability")
+outputdir <- file.path("~", "Github", "pvdiv-phenology-gxe", "analysis", "gwas", "G_BLUP")
+subpop_v <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest", Gulf = "Gulf")
+
+inputfiles <- read_delim("~/Github/pvdiv-phenology-gxe/analysis/gwas/inputkinship.txt", delim = " ", col_names = "SNPfiles")
+
+
+for(i in seq_along(subpop_v)){
+  snp <- snp_attach(inputfiles$SNPfiles[i])
+  phe_df <- read_rds(file.path(inputdir, paste0("G_BLUP_phenotypes_",
+                                                "for_gwas_GR_FL_",
+                                                names(subpop_v)[i], ".csv")))
+  pvdiv_standard_gwas(snp, df = phe_df, type = "linear", outputdir = outputdir,
+                      savegwas = TRUE, saveannos = TRUE, txdb = txdb,
+                      minphe = 130)
+}
 ```
 
 
 
 
-
-
 # Make new environmental variables for Li to use?
+
+We next evaluated genetic effects of greenup as functions of GDD (12C) and minimum temperature 10 days prior to greenup, and genetic effects of flowering as functions of daylength at flowering and GDD between greenup and flowering. 
+
 Can I estimate heritability for the fourway cross?
