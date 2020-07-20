@@ -375,16 +375,121 @@ inputfiles <- read_delim("~/Github/pvdiv-phenology-gxe/analysis/gwas/inputkinshi
 
 for(i in seq_along(subpop_v)){
   snp <- snp_attach(inputfiles$SNPfiles[i])
-  phe_df <- read_rds(file.path(inputdir, paste0("G_BLUP_phenotypes_",
+  phe_df <- read_csv(file.path(inputdir, paste0("G_BLUP_phenotypes_",
                                                 "for_gwas_GR_FL_",
                                                 names(subpop_v)[i], ".csv")))
   pvdiv_standard_gwas(snp, df = phe_df, type = "linear", outputdir = outputdir,
                       savegwas = TRUE, saveannos = TRUE, txdb = txdb,
                       minphe = 130)
 }
+snp_v <- c("12\\.1M", "8\\.8M", "10\\.3M")
+# Make output of top 1000 SNPs
+for(i in seq_along(subpop_v)){
+  snp <- snp_attach(inputfiles$SNPfiles[i])
+  gwas_rds <- pvdiv_results_in_folder(path = outputdir, 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       snp_v[i]))
+  phenotypes <- str_sub(gwas_rds, start = 16, end = -43)
+  out1 <- pvdiv_bigsnp2mashr(path = outputdir, snp = snp, gwas_rds = gwas_rds, 
+                             phenotypes = phenotypes, numSNPs = 1000, 
+                             clump = FALSE, scaled = FALSE, saveoutput = TRUE,
+                             suffix = paste0("GR_FL_", names(subpop_v)[i]))
+}
+
+```
+# examine top 1000 SNPs
+```{r}
+gulf_top1000 <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Gulf.rds")
+gandm_top1000 <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Gulf_and_Midwest.rds")
+midw_top1000 <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Midwest.rds")
 ```
 
+```{r}
+gulf_top1000 %>%
+  arrange(desc(max_score_log10p)) %>%
+  ungroup() %>%
+  #top_n(100, max_score_log10p) %>%
+  left_join(log10p_Gulf_top1000) %>%
+  #select(-starts_with("GR50"), -starts_with("tmin"), -starts_with("cgdd_12c_10d"), -marker, -CHRN) %>%
+  ggplot(aes(x = FL50_G_BLUP_log10p, y = cgdd_12c_10d_G_BLUP_log10p)) +
+  geom_point(aes(shape = as_factor(n_cond_in_top_set), color = max_score_log10p),
+             size = 2) +
+  geom_abline(slope = 1, intercept = 0) +
+  scale_color_viridis(end = 0.9, option = "B") +
+  scale_shape_manual(values = c(0, 1, 2, 5, 3)) +
+  theme(legend.position = "right")
+names(log10p_Gulf_top1000)
 
+midw_top1000 %>%
+  arrange(desc(max_score_log10p)) %>%
+  ungroup() %>%
+  #top_n(100, max_score_log10p) %>%
+  left_join(log10p_midwest) %>%
+  #select(-starts_with("GR50"), -starts_with("tmin"), -starts_with("cgdd_12c_10d"), -marker, -CHRN) %>%
+  ggplot(aes(x = FL50_G_BLU_log10p, y = cgdd_12c_gr2fl_G_BLU_log10p)) +
+  geom_point(aes(shape = as_factor(n_cond_in_top_set), color = max_score_log10p),
+             size = 2) +
+  geom_abline(slope = 1, intercept = 0) +
+  scale_color_viridis(end = 0.9, option = "B") +
+  scale_shape_manual(values = c(0, 1, 2, 5, 3)) +
+  theme(legend.position = "right")
+names(log10p_midwest)
+midw_top1000 %>%
+  arrange(desc(max_score_log10p)) %>%
+  ungroup() %>%
+  top_n(100, max_score_log10p)
+```
+Midwest has a lot more top hits for these G BLUPs that are at least on the same chromosomes as Li's QTLs. FWIW. GxE may be better, and need to get Li's intervals again and do a formal comparison, but just at first glance. top hits for Midwest are mostly for dyln_fl50...
+```{r}
+qtl <- read_csv("../data/QTLsWithFlankMarkers_FL50_GDD_7_SITES_Full_model.csv")
+qtldf <- qtl %>%
+  separate(flank_lo, into = c("CHR", "POS_lo"), sep = "_", convert = TRUE) %>%
+  separate(flank_hi, into = c("CHR1", "POS_hi"), sep = "_", convert = TRUE) %>%
+  select(-chr, -CHR1, -X1, -lodindex) %>%
+  mutate(POS_lo = POS_lo*1000000,
+         POS_hi = POS_hi*1000000) %>%
+  filter(lodcolumn != "D2F")
+
+i=1
+midw_qtl_overlap <- tibble()
+gulf_qtl_overlap <- tibble()
+gandm_qtl_overlap <- tibble()
+for(i in 1:nrow(qtldf)){
+  gam_qtl1 <- gandm_top1000 %>%
+    filter(CHR == qtldf$CHR[i] & between(POS, qtldf$POS_lo[i], qtldf$POS_hi[i]))
+  gulf_qtl1 <- gulf_top1000 %>%
+    filter(CHR == qtldf$CHR[i] & between(POS, qtldf$POS_lo[i], qtldf$POS_hi[i]))
+  mid_qtl1 <- midw_top1000 %>%
+    filter(CHR == qtldf$CHR[i] & between(POS, qtldf$POS_lo[i], qtldf$POS_hi[i]))
+  if(i == 1){
+    midw_qtl_overlap <- mid_qtl1
+    gulf_qtl_overlap <- gulf_qtl1
+    gandm_qtl_overlap <- gam_qtl1
+  } else {
+    midw_qtl_overlap <- midw_qtl_overlap %>%
+      full_join(mid_qtl1, by = c("CHR", "POS", "Condition", "max_score_log10p",
+                                 "n_cond_in_top_set", "marker", "CHRN"))
+    gandm_qtl_overlap <- gandm_qtl_overlap %>%
+      full_join(gam_qtl1, by = c("CHR", "POS", "Condition", "max_score_log10p",
+                                 "n_cond_in_top_set", "marker", "CHRN"))
+    gulf_qtl_overlap <- gulf_qtl_overlap %>%
+      full_join(gulf_qtl1, by = c("CHR", "POS", "Condition", "max_score_log10p",
+                                 "n_cond_in_top_set", "marker", "CHRN"))
+    
+  }
+} 
+
+nrow(midw_top1000)
+midw_qtl_overlap %>%
+  arrange(desc(max_score_log10p))
+nrow(gandm_top1000)
+gandm_qtl_overlap %>%
+  arrange(desc(max_score_log10p))
+nrow(gulf_top1000)
+gulf_qtl_overlap %>%
+  arrange(desc(max_score_log10p))
+```
+How many SNPs are in the QTL regions? And how many SNPs are in the full genome? Therefore how many SNPs would we expect at random?
 
 
 # Make new environmental variables for Li to use?
