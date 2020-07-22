@@ -402,6 +402,9 @@ for(i in seq_along(subpop_v)){
 gulf_top1000 <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Gulf.rds")
 gandm_top1000 <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Gulf_and_Midwest.rds")
 midw_top1000 <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Midwest.rds")
+log10p_gulf <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/log10p_strong_df_1000topSNPs_GR_FL_Gulf.rds")
+log10p_gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/log10p_strong_df_1000topSNPs_GR_FL_Gulf_and_Midwest.rds")
+log10p_midw <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/G_BLUP/log10p_strong_df_1000topSNPs_GR_FL_Midwest.rds")
 ```
 
 ```{r}
@@ -441,11 +444,11 @@ midw_top1000 %>%
 ```
 Midwest has a lot more top hits for these G BLUPs that are at least on the same chromosomes as Li's QTLs. FWIW. GxE may be better, and need to get Li's intervals again and do a formal comparison, but just at first glance. top hits for Midwest are mostly for dyln_fl50...
 ```{r}
-qtl <- read_csv("../data/QTLsWithFlankMarkers_FL50_GDD_7_SITES_Full_model.csv")
+qtl <- read_csv("~/Github/pvdiv-phenology-gxe/data/QTLsWithFlankMarkers_FL50_GDD_7_SITES_Full_model.csv")
 qtldf <- qtl %>%
   separate(flank_lo, into = c("CHR", "POS_lo"), sep = "_", convert = TRUE) %>%
   separate(flank_hi, into = c("CHR1", "POS_hi"), sep = "_", convert = TRUE) %>%
-  select(-chr, -CHR1, -X1, -lodindex) %>%
+  dplyr::select(-chr, -CHR1, -X1, -lodindex) %>%
   mutate(POS_lo = POS_lo*1000000,
          POS_hi = POS_hi*1000000) %>%
   filter(lodcolumn != "D2F")
@@ -479,6 +482,23 @@ for(i in 1:nrow(qtldf)){
   }
 } 
 
+i=3
+snp <- snp_attach(inputfiles$SNPfiles[i])
+markers <- tibble(CHR = snp$map$chromosome, POS = snp$map$physical.pos)
+marker_qtl_overlap <- tibble()
+for(i in 1:nrow(qtldf)){
+  qtl1 <- markers %>%
+    filter(CHR == qtldf$CHR[i] & between(POS, qtldf$POS_lo[i], qtldf$POS_hi[i]))
+  if(i == 1){
+    marker_qtl_overlap <- qtl1
+  } else {
+    marker_qtl_overlap <- marker_qtl_overlap %>%
+      full_join(qtl1, by = c("CHR", "POS"))
+  }
+} 
+nrow(markers)
+nrow(marker_qtl_overlap)
+
 nrow(midw_top1000)
 midw_qtl_overlap %>%
   arrange(desc(max_score_log10p))
@@ -487,12 +507,138 @@ gandm_qtl_overlap %>%
   arrange(desc(max_score_log10p))
 nrow(gulf_top1000)
 gulf_qtl_overlap %>%
-  arrange(desc(max_score_log10p))
+  arrange(desc(max_score_log10p)) %>%
+  group_by(Condition, n_cond_in_top_set) %>% tally()
+
+names(log10p_Gulf_top1000)
+log10p_Gulf_top1000 %>%
+  ungroup() %>%
+  top_n(1000, cgdd_12c_gr2fl_G_BLUP_log10p) %>%
+  inner_join(gulf_qtl_overlap)
+snpmatrix <- matrix(c(49, 1000, 565807, 10320201), nrow = 2, dimnames = list(Observed = c("SNPs in QTL", "Total SNPs"), Expected = c("Sig SNPs", "Total SNPs")))
+fisher.test(snpmatrix, alternative = "t")
 ```
-How many SNPs are in the QTL regions? And how many SNPs are in the full genome? Therefore how many SNPs would we expect at random?
+FL50; dyln_fl50 in Gulf: 6.67 (52 / 1000)
+dyln_change_sec in Gulf: 8.21 (64 / 1000)
+cgdd_12c_10d_G_BLUP_log10p 37 / 1000 4.75
+
+How many SNPs are in the QTL regions? And how many SNPs are in the full genome?
+565807 in QTL region out of 10320201 SNPs in Gulf set. 241 / 5043   5.48%
+650092 in QTL region out of 12083955 SNPs in Gulf and Midwest set. 276 / 5320 5.38%
+475951 in QTL region out of 8824339 SNPs in Midwest set. Whoa. That's already a striking difference. ~5.39 %ofthegenome.
+Therefore how many SNPs would we expect at random?
+
+Fisher's exact test for SNPs above Bonferroni in QTL intervals, vs elsewhere.
+```{r}
+-log10(0.05/10320201)  # 8.31 Gulf
+-log10(0.05/12083955)  # 8.38 GandM
+-log10(0.05/8824339)   # 8.25 Midwest
+subpop_v
+bonferroni_v <- c(-log10(0.05/12083955), -log10(0.05/8824339), 
+                  -log10(0.05/10320201))
+log10p_list <- list(gandm = log10p_gandm, midwest = log10p_midw, gulf = log10p_gulf)
+
+```
+
+```{r}
+sig_df <- tibble()
+
+for(j in seq_along(bonferroni_v)){
+  log10p_df <- log10p_list[[j]] %>%
+    mutate_at(.vars = vars(ends_with("log10p")),
+              .funs = ~ if_else(. >= bonferroni_v[j], ., NA_real_)) %>%
+    ungroup %>%
+    select(-(1)) 
+  if(j == 1){
+    sig_df <- enframe(colSums(!is.na(log10p_df[,-1])), name = "Column", 
+                      value = paste0("Num_sig_", names(subpop_v)[j])) %>%
+      mutate(Column = str_sub(Column, end = 10))
+  } else {
+    sig1 <- enframe(colSums(!is.na(log10p_df[,-1])), name = "Column", 
+                    value = paste0("Num_sig_", names(subpop_v)[j])) %>%
+      mutate(Column = str_sub(Column, end = 10))
+    sig_df <- sig_df %>%
+      full_join(sig1, by = "Column")
+  }
+}
+sig_df
+write_csv(sig_df, "G_BLUP_Num_SNPs_above_Bonferroni_GR_FL.csv")
+```
 
 
-# Make new environmental variables for Li to use?
+
+```{r}
+j = 1
+i=4
+names(log10p_gandm)[4:ncol(log10p_gandm)]
+log10p_df <- log10p_gandm
+
+marker_qtl_overlap <- tibble()
+
+for(i in 4:ncol(log10p_df)){
+  phe_use <- names(log10p_df)[i]
+  sig_markers <- log10p_df %>%
+    select(SNP:POS, eval(phe_use)) %>%
+    ungroup() %>%
+    filter(!! sym(phe_use) >= bonferroni_v[j])
+  
+  for(k in 1:nrow(qtldf)){
+  qtl1 <- sig_markers %>%
+    filter(CHR == qtldf$CHR[k] & between(POS, qtldf$POS_lo[k], qtldf$POS_hi[k]))
+  if(k == 1){
+    marker_qtl_overlap <- qtl1
+  } else {
+    marker_qtl_overlap <- marker_qtl_overlap %>%
+      full_join(qtl1, by = c("CHR", "POS"))
+  }
+} 
+nrow(sig_markers)
+nrow(marker_qtl_overlap)
+  
+}
+log10p_df <- log10p_df %>%
+  mutate_at(.vars = vars(ends_with("log10p")), .funs = ~ if_else(. >= bonferroni_v[j], ., NA_real_)) %>%
+  ungroup %>%
+  select(-(1)) 
+
+colSums(!is.na(log10p_df[,-1]))
+marker_qtl_overlap <- tibble()
+
+for(k in 1:nrow(qtldf)){
+  phe_use <- names(log10p_df)[3]
+  qtl1 <- log10p_df %>%
+    filter(!is.na(!! sym(phe_use)) & CHR == qtldf$CHR[k] & between(POS, qtldf$POS_lo[k], qtldf$POS_hi[k]))
+  if(k == 1){
+    marker_qtl_overlap <- qtl1
+  } else {
+    marker_qtl_overlap <- marker_qtl_overlap %>%
+      full_join(qtl1, by = c("CHR", "POS"))
+  }
+}
+k=1
+
+```
+
+
+Um, so by Fisher's exact test, there are fewer Midwest SNPs in the sig set than we would expect at random. Rad. What the heck.
+And no significant enrichment of Gulf SNPs in the sig set.
+And no significant enrichment in the Gulf & Midwest set. So what does this mean?
+```{r}
+snpmatrix <- matrix(c(115, 4876, 475951, 8824339), nrow = 2, dimnames = list(Observed = c("SNPs in QTL", "Total SNPs"), Expected = c("Sig SNPs", "Total SNPs")))
+matrix(c(3, 40, 500, 80278), nrow = 2, dimnames = list(Observed = c("GO in Sample", "Genes in Sample"), Expected = c("GO in Genome", "Genes in Genome")))
+fisher.test(snpmatrix, alternative = "t")
+(115/4876)/(475951/8824339)
+snpmatrix <- matrix(c(241, 5043, 565807, 10320201), nrow = 2, dimnames = list(Observed = c("SNPs in QTL", "Total SNPs"), Expected = c("Sig SNPs", "Total SNPs")))
+fisher.test(snpmatrix, alternative = "t")
+
+snpmatrix <- matrix(c(276, 5320, 650092, 12083955), nrow = 2, dimnames = list(Observed = c("SNPs in QTL", "Total SNPs"), Expected = c("Sig SNPs", "Total SNPs")))
+fisher.test(snpmatrix, alternative = "t")
+```
+genematrix <- matrix(c(3, 40, 500, 80278), nrow = 2, dimnames = list(Observed = c("GO in Sample", "Genes in Sample"), Expected = c("GO in Genome", "Genes in Genome")))
+fisher.test(GOmatrix, alternative = "t")
+
+
+# Make new environmental variables for Li to use? Did this in Data_Setup.
 
 We next evaluated genetic effects of greenup as functions of GDD (12C) and minimum temperature 10 days prior to greenup, and genetic effects of flowering as functions of daylength at flowering and GDD between greenup and flowering. 
 

@@ -1,0 +1,31 @@
+---
+title: "Plots_manuscript_v0.3"
+author: "Alice MacQueen"
+date: "7/22/2020"
+output: html_document
+---
+
+Add any libraries/scripts that need to be loaded for these analyses here.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(viridis)
+library(lubridate)
+library(switchgrassGWAS)
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+```
+
+# Load data
+Add any data that needs to be loaded for these analyses here.
+```{r}
+metadata <- readRDS("~/Github/pvdiv-phenology-gxe/data/metadata.rds")
+sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
+phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+```
+
+
+# Overview
+Here I'm putting the code for any new analyses that I'm running to do new writeup for the manuscript v0.3.
+
+v0.2 has the ASReml h2 analysis, has BLUPs for G (which as of v0.3 probably needs a GxE term...)
