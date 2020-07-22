@@ -48,7 +48,7 @@ subpops$SUBPOP <- factor(subpops$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "M
 write_rds(subpops, path = "../data/subpop_color_coding.rds")
 ```
 
-
+### ------
 # Make phenotypes for flowering time paper from all the cleaned phenotypes.
 
 Specifically using GR50 & FL50 Julian dates from 2019. And using them to make cGDD between greenup and flowering for another GWAS phenotype.
@@ -101,7 +101,9 @@ write_rds(phe_all, path = "../data/Phenology_phenotypes_4wcr_and_gwas.rds")
 cGDD between GR50 and FL50 for each YEAR, each PLANT_ID (and PLOT_GL)
 ```{r}
 wea_df <- ptt_df %>%
-  dplyr::select(DOY:GDD_12C_SM, PTT_12C)
+  dplyr::select(DOY:GDD_12C_SM, PTT_12C) %>%
+  group_by(SITE) %>%
+  mutate(dyln_change_sec = (DYLN - lag(DYLN))*60*60)
 
 fl_timing <- phe_all %>% 
   filter(YEAR == 2019 & PHE %in% c("GR50", "FL50")) %>%
@@ -112,7 +114,6 @@ fl_timing <- phe_all %>%
 
 wea_gr_fl <- wea_df %>%
   left_join(fl_timing)
-
 
 wea_gr_fl2 <- wea_gr_fl %>%
   group_by(Day_of_year, PLOT_GL, PLANT_ID) %>%
@@ -138,13 +139,21 @@ crain_df <- wea_gr_fl3 %>%
             PTT_12C_5d = sum(PTT_12C),
             CRAIN_5d = sum(RAIN_SM)
             )
+wea_gr_fl4 <- wea_gr_fl %>%
+  ungroup() %>%
+  group_by(Day_of_year, PLOT_GL, PLANT_ID) %>%
+  filter(Day_of_year == FL50) %>% 
+  rename(dyln_fl50 = DYLN) %>%
+  dplyr::select(-(TMAX:Day_of_year), -(TMAX_SM:PTT_12C))
 
 cumweadf <- cgdd_df %>%
-  left_join(crain_df)
+  left_join(crain_df) %>%
+  left_join(wea_gr_fl4)
 
 write_rds(cumweadf, path = "../data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
-
 ```
+### -------
+
 # All phenotypes
 ```{r}
 phe_all <- read_rds("../data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
