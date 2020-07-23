@@ -124,6 +124,8 @@ k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_
 
 ```
 
+
+
 ### loop to make heritability table using ASReml mixed models and vpredict.
 ```{r}
 site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
@@ -140,11 +142,11 @@ phe_dfs <- list(phe_gr_df, phe_fl_df)
 phe_lists <- list(phe_gr, phe_fl)
 h2_table <- tibble()
 
-for(p in seq_along(phe_dfs)){
+for(p in 2){#seq_along(phe_dfs)){
   phe_v <- phe_lists[[p]]
   phe <- phe_dfs[[p]]
   
-  for(i in 6:9){
+  for(i in seq_along(site_v)){
     for(j in seq_along(subpop_v)){
       for(k in seq_along(phe_v)){
         phe_single <- phe %>%
@@ -161,7 +163,7 @@ for(p in seq_along(phe_dfs)){
     tryCatch({
      asr_out <- asreml(phenotype ~ 1,
                        random = ~vm(PLANT_ID, k_full) +
-                         ~idv(SITE),
+                         ~idv(SITE):vm(PLANT_ID, k_full),
                        residual = ~idv(units),
                        data = phe_single, 
                        workspace = "3gb")
@@ -208,7 +210,7 @@ for(p in seq_along(phe_dfs)){
   }
   write_csv(h2_table, file.path(outputdir, paste0("h2_df_", phe_v[1],
                                                   "_related_", 
-                                                  "functions_of_weather_v2.csv")))
+                                                  "functions_of_weather_v3.csv")))
 }
 
 ```
