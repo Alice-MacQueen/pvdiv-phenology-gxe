@@ -67,6 +67,7 @@ phe_gwas <- phenotypes %>%
          WHERE = "GWAS") %>%
   select(-manu_site)
 
+
 fwy_prev <- fwy_prev_raw %>%
   separate(ENVI, into = c("SITE", "YEAR"), sep = "_") %>%
   group_by(LINE, SITE, YEAR) %>%
@@ -79,12 +80,14 @@ fwy_prev <- fwy_prev_raw %>%
 fwy_2019 <- fourway %>%
   separate(ENVI, into = c("SITE", "YEAR"), sep = "_") %>%
   group_by(LINE, SITE, YEAR) %>%
-  mutate(PLOT_GL = paste0(str_sub(SITE, end = 1), str_sub(YEAR, start =3, end = 4), "_", row_number())) %>%
+  mutate(PLOT_GL = paste0(str_sub(SITE, end = 1), str_sub(YEAR, start = 3, 
+                                                          end = 4), "_", row_number())) %>%
   mutate(YEAR = as.numeric(YEAR),
          WHERE = "FWCR") %>%
   pivot_longer(cols = FL50:HT, names_to = "PHE", values_to = "MEAS") %>%
   rename(PLANT_ID = LINE) %>%
   filter(PHE %in% c("FL50", "GR50"))
+
 
 phe_all <- phe_gwas %>%
   full_join(fwy_2019, by = c("SITE", "PLOT_GL", "PLANT_ID", "YEAR", "PHE", "MEAS", "WHERE")) %>%
@@ -92,8 +95,9 @@ phe_all <- phe_gwas %>%
   filter(!is.na(MEAS))
 
 phe_all %>%
-  group_by(PLOT_GL, SITE, PLANT_ID, YEAR) %>%
+  group_by(WHERE) %>%
   tally() %>% arrange((n))
+
 
 write_rds(phe_all, path = "../data/Phenology_phenotypes_4wcr_and_gwas.rds")
 ```
@@ -111,7 +115,6 @@ fl_timing <- phe_all %>%
   select(-SUBPOP) %>%
   drop_na()
 
-
 wea_gr_fl <- wea_df %>%
   left_join(fl_timing)
 
@@ -120,8 +123,9 @@ wea_gr_fl2 <- wea_gr_fl %>%
   filter(between(Day_of_year, GR50, FL50)) %>% 
   ungroup() 
 
+
 cgdd_df <- wea_gr_fl2 %>%
-  group_by(SITE, PLANT_ID, PLOT_GL, GR50, FL50) %>%
+  group_by(WHERE, SITE, PLANT_ID, PLOT_GL, GR50, FL50) %>%
   summarise(CGDD_12C = sum(GDD_12C_SM),
             PTT_12C = sum(PTT_12C),
             CRAIN = sum(RAIN_SM)
@@ -133,8 +137,14 @@ wea_gr_fl3 <- wea_gr_fl %>%
   group_by(Day_of_year, PLOT_GL, PLANT_ID) %>%
   filter(between(Day_of_year, FL50-5, FL50)) %>% 
   ungroup() 
+
+
+cumweadf %>%
+  group_by(WHERE) %>%
+  tally() %>% arrange((n))
+
 crain_df <- wea_gr_fl3 %>%
-  group_by(SITE, PLANT_ID, PLOT_GL, GR50, FL50) %>%
+  group_by(WHERE, SITE, PLANT_ID, PLOT_GL, GR50, FL50) %>%
   summarise(CGDD_12C_5d = sum(GDD_12C_SM),
             PTT_12C_5d = sum(PTT_12C),
             CRAIN_5d = sum(RAIN_SM)
@@ -152,6 +162,14 @@ cumweadf <- cgdd_df %>%
 
 write_rds(cumweadf, path = "../data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
 ```
+
+```{r}
+fourway = cumweadf[cumweadf$WHERE == "FWCR",]
+df
+fourway
+```
+
+
 ### -------
 
 # All phenotypes
