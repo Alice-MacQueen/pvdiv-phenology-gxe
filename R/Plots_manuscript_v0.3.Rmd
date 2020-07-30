@@ -14,6 +14,9 @@ library(viridis)
 library(lubridate)
 library(switchgrassGWAS)
 library(GGally)
+library(maps)
+library(ggmap)
+usa <- map_data("usa")
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 ```
 
@@ -29,13 +32,22 @@ phe_gr_df <- read_rds(file.path(workingdir, "data",
 phe_fl_df <- read_rds(file.path(workingdir, "data",
                                 "Weather_related_phe_for_asreml_h2_FL50.rds"))
 phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+h2gr <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "h2_df_GR50_related_functions_of_weather_v1.csv"))
+h2fl <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "h2_df_FL50_related_functions_of_weather_v1.csv"))
+h2gr_gxe <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_GR50_related_functions_of_weather_v1.csv"))
+h2fl_gxe <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_FL50_related_functions_of_weather_v1.csv"))
+
+h2gr <- h2gr %>%
+  full_join(h2gr_gxe)
+h2fl <- h2fl %>%
+  full_join(h2fl_gxe)
+```
+### older files to load
 h2fl <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/heritability/h2_df_FL50_related_functions_of_weather_v3.csv")
 h2gr <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/heritability/h2_df_GR50_related_functions_of_weather_v2.csv")
 h2gr4 <- read_csv(file.path(workingdir, "analysis", "heritability", "h2_df_GR50_related_functions_of_weather_v4.csv"))
 h2gr <- h2gr %>%
   full_join(h2gr4)
-```
-
 
 # Overview
 Here I'm putting the code for any new analyses that I'm running to do new writeup for the manuscript v0.3.
@@ -46,227 +58,42 @@ Results: h2 at single sites. Then h2 at all eight sites. And so there must be Gx
 
 To show this, make barplots of the different variables and facet them by site. Then, show heritability across all eight sites (in a model with a random effect of site, interacted with some number of eigenvectors from a SVD of the kinship matrix.)
 
-# Heritability Plots
-
-## h2 as functions of GR50 and FL50
-```{r}
-h2all <- h2fl %>%
-  full_join(h2gr)
-
-f1h2 <- h2all %>%
-  filter(phe %in% c("FL50", "GR50")) %>%
-  mutate(site = case_when(is.na(site) ~ "all",
-                          site == "eight_sites" ~ "all",
-                          TRUE ~ site),
-         subpop_name = case_when(subpop == "Gulf_and_Midwest" ~ "Gulf and Midwest",
-                                 subpop == "three_subpops" ~ "all",
-                                 TRUE ~ subpop),
-         phe_name = case_when(phe == "GR50" ~ "50% greenup",
-                              phe == "FL50" ~ "50% flowering",
-                              TRUE ~ phe))
-f1h2$site <- factor(f1h2$site, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "all", "nine_sites"))
-f1h2$phe_name <- factor(f1h2$phe_name, levels = c("50% greenup", "50% flowering"))
-f1h2$subpop_name <- factor(f1h2$subpop_name, levels = c("Gulf", "Midwest", "Gulf and Midwest", "Atlantic", "all"))
-ggh21 <- f1h2 %>%
-  filter(!(site %in% c("nine_sites", "IL")) & !(subpop %in% c("three_subpops", "Atlantic"))) %>%
-  ggplot(aes(x = site, y = Estimate)) +
-  geom_bar(aes(fill = site == "all"), stat = "identity") +
-  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
-  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
-  facet_grid(phe_name ~ subpop_name) +
-  theme(panel.spacing.x = unit(0.1, 'cm'), 
-        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
-        legend.position = "none") + 
-  ylim(c(0, 1)) +
-  xlab("Common Gardens") + 
-  ylab(bquote('h'^2)) +
-  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
-  #
-save_plot("../manuscript/plots/h2_GR_FL_site_by_subpop.png", plot = ggh21, base_height = 3.5, base_asp = 1.618)
-
-f1h2 %>%
-  filter(!(site %in% c("all", "nine_sites", "IL")) & !(subpop %in% c("three_subpops", "Atlantic"))) %>%
-  ungroup() %>%
-  group_by(phe) %>%
-  summarise(mean = mean(Estimate))
-f1h2 %>%
-  filter((site %in% c("all")) & !(subpop %in% c("three_subpops", "Atlantic"))) %>%
-  ungroup() %>%
-  group_by(phe) %>%
-  summarise(mean = mean(Estimate))
-```
-
-## h2 flowering weather
-```{r}
-flh2 <- h2fl %>%
-  filter(phe %in% c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d", "crain_7d")) %>%
-  mutate(site = case_when(is.na(site) ~ "all",
-                          site == "eight_sites" ~ "All",
-                          TRUE ~ site),
-         subpop_name = case_when(subpop == "Gulf_and_Midwest" ~ "Gulf and Midwest",
-                                 subpop == "three_subpops" ~ "all",
-                                 TRUE ~ subpop),
-         phe_name = case_when(phe == "FL50" ~ "50% flowering",
-                              phe == "dyln_fl50" ~ "daylength",
-                              phe == "dyln_change_sec" ~ "daylength change (s)",
-                              phe == "cgdd_12c_gr2fl" ~ "GDD, GR to FL",
-                              phe == "crain_gr2fl" ~ "Rainfall, GR to FL",
-                              phe == "crain_1d" ~ "Rainfall, 1 day",
-                              phe == "crain_2d" ~ "Rainfall, 2d sum",
-                              phe == "crain_3d" ~ "Rainfall, 3d sum",
-                              phe == "crain_5d" ~ "Rainfall, 5d sum",
-                              phe == "crain_7d" ~ "Rainfall, 7d sum",
-                              TRUE ~ phe))
-flh2$site <- factor(flh2$site, levels = rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "nine_sites")))
-flh2$phe_name <- factor(flh2$phe_name, levels = c("50% flowering", "daylength",
-                                                  "daylength change (s)",
-                                                  "GDD, GR to FL",
-                                                  "Rainfall, GR to FL",
-                                                  "Rainfall, 1 day",
-                                                  #"Rainfall, 2d sum",
-                                                  "Rainfall, 3d sum",
-                                                  "Rainfall, 5d sum"#,
-                                                  #"Rainfall, 7d sum"
-                                                  ))
-flh2$subpop_name <- factor(flh2$subpop_name, levels = c("Gulf", "Midwest", "Gulf and Midwest", "Atlantic", "all"))
-site_plot <- rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD", "All", "Texas", "North"))
-subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"), Atlantic = "Atlantic", three_subpops = c("Atlantic", "Gulf", "Midwest"))
-
-flh2_p1 <- flh2 %>%
-  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
-  ggplot(aes(x = phe_name, y = Estimate)) +
-  geom_bar(stat = "identity", aes(fill = phe_name == "50% flowering")) +
-  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
-  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
-  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
-  facet_grid(site ~ subpop_name) +
-  geom_hline(data = filter(flh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "FL50"), aes(yintercept = Estimate), linetype = 2) +
-  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 1.1)) +
-  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
-
-save_plot("../manuscript/plots/h2_FL_site_weather_functions_All_Sites_v3.png", plot = flh2_p1, base_height = 7, base_asp = 1.1)
-
-site_plot <- c("All", "Texas", "North")
-
-flh2_p2 <- flh2 %>%
-  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
-  ggplot(aes(x = phe_name, y = Estimate)) +
-  geom_bar(stat = "identity", aes(fill = phe_name == "50% flowering")) +
-  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
-  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
-  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
-  facet_grid(site ~ subpop_name) +
-  geom_hline(data = filter(flh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "FL50"), aes(yintercept = Estimate), linetype = 2) +
-  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 0.45)) +
-  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1) + xlab("")
-
-save_plot("../manuscript/plots/h2_FL_site_weather_functions_All_Sites_v2.png", plot = flh2_p2, base_height = 4, base_asp = 1.5)
-```
-## h2 greenup weather
-```{r}
-h2gr
-```
+# Map Fig 1A
 
 ```{r}
-unique(h2gr$site)
-grh2 <- h2gr %>%
-  filter(!(phe %in% c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d", "crain_7d", "DYLN"))) %>%
-  mutate(site = case_when(is.na(site) ~ "all",
-                          site == "eight_sites" ~ "All",
-                          site == "tx_sites" ~ "Texas",
-                          site == "north_sites" ~ "North",
-                          TRUE ~ site),
-         subpop_name = case_when(subpop == "Gulf_and_Midwest" ~ "Gulf and Midwest",
-                                 subpop == "three_subpops" ~ "All",
-                                 TRUE ~ subpop),
-         phe_name = case_when(phe == "GR50" ~ "50% greenup",
-                              phe == "FL50" ~ "50% flowering",
-                              phe == "cgdd_12c_jan2gr" ~ "GDD 01-01 to GR",
-                              phe == "cgdd_8c_jan2gr" ~ "GDD 8C 01-01 to greenup",
-                              phe == "tmax_18d" ~ "Max T, 18d mean",
-                              phe == "tmin_18d" ~ "Min T, 18d mean",
-                              phe == "tave_18d" ~ "Mean T, 18d mean",
-                              phe == "tmax_10d" ~ "Max T, 10d mean",
-                              phe == "tmin_10d" ~ "Min T, 10d mean",
-                              phe == "tave_10d" ~ "Mean T, 10d mean",
-                              phe == "tmax_5d" ~ "Max T, 5d mean",
-                              phe == "tmin_5d" ~ "Min T, 5d mean",
-                              phe == "tave_5d" ~ "Mean T, 5d mean",
-                              phe == "cgdd_12c_10d" ~ "GDD, 10d",
-                              phe == "cgdd_12c_18d" ~ "GDD, 18d",
-                              phe == "cgdd_12c_5d" ~ "GDD, 5d",
-                              TRUE ~ phe))
-grh2$site <- factor(grh2$site, levels = rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North", "nine_sites")))
-grh2$phe_name <- factor(grh2$phe_name, levels = c("50% greenup", "GDD, 5d",
-                                                  "Min T, 5d mean",
-                                                  #"Mean T, 5d mean",
-                                                  #"Max T, 5d mean",
-                                                  "GDD, 10d",
-                                                  "Min T, 10d mean",
-                                                  #"Mean T, 10d mean",
-                                                  #"Max T, 10d mean",
-                                                  "GDD, 18d",
-                                                  "Min T, 18d mean",
-                                                  #"Mean T, 18d mean",
-                                                  #"Max T, 18d mean",
-                                                  #"GDD 8C 01-01 to greenup",
-                                                  "GDD 01-01 to GR"))
-grh2$subpop_name <- factor(grh2$subpop_name, levels = c("Gulf", "Midwest", "Gulf and Midwest", "Atlantic", "All"))
+subpops
+library(ggrepel)
 
+metaplot <- metadata %>%
+  filter(SUBPOP %in% c("Gulf", "Midwest") & !is.na(LATITUDE)) %>%
+  mutate(LONGITUDE = -LONGITUDE)
+metaplot$ECOTYPE_NNET <- factor(metaplot$ECOTYPE_NNET, levels = c("Coastal", "Lowland", "Upland", "Unknown"))
+siteplot <- sites %>%
+  filter(!(SITE %in% c("FRMI", "OVTN")))
 
-subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"), Atlantic = "Atlantic", three_subpops = c("Atlantic", "Gulf", "Midwest"))
-i=3
-subpop_v[[i]]
-site_plot <- c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North")
-
-grh2_p1 <- grh2 %>%
-  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
-  ggplot(aes(x = phe_name, y = Estimate)) +
-  geom_bar(stat = "identity", aes(fill = phe_name == "50% greenup")) +
-  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
-  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
-  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
-  facet_grid(site ~ subpop_name) +
-  geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = Estimate), linetype = 2) +
-  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 1.1)) +
-  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
-save_plot("../manuscript/plots/h2_GR_site_weather_functions_All_Sites_v2.png", plot = grh2_p1, base_height = 7.5, base_asp = 1.1)
-
-site_plot <- c( "All", "Texas", "North")
-
-grh2_p2 <- grh2 %>%
-  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
-  ggplot(aes(x = phe_name, y = Estimate)) +
-  geom_bar(stat = "identity", aes(fill = phe_name == "50% greenup")) +
-  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
-  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
-  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
-  facet_grid(site ~ subpop_name) +
-  geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = Estimate), linetype = 2) +
-  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 0.5)) +
-  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
-save_plot("../manuscript/plots/h2_GR_site_weather_functions_All_Sites_v3.png", plot = grh2_p2, base_height = 5, base_asp = 1.3)
-
-site_plot <- c( "All")
-
-grh2_p3 <- grh2 %>%
-  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
-  ggplot(aes(x = phe_name, y = Estimate)) +
-  geom_bar(stat = "identity", aes(fill = phe_name == "50% greenup")) +
-  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
-  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
-  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
-  facet_grid(site ~ subpop_name) +
-  geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = Estimate), linetype = 2) +
-  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 0.11)) +
-  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1) + xlab("")
-save_plot("../manuscript/plots/h2_GR_site_weather_functions_All_Sites_v4.png", plot = grh2_p3, base_height = 4, base_asp = 1.5)
-
-gr_fl_p1 <- plot_grid(grh2_p3, flh2_p2, nrow = 2)
-
-save_plot("../manuscript/plots/h2_GR_and_FL_site_weather_functions_All_Sites.png", plot = gr_fl_p1, base_height = 4.6, base_asp = 1.35)
+ggplot() + 
+  geom_polygon(data = usa, aes(x=long, y = lat, group = group), 
+               fill = "white", color = "black") +
+  coord_quickmap(xlim = c(-105, -66), ylim = c(25, 50)) +
+  geom_jitter(data = metaplot, aes(x = LONGITUDE, y = LATITUDE, 
+                                   color = SUBPOP, shape = ECOTYPE_NNET),
+              width = 0.45, height = 0.45) + 
+  geom_point(data = siteplot, aes(x = Longitude, y = Latitude), shape = 21, size = 4, stroke = 1.5, fill = "white") +
+  geom_point(data = siteplot, aes(x = Longitude, y = Latitude), shape = 4, size = 3, stroke = 1.5) +
+  geom_label_repel(data = siteplot, aes(x = Longitude, y = Latitude, label = manu_site), alpha = 0.7) +
+  labs(x = "Longitude", y = "Latitude") + 
+  theme(legend.position = "right") +
+  scale_color_manual(values = c("#F47F72", "#442C83")) +
+  scale_shape_manual(values = c(0, 6, 1, 4)) 
+  #scale_fill_manual(values = c("#280B54FF","#FAC127FF", "#D44842FF", "white")) +
+  #scale_color_manual(values = c(rep("black", 10), "#280B54FF","#FAC127FF", "#D44842FF", "white", "#280B54FF","#FAC127FF", "#D44842FF", "white"), guide = FALSE) +
+  #scale_alpha_manual(values = c(0.7, 0.7, 0.7, 0.7), guide = FALSE)
+save_plot(filename = "../manuscript/plots/Map_subpops_and_Ecotypes.png", plot = last_plot(), base_height = 3)
+?geom_point
 ```
-## Phenotype correlations
+
+# -- Figure 1 B
+# Phenotype correlations
 can you easily look at the correlation between greenup ranks at OK versus NE?
 ```{r}
 phe_gr_df %>%
@@ -339,7 +166,7 @@ cor_gr %>%
 pand <- cor_fl %>%
   filter(SUBPOP %in% c("Gulf")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
-  ggcorr(method = "pairwise", label = TRUE) +
+  ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
   scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
                                       "white", "#27AD81FF", "#5DC863FF",
                                       "#FDE725FF"), limits = c(-1,1)) +
@@ -347,7 +174,7 @@ pand <- cor_fl %>%
 pane <- cor_fl %>%
   filter(SUBPOP %in% c("Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
-  ggcorr(method = "pairwise", label = TRUE) +
+  ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
   scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
                                       "white", "#27AD81FF", "#5DC863FF",
                                       "#FDE725FF"), limits = c(-1,1)) +
@@ -355,7 +182,7 @@ pane <- cor_fl %>%
 panf <- cor_fl %>%
   filter(SUBPOP %in% c("Gulf", "Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
-  ggcorr(method = "pairwise", label = TRUE) +
+  ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
   scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
                                       "white", "#27AD81FF", "#5DC863FF",
                                       "#FDE725FF"), limits = c(-1,1)) +
@@ -363,7 +190,7 @@ panf <- cor_fl %>%
 pana <- cor_gr %>%
   filter(SUBPOP %in% c("Gulf")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
-  ggcorr(method = "pairwise", label = TRUE) +
+  ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
   scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
                                       "white", "#27AD81FF", "#5DC863FF",
                                       "#FDE725FF"), limits = c(-1,1)) +
@@ -371,7 +198,7 @@ pana <- cor_gr %>%
 panb <- cor_gr %>%
   filter(SUBPOP %in% c("Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
-  ggcorr(method = "pairwise", label = TRUE) +
+  ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
   scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
                                       "white", "#27AD81FF", "#5DC863FF",
                                       "#FDE725FF"), limits = c(-1,1)) +
@@ -379,15 +206,370 @@ panb <- cor_gr %>%
 panc <- cor_gr %>%
   filter(SUBPOP %in% c("Gulf", "Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
-  ggcorr(method = "pairwise", label = TRUE) +
+  ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
   scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
                                       "white", "#27AD81FF", "#5DC863FF",
                                       "#FDE725FF"), limits = c(-1,1)) +
   theme(legend.position = "none")
 
 pheno_corr <- plot_grid(pana, panb, panc, pand, pane, panf, nrow = 2)
-save_plot(filename = "../manuscript/plots/Phenotypic_correlations_GR50_FL50_2.png", plot = pheno_corr, base_height = 5)
+save_plot(filename = "../manuscript/plots/Phenotypic_correlations_GR50_FL50_2.svg", plot = pheno_corr, base_width = 6.5)
 ```
+
+
+# --- Fig 1 C & D
+# Heritability Plots
+
+Within common gardens, h2 were typically quite high: 62% on average for greenup date, and 87% for flowering date. However, h2 were not consistently high, notably for greenup at our OK and NE common gardens.
+```{r}
+h2all <- h2fl %>%
+  full_join(h2gr)
+
+h2all %>%
+  filter(phe %in% c("FL50", "GR50") & site %in% c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD")) %>%
+  group_by(phe) %>%
+  summarise(meanh2 = mean(Estimate))
+
+h2all %>%
+  filter(phe %in% c("FL50", "GR50") & site %in% c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD")) %>%
+  filter(Estimate < 0.2)
+
+h2all %>%
+  filter(phe %in% c("FL50", "GR50") & site %in% c("eight_sites")) %>%
+  group_by(phe) %>%
+  summarise(meanh2 = mean(Estimate))
+
+h2all %>%
+  filter(phe %in% c("GR50") & site %in% c("tx_sites", "north_sites")) %>%
+  mutate(GandGxE = Estimate + GxE_Estimate) %>%
+  select(GandGxE, Estimate:phe, GxE_Estimate) %>%
+  group_by(site) %>%
+  summarise(meanh2 = mean(Estimate + GxE_Estimate))
+
+h2all %>%
+  filter(site %in% c("eight_sites")) %>%
+  mutate(GandGxE = Estimate + GxE_Estimate)  %>%
+  select(GandGxE, site:phe, Estimate, GxE_Estimate)
+```
+
+
+## h2 as functions of GR50 and FL50
+```{r}
+h2all <- h2fl %>%
+  full_join(h2gr)
+unique(h2all$site)
+f1h2 <- h2all %>%
+  filter(phe %in% c("FL50", "GR50")) %>%
+  mutate(site = case_when(is.na(site) ~ "all",
+                          site == "eight_sites" ~ "All",
+                          site == "tx_sites" ~ "Texas",
+                          site == "north_sites" ~ "North",
+                          TRUE ~ site),
+         subpop_name = case_when(subpop == "Gulf_and_Midwest" ~ "Gulf and Midwest",
+                                 subpop == "three_subpops" ~ "all",
+                                 TRUE ~ subpop),
+         phe_name = case_when(phe == "GR50" ~ "50% greenup",
+                              phe == "FL50" ~ "50% flowering",
+                              TRUE ~ phe))
+f1h2$site <- factor(f1h2$site, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All"))#, "Texas", "North"))
+f1h2$phe_name <- factor(f1h2$phe_name, levels = c("50% greenup", "50% flowering"))
+f1h2$subpop_name <- factor(f1h2$subpop_name, levels = c("Gulf", "Midwest", "Gulf and Midwest", "Atlantic", "all"))
+ggh21 <- f1h2 %>%
+  filter(!(site %in% c("nine_sites", "IL")) & !is.na(subpop_name) & !is.na(phe_name) & !is.na(site)) %>%
+  ggplot(aes(x = site, y = Estimate)) +
+  geom_bar(aes(fill = site %in% c("All", "Texas", "North")), stat = "identity") +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
+  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
+  facet_grid(phe_name ~ subpop_name) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), 
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        legend.position = "none") + 
+  ylim(c(0, 1)) +
+  xlab("Common Gardens") + 
+  ylab(bquote('h'^2)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
+  #
+save_plot("../manuscript/plots/h2_GR_FL_site_by_subpop_k_specific.png", plot = ggh21, base_width = 5.5, base_height = 3)
+```
+
+## h2 flowering weather
+```{r}
+flh2 <- h2fl %>%
+  filter(phe %in% c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d", "crain_7d")) %>%
+  mutate(site = case_when(is.na(site) ~ "all",
+                          site == "eight_sites" ~ "All",
+                          site == "tx_sites" ~ "Texas",
+                          site == "north_sites" ~ "North",
+                          TRUE ~ site),
+         subpop_name = case_when(subpop == "Gulf_and_Midwest" ~ "Gulf and Midwest",
+                                 subpop == "three_subpops" ~ "all",
+                                 TRUE ~ subpop),
+         phe_name = case_when(phe == "FL50" ~ "50% flowering",
+                              phe == "dyln_fl50" ~ "daylength",
+                              phe == "dyln_change_sec" ~ "daylength change (s)",
+                              phe == "cgdd_12c_gr2fl" ~ "GDD, GR to FL",
+                              phe == "crain_gr2fl" ~ "Rainfall, GR to FL",
+                              phe == "crain_1d" ~ "Rainfall, 1 day",
+                              phe == "crain_2d" ~ "Rainfall, 2d sum",
+                              phe == "crain_3d" ~ "Rainfall, 3d sum",
+                              phe == "crain_5d" ~ "Rainfall, 5d sum",
+                              phe == "crain_7d" ~ "Rainfall, 7d sum",
+                              TRUE ~ phe))
+flh2$site <- factor(flh2$site, levels = rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North")))
+flh2$phe_name <- factor(flh2$phe_name, levels = c("50% flowering", "daylength",
+                                                  "daylength change (s)",
+                                                  "GDD, GR to FL",
+                                                  "Rainfall, GR to FL",
+                                                  "Rainfall, 1 day",
+                                                  #"Rainfall, 2d sum",
+                                                  "Rainfall, 3d sum",
+                                                  "Rainfall, 5d sum"#,
+                                                  #"Rainfall, 7d sum"
+                                                  ))
+flh2$subpop_name <- factor(flh2$subpop_name, levels = c("Gulf", "Midwest", "Gulf and Midwest", "Atlantic", "all"))
+site_plot <- rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD", "All", "Texas", "North"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"), Atlantic = "Atlantic", three_subpops = c("Atlantic", "Gulf", "Midwest"))
+
+flh2_p1 <- flh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = phe_name == "50% flowering")) +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
+  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
+  facet_grid(site ~ subpop_name) +
+  geom_hline(data = filter(flh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "FL50"), aes(yintercept = Estimate), linetype = 2) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 1.1)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
+
+save_plot("../manuscript/plots/h2_FL_site_weather_functions_single_sites_k_specific.png", plot = flh2_p1, base_height = 7, base_asp = 1.1)
+
+site_plot <- c("All", "Texas", "North")
+
+flh2_p2 <- flh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = phe_name == "50% flowering")) +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
+  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
+  facet_grid(site ~ subpop_name) +
+  geom_hline(data = filter(flh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "FL50"), aes(yintercept = Estimate), linetype = 2) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 0.8)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1) + xlab("")
+
+save_plot("../manuscript/plots/h2_FL_site_weather_functions_site_groups_k_specific.png", plot = flh2_p2, base_height = 4, base_asp = 1.5)
+
+site_plot <- c("All")
+
+flh2_p3 <- flh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = phe_name == "50% flowering")) +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
+  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
+  facet_grid(site ~ subpop_name) +
+  geom_hline(data = filter(flh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "FL50"), aes(yintercept = Estimate), linetype = 2) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 0.5)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1) + xlab("")
+save_plot("../manuscript/plots/h2_FL_site_weather_functions_All_Sites_k_specific.png", plot = flh2_p3, base_height = 3.5)
+```
+## gxe flowering all, north, texas
+```{r}
+site_plot <- c("All", "Texas", "North")
+
+fl_barplot2 <- flh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>%
+  select(site:phe, subpop_name, phe_name, ends_with("SE")) %>%
+  pivot_longer(cols = ends_with("SE"), names_to = "Type", values_to = "SE") %>%
+  mutate(type_name = case_when(Type == "SE" ~ "G",
+                               Type == "GxE_SE" ~ "GxE",
+                               Type == "error_SE" ~ "error",
+                               Type == "Env_SE" ~ "E")) %>%
+  select(-Type)
+fl_barplot <- flh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>%
+  select(site:phe, subpop_name, phe_name, ends_with("Estimate")) %>%
+  pivot_longer(cols = ends_with("Estimate"), names_to = "Type", values_to = "Estimate") %>%
+  mutate(type_name = case_when(Type == "Estimate" ~ "G",
+                               Type == "GxE_Estimate" ~ "GxE",
+                               Type == "error_Estimate" ~ "error",
+                               Type == "Env_Estimate" ~ "E"))
+fl_barplot <- fl_barplot %>%
+  left_join(fl_barplot2)
+fl_barplot$type_name <- factor(fl_barplot$type_name, levels = rev(c("G", "GxE", "E", "error")))
+
+fl_bar_gxe <- fl_barplot %>%
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = type_name)) + 
+  geom_errorbar(data = filter(fl_barplot, type_name == "G"), aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  facet_grid(site ~ subpop_name)+
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") +
+  geom_hline(data = filter(flh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "FL50"), aes(yintercept = GxE_Estimate+Estimate), linetype = 2) + xlab("") +
+  ylab("Variance Explained")
+  
+save_plot("../manuscript/plots/Var_Comp_flowering_site_groups.png", plot = fl_bar_gxe, base_width = 5.5, base_height = 4)
+
+flh2_p4 <- flh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
+  ggplot(aes(x = phe_name, y = GxE_Estimate)) +
+  geom_bar(stat = "identity", aes(fill = phe_name == "50% flowering")) +
+  geom_errorbar(aes(ymin = GxE_Estimate - GxE_SE, ymax = GxE_Estimate + GxE_SE), width = 0.3) +
+  geom_linerange(aes(ymin = GxE_Estimate, ymax = GxE_Estimate + GxE_SE)) +
+  geom_linerange(aes(ymin = GxE_Estimate - GxE_SE, ymax = GxE_Estimate)) +
+  facet_grid(site ~ subpop_name) +
+  geom_hline(data = filter(flh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "FL50"), aes(yintercept = GxE_Estimate), linetype = 2) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 1)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1) + xlab("")
+
+save_plot("../manuscript/plots/h2_FL_site_weather_functions_site_groups_k_specific.png", plot = flh2_p2, base_height = 4, base_asp = 1.5)
+
+library(scales)
+show_col(viridis(4)) # #440154FF   #31688EFF
+```
+
+
+## h2 greenup weather
+
+```{r}
+unique(h2gr$site)
+grh2 <- h2gr %>%
+  filter(!(phe %in% c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d", "crain_7d", "DYLN"))) %>%
+  mutate(site = case_when(is.na(site) ~ "all",
+                          site == "eight_sites" ~ "All",
+                          site == "tx_sites" ~ "Texas",
+                          site == "north_sites" ~ "North",
+                          TRUE ~ site),
+         subpop_name = case_when(subpop == "Gulf_and_Midwest" ~ "Gulf and Midwest",
+                                 subpop == "three_subpops" ~ "All",
+                                 TRUE ~ subpop),
+         phe_name = case_when(phe == "GR50" ~ "50% greenup",
+                              phe == "FL50" ~ "50% flowering",
+                              phe == "cgdd_12c_jan2gr" ~ "GDD 01-01 to GR",
+                              phe == "cgdd_8c_jan2gr" ~ "GDD 8C 01-01 to greenup",
+                              phe == "tmax_18d" ~ "Max T, 18d mean",
+                              phe == "tmin_18d" ~ "Min T, 18d mean",
+                              phe == "tave_18d" ~ "Mean T, 18d mean",
+                              phe == "tmax_10d" ~ "Max T, 10d mean",
+                              phe == "tmin_10d" ~ "Min T, 10d mean",
+                              phe == "tave_10d" ~ "Mean T, 10d mean",
+                              phe == "tmax_5d" ~ "Max T, 5d mean",
+                              phe == "tmin_5d" ~ "Min T, 5d mean",
+                              phe == "tave_5d" ~ "Mean T, 5d mean",
+                              phe == "cgdd_12c_10d" ~ "GDD, 10d",
+                              phe == "cgdd_12c_18d" ~ "GDD, 18d",
+                              phe == "cgdd_12c_5d" ~ "GDD, 5d",
+                              TRUE ~ phe))
+grh2$site <- factor(grh2$site, levels = rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North", "nine_sites")))
+grh2$phe_name <- factor(grh2$phe_name, levels = c("50% greenup", "GDD, 5d",
+                                                  "Min T, 5d mean",
+                                                  #"Mean T, 5d mean",
+                                                  #"Max T, 5d mean",
+                                                  "GDD, 10d",
+                                                  "Min T, 10d mean",
+                                                  #"Mean T, 10d mean",
+                                                  #"Max T, 10d mean",
+                                                  "GDD, 18d",
+                                                  "Min T, 18d mean",
+                                                  #"Mean T, 18d mean",
+                                                  #"Max T, 18d mean",
+                                                  #"GDD 8C 01-01 to greenup",
+                                                  "GDD 01-01 to GR"))
+grh2$subpop_name <- factor(grh2$subpop_name, levels = c("Gulf", "Midwest", "Gulf and Midwest", "Atlantic", "All"))
+
+
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"), Atlantic = "Atlantic", three_subpops = c("Atlantic", "Gulf", "Midwest"))
+
+site_plot <- c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North")
+
+grh2_p1 <- grh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = phe_name == "50% greenup")) +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
+  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
+  facet_grid(site ~ subpop_name) +
+  geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = Estimate), linetype = 2) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 1.1)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
+save_plot("../manuscript/plots/h2_GR_site_weather_functions_single_sites_k_specific.png", plot = grh2_p1, base_height = 7.5, base_asp = 1.1)
+
+site_plot <- c( "All", "Texas", "North")
+
+grh2_p2 <- grh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = phe_name == "50% greenup")) +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
+  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
+  facet_grid(site ~ subpop_name) +
+  geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = Estimate), linetype = 2) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 0.6)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1)
+save_plot("../manuscript/plots/h2_GR_site_weather_functions_site_groups_k_specific.png", plot = grh2_p2, base_height = 5, base_asp = 1.3)
+
+site_plot <- c( "All")
+
+grh2_p3 <- grh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>% # subpop == subpop_v[[i]] & 
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = phe_name == "50% greenup")) +
+  geom_errorbar(aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  geom_linerange(aes(ymin = Estimate, ymax = Estimate + SE)) +
+  geom_linerange(aes(ymin = Estimate - SE, ymax = Estimate)) +
+  facet_grid(site ~ subpop_name) +
+  geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = Estimate), linetype = 2) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "none") + ylim(c(0, 0.11)) +
+  scale_fill_viridis(discrete = TRUE, end = 0.8, direction = 1) + xlab("")
+save_plot("../manuscript/plots/h2_GR_site_weather_functions_All_Sites_k_specific.png", plot = grh2_p3, base_height = 3.5)
+
+gr_fl_p1 <- plot_grid(grh2_p3, flh2_p3, nrow = 2)
+
+save_plot("../manuscript/plots/h2_GR_and_FL_site_weather_functions_All_Sites_k_specific.png", plot = gr_fl_p1, base_height = 4.6)
+```
+## gxe greenup
+
+```{r}
+site_plot <- c("All", "Texas", "North")
+
+gr_barplot2 <- grh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>%
+  select(site:phe, subpop_name, phe_name, ends_with("SE")) %>%
+  pivot_longer(cols = ends_with("SE"), names_to = "Type", values_to = "SE") %>%
+  mutate(type_name = case_when(Type == "SE" ~ "G",
+                               Type == "GxE_SE" ~ "GxE",
+                               Type == "error_SE" ~ "error",
+                               Type == "Env_SE" ~ "E")) %>%
+  select(-Type)
+gr_barplot <- grh2 %>%
+  filter(subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & !is.na(phe_name)) %>%
+  select(site:phe, subpop_name, phe_name, ends_with("Estimate")) %>%
+  pivot_longer(cols = ends_with("Estimate"), names_to = "Type", values_to = "Estimate") %>%
+  mutate(type_name = case_when(Type == "Estimate" ~ "G",
+                               Type == "GxE_Estimate" ~ "GxE",
+                               Type == "error_Estimate" ~ "error",
+                               Type == "Env_Estimate" ~ "E"))
+gr_barplot <- gr_barplot %>%
+  left_join(gr_barplot2)
+gr_barplot$type_name <- factor(gr_barplot$type_name, levels = rev(c("G", "GxE", "E", "error")))
+
+gr_bar_gxe <- gr_barplot %>%
+  ggplot(aes(x = phe_name, y = Estimate)) +
+  geom_bar(stat = "identity", aes(fill = type_name)) + 
+  geom_errorbar(data = filter(gr_barplot, type_name == "G"), aes(ymin = Estimate - SE, ymax = Estimate + SE), width = 0.3) +
+  facet_grid(site ~ subpop_name)+
+  scale_fill_viridis(discrete = TRUE, direction = -1) +
+  theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "right") +
+  geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = GxE_Estimate+Estimate), linetype = 2)
+  
+save_plot("../manuscript/plots/Var_Comp_greenup_site_groups.png", plot = gr_bar_gxe, base_height = 4, base_asp = 1.5)
+```
+
 
 # --------------
 # SVD of K
@@ -395,6 +577,9 @@ save_plot(filename = "../manuscript/plots/Phenotypic_correlations_GR50_FL50_2.pn
 ## Plot eigenvectors to capture predominant patterns in K matrix.
 ```{r}
 k_full <- read_rds("../data/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+k_gandm <- read_rds("../data/Kinship_van_Raden_method_363g_Gulf_and_Midwest_subset_maf0.05.rds")
+k_midw <- read_rds("../data/Kinship_van_Raden_method_134g_Midwest_subset_maf0.05.rds")
+k_gulf <- read_rds("../data/Kinship_van_Raden_method_229g_Gulf_subset_maf0.05.rds")
 ```
 
 ```{r}
@@ -455,6 +640,185 @@ ggb1_plot2 <- ggb1 %>%
 save_plot("../manuscript/plots/SVD_of_Kinship_matrix_first_six_eigenvectors_ecotype.png", base_height = 5, base_asp = 2, plot = ggb1_plot2)
 ```
 
+## k_gandm
+
+```{r}
+b1 <- svd(k_gandm)
+b1$d[1] / sum(b1$d) # Proportion of variance explained by first eigenvector 29.2
+b1$d[2] / sum(b1$d) # 18.2
+b1$d[3] / sum(b1$d) # 3.7
+b1$d[4] / sum(b1$d) # 1.4
+b1$d[5] / sum(b1$d) # 0.008
+sum(b1$d[1:4]) / sum(b1$d) # First 4 eigenvectors explain 1% or more variance, and 52.5% of total variance.
+
+for(g in 1:5){
+barplot(b1$v[,g]/k_gandm[which.max(abs(k_gandm[,g])),g])
+}
+order <- enframe(colnames(k_gandm), name = NULL, value = "PLANT_ID")
+ggb1 <- tibble(`First eigenvector (PVE = 29.2%)` = b1$v[,1]/k_gandm[which.max(abs(k_gandm[,1])),1],
+       `Second eigenvector (PVE = 18.2%)` = b1$v[,2]/k_gandm[which.max(abs(k_gandm[,2])),2],
+       `Third eigenvector (PVE = 3.7%)` = b1$v[,3]/k_gandm[which.max(abs(k_gandm[,3])),3],
+       `Fourth eigenvector (PVE = 1.4%)` = b1$v[,4]/k_gandm[which.max(abs(k_gandm[,4])),4],
+       #`Fifth eigenvector (PVE = 0.8%)` = b1$v[,5]/k_gandm[which.max(abs(k_gandm[,5])),5],
+       PLANT_ID = order$PLANT_ID) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  dplyr::select(PLANT_ID, SUBPOP, ECOTYPE_NNET, LATITUDE, ends_with("%)"))
+
+ggb1 <- ggb1 %>%
+  arrange(LATITUDE) %>%
+  mutate(rank = row_number()) %>%
+  pivot_longer(cols = ends_with("%)"), names_to = "Eigenvector", values_to = "value")
+ggb1$Eigenvector <- factor(ggb1$Eigenvector, 
+                           levels = c("First eigenvector (PVE = 29.2%)", 
+                                      "Second eigenvector (PVE = 18.2%)", 
+                                      "Third eigenvector (PVE = 3.7%)", 
+                                      "Fourth eigenvector (PVE = 1.4%)",
+                                      "Fifth eigenvector (PVE = 0.8%)"
+                                      ))
+ggb1$ECOTYPE_NNET <- factor(ggb1$ECOTYPE_NNET, levels = c("Coastal", "Lowland", "Upland", "Unknown"))
+ggb1_plot <- ggb1 %>%
+  ggplot(aes(x = rank, y = value)) +
+  geom_bar(aes(color = SUBPOP, fill = SUBPOP), stat = "identity") +
+  facet_wrap(~ Eigenvector) +
+  theme(legend.position = "right", axis.text.x = element_blank(), panel.spacing.x = unit(0.1, 'cm')) +
+  scale_color_manual(values = c("#F47F72", "#442C83")) +
+  scale_fill_manual(values = c("#F47F72", "#442C83")) +
+  xlab("Latitude of Origin (Rank Order)") + ylab("") +
+  geom_vline(xintercept = 342, linetype = 2)
+save_plot("../manuscript/plots/SVD_of_Kinship_matrix_Gulf_and_Midwest_first_four_eigenvectors.png", base_height = 5, base_asp = 2, plot = ggb1_plot)
+
+ggb1_plot2 <- ggb1 %>%
+  ggplot(aes(x = rank, y = value)) +
+  geom_bar(aes(color = ECOTYPE_NNET, fill = ECOTYPE_NNET), stat = "identity") +
+  facet_wrap(~ Eigenvector) +
+  theme(legend.position = "right", axis.text.x = element_blank(), panel.spacing.x = unit(0.1, 'cm')) +
+  scale_color_viridis(discrete = TRUE, option = "B", end = 0.9, 
+                      direction = -1) +
+  scale_fill_viridis(discrete = TRUE, option = "B", end = 0.9, direction = -1) +
+  xlab("Latitude of Origin (Rank Order)") + ylab("") +
+  geom_vline(xintercept = 342, linetype = 2)
+save_plot("../manuscript/plots/SVD_of_Kinship_matrix_Gulf_and_Midwest_first_four_eigenvectors_ecotype.png", base_height = 5, base_asp = 2, plot = ggb1_plot2)
+```
+
+## k_midw
+
+```{r}
+b1 <- svd(k_midw)
+b1$d[1] / sum(b1$d) # Proportion of variance explained by first eigenvector 10.2
+b1$d[2] / sum(b1$d) # 4.8
+b1$d[3] / sum(b1$d) # 2.4
+b1$d[4] / sum(b1$d) # 2.0
+b1$d[5] / sum(b1$d) # 1.7
+b1$d[6] / sum(b1$d) # 1.3
+b1$d[7] / sum(b1$d) # 1.3
+b1$d[8] / sum(b1$d) # 1.1
+b1$d[9] / sum(b1$d) # 1.1
+b1$d[10] / sum(b1$d) # 1.1
+b1$d[11] / sum(b1$d) # 1.1
+b1$d[12] / sum(b1$d) # 1.0
+b1$d[13] / sum(b1$d) # 1.0
+sum(b1$d[1:13]) / sum(b1$d) # First 13 eigenvectors explain 1% or more variance, and 30% of total variance. Phew! Exhausting.
+```
+
+```{r}
+k_use <- k_midw
+for(g in 1:5){
+barplot(b1$v[,g]/k_use[which.max(abs(k_use[,g])),g])
+}
+order <- enframe(colnames(k_use), name = NULL, value = "PLANT_ID")
+ggb1 <- tibble(`First eigenvector (PVE = 10.2%)` = b1$v[,1]/k_use[which.max(abs(k_use[,1])),1],
+       `Second eigenvector (PVE = 4.8%)` = b1$v[,2]/k_use[which.max(abs(k_use[,2])),2],
+       `Third eigenvector (PVE = 2.4%)` = b1$v[,3]/k_use[which.max(abs(k_use[,3])),3],
+       `Fourth eigenvector (PVE = 2.0%)` = b1$v[,4]/k_use[which.max(abs(k_use[,4])),4],
+       `Fifth eigenvector (PVE = 1.7%)` = b1$v[,5]/k_use[which.max(abs(k_use[,5])),5],
+       `Sixth eigenvector (PVE = 1.3%)` = b1$v[,6]/k_use[which.max(abs(k_use[,6])),6],
+       PLANT_ID = order$PLANT_ID) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  dplyr::select(PLANT_ID, SUBPOP, ECOTYPE_NNET, LATITUDE, ends_with("%)"))
+
+ggb1 <- ggb1 %>%
+  arrange(LATITUDE) %>%
+  mutate(rank = row_number()) %>%
+  pivot_longer(cols = ends_with("%)"), names_to = "Eigenvector", values_to = "value")
+ggb1$Eigenvector <- factor(ggb1$Eigenvector, 
+                           levels = c("First eigenvector (PVE = 10.2%)", 
+                                      "Second eigenvector (PVE = 4.8%)", 
+                                      "Third eigenvector (PVE = 2.4%)", 
+                                      "Fourth eigenvector (PVE = 2.0%)",
+                                      "Fifth eigenvector (PVE = 1.7%)",
+                                      "Sixth eigenvector (PVE = 1.3%)"
+                                      ))
+ggb1$ECOTYPE_NNET <- factor(ggb1$ECOTYPE_NNET, levels = c("Coastal", "Lowland", "Upland", "Unknown"))
+
+ggb1_plot2 <- ggb1 %>%
+  ggplot(aes(x = rank, y = value)) +
+  geom_bar(aes(color = ECOTYPE_NNET, fill = ECOTYPE_NNET), stat = "identity") +
+  facet_wrap(~ Eigenvector) +
+  theme(legend.position = "right", axis.text.x = element_blank(), panel.spacing.x = unit(0.1, 'cm')) +
+  scale_color_viridis(discrete = TRUE, option = "B", end = 0.9, 
+                      direction = -1) +
+  scale_fill_viridis(discrete = TRUE, option = "B", end = 0.9, direction = -1) +
+  xlab("Latitude of Origin (Rank Order)") + ylab("") +
+  geom_vline(xintercept = 133, linetype = 2)
+save_plot("../manuscript/plots/SVD_of_Kinship_matrix_Midwest_first_six_eigenvectors_ecotype.png", base_height = 5, base_asp = 2, plot = ggb1_plot2)
+```
+## k_gulf
+
+```{r}
+b1 <- svd(k_gulf)
+b1$d[1] / sum(b1$d) # Proportion of variance explained by first eigenvector 22.5
+b1$d[2] / sum(b1$d) # 9.4
+b1$d[3] / sum(b1$d) # 3.1
+b1$d[4] / sum(b1$d) # 1.8
+b1$d[5] / sum(b1$d) # 1.6
+b1$d[6] / sum(b1$d) # 1.3
+b1$d[7] / sum(b1$d) # 1.1
+b1$d[8] / sum(b1$d) # 1.0
+sum(b1$d[1:8]) / sum(b1$d) # First 8 eigenvectors explain 1% or more variance, and 41.8% of total variance. 
+```
+
+```{r}
+k_use <- k_gulf
+for(g in 1:8){
+barplot(b1$v[,g]/k_use[which.max(abs(k_use[,g])),g])
+}
+order <- enframe(colnames(k_use), name = NULL, value = "PLANT_ID")
+ggb1 <- tibble(`First eigenvector (PVE = 22.5%)` = b1$v[,1]/k_use[which.max(abs(k_use[,1])),1],
+       `Second eigenvector (PVE = 9.4%)` = b1$v[,2]/k_use[which.max(abs(k_use[,2])),2],
+       `Third eigenvector (PVE = 3.1%)` = b1$v[,3]/k_use[which.max(abs(k_use[,3])),3],
+       `Fourth eigenvector (PVE = 1.8%)` = b1$v[,4]/k_use[which.max(abs(k_use[,4])),4],
+       `Fifth eigenvector (PVE = 1.6%)` = b1$v[,5]/k_use[which.max(abs(k_use[,5])),5],
+       `Sixth eigenvector (PVE = 1.3%)` = b1$v[,6]/k_use[which.max(abs(k_use[,6])),6],
+       PLANT_ID = order$PLANT_ID) %>%
+  left_join(metadata, by = "PLANT_ID") %>%
+  dplyr::select(PLANT_ID, SUBPOP, ECOTYPE_NNET, LATITUDE, ends_with("%)"))
+
+ggb1 <- ggb1 %>%
+  arrange(LATITUDE) %>%
+  mutate(rank = row_number()) %>%
+  pivot_longer(cols = ends_with("%)"), names_to = "Eigenvector", values_to = "value")
+ggb1$Eigenvector <- factor(ggb1$Eigenvector, 
+                           levels = c("First eigenvector (PVE = 22.5%)", 
+                                      "Second eigenvector (PVE = 9.4%)", 
+                                      "Third eigenvector (PVE = 3.1%)", 
+                                      "Fourth eigenvector (PVE = 1.8%)",
+                                      "Fifth eigenvector (PVE = 1.6%)",
+                                      "Sixth eigenvector (PVE = 1.3%)"
+                                      ))
+ggb1$ECOTYPE_NNET <- factor(ggb1$ECOTYPE_NNET, levels = c("Coastal", "Lowland", "Upland", "Unknown"))
+
+ggb1_plot2 <- ggb1 %>%
+  ggplot(aes(x = rank, y = value)) +
+  geom_bar(aes(color = ECOTYPE_NNET, fill = ECOTYPE_NNET), stat = "identity") +
+  facet_wrap(~ Eigenvector) +
+  theme(legend.position = "right", axis.text.x = element_blank(), panel.spacing.x = unit(0.1, 'cm')) +
+  scale_color_viridis(discrete = TRUE, option = "B", end = 0.9, 
+                      direction = -1) +
+  scale_fill_viridis(discrete = TRUE, option = "B", end = 0.9, direction = -1) +
+  xlab("Latitude of Origin (Rank Order)") + ylab("") +
+  geom_vline(xintercept = 210, linetype = 2)
+save_plot("../manuscript/plots/SVD_of_Kinship_matrix_Gulf_first_six_eigenvectors_ecotype.png", base_height = 5, base_asp = 2, plot = ggb1_plot2)
+```
 
 The eigenvectors capture the predominant patterns in the Uk3 covariance matrix.
 ```
@@ -468,6 +832,13 @@ b1$d # the top eigenvector captures the predominant pattern in the ED_PCA_1 cova
 ```
 
 WAIT. I could also plot this for the svd from the whole SNP set. That might make more sense than doing a svd on the kinship matrix... 
+
+
+```{r}
+snp <- snp_attach("~/Github/pvdiv-genome/genetic_subpops/kinship/Pvirgatum_V5_GWAS_134g_Midwest_K_subset_maf0.05.rds")
+
+```
+
 
 # -------------
 # ASReml models for eight sites including GxE
@@ -597,6 +968,153 @@ for(p in seq_along(phe_dfs)){
 }
 ```
 
+# ASReml 07-29
+
+## Model eight, texas, and north sites with a kinship : site interaction.
+Then, find GxE and G proportions of variance.
+## Use Midwest-specific kinship matrix for Midwest-only, and Gulf-specific kinship matrix for Gulf-only comparisons. And use (and visualize eigenvectors of? Midwest and Gulf kinship matrix for the comparisons with both.)
+```{r}
+library(tidyverse)
+library(asreml)
+library(switchgrassGWAS)
+library(cowplot)
+
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "heritability", "kinship_subpop")
+metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
+sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
+subpops <- read_rds(file.path(workingdir, "data", "subpop_color_coding.rds"))
+phe_gr_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_GR50.rds"))
+phe_fl_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_FL50.rds"))
+
+kinshipdir <- file.path(workingdir, "data")
+k_gandm <- read_rds(file.path(kinshipdir, "Kinship_van_Raden_method_363g_Gulf_and_Midwest_subset_maf0.05.rds"))
+k_midw <- read_rds(file.path(kinshipdir,
+                "Kinship_van_Raden_method_134g_Midwest_subset_maf0.05.rds"))
+k_gulf <- read_rds(file.path(kinshipdir, "Kinship_van_Raden_method_229g_Gulf_subset_maf0.05.rds"))
+
+```
+
+```{r}
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", MI = "MI", SD = "SD", eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl",
+           "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
+phe_gr <- c("GR50", "DYLN", "cgdd_12c_jan2gr", "tmin_18d", "cgdd_12c_18d",
+            "tmin_10d", "cgdd_12c_10d", "tmin_5d", "cgdd_12c_5d")
+phe_dfs <- list(phe_gr_df, phe_fl_df)
+phe_lists <- list(phe_gr, phe_fl)
+k_list <- list(Gulf = k_gulf, Midwest = k_midw, Gulf_and_Midwest = k_gandm)
+h2_table <- tibble()
+gxe_table <- tibble()
+
+for(p in seq_along(phe_dfs)){
+  phe_v <- phe_lists[[p]]
+  phe <- phe_dfs[[p]]
+  
+  for(i in seq_along(site_v)){ # may need to adjust below for h2_table
+    dir.create(file.path(outputdir, names(site_v)[i]), showWarnings = FALSE)
+    for(j in seq_along(subpop_v)){
+      k_use <- k_list[[j]]
+      for(k in seq_along(phe_v)){
+        phe_single <- phe %>%
+          left_join(sites, by = "SITE") %>%
+          filter(manu_site %in% site_v[[i]] & SUBPOP %in% subpop_v[[j]]) %>%
+          rename(phenotype = eval(phe_v[k])) %>%
+          mutate(PLANT_ID = as_factor(PLANT_ID),
+                 SITE = as_factor(SITE),
+                 PLOT_GL = as_factor(PLOT_GL)) %>%
+          as.data.frame()
+  
+  if(length(site_v[[i]]) > 1){  # need to add site as a random factor if 
+    # there is more than one site included in the dataset.
+    tryCatch({
+     asr_out <- asreml(phenotype ~ 1,
+                       random = ~idv(SITE)*vm(PLANT_ID, k_use),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+  
+    Env_est <- vpredict(asr_out, E ~ V1/(V1+V2+V3+V4))
+    GxE_est <- vpredict(asr_out, GxE_h2 ~ V3/(V1+V2+V3+V4))
+    err_est <- vpredict(asr_out, err ~ V4/(V1+V2+V3+V4))
+    h2_est <- vpredict(asr_out, G_h2 ~ V2/(V1+V2+V3+V4)) %>% as_tibble() %>%
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik,
+             Env_Estimate = Env_est$Estimate[1],
+             Env_SE = Env_est$SE[1],
+             GxE_Estimate = GxE_est$Estimate[1],
+             GxE_SE = GxE_est$SE[1],
+             error_Estimate = err_est$Estimate[1],
+             error_SE = err_est$SE[1])
+    
+    blup <- summary(asr_out, coef=TRUE)$coef.random %>% 
+    as_tibble(rownames = "Effect")
+    write_csv(blup, file.path(outputdir, names(site_v)[i], 
+                              paste0("blups_", names(site_v)[i], "_",
+                                     names(subpop_v)[j], "_", phe_v[k],
+                                     ".csv")))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  } else {
+    tryCatch({
+    asr_out <- asreml(phenotype ~ 1,
+                       random = ~vm(PLANT_ID, k_use),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+    
+    h2_est <- vpredict(asr_out, h2 ~ V1/(V1+V2)) %>% as_tibble() %>%
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik)
+    blup <- summary(asr_out, coef=TRUE)$coef.random %>% 
+    as_tibble(rownames = "Effect")
+    write_csv(blup, file.path(outputdir, names(site_v)[i],
+                              paste0("blups_", names(site_v)[i], "_",
+                                     names(subpop_v)[j], "_", phe_v[k],
+                                     ".csv")))
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  }
+  
+  if(i == 1 & j == 1 & k == 1){
+    h2_table <- h2_est
+  } else if(i == 9 & j == 1 & k == 1){
+    gxe_table <- h2_est
+  } else if(length(site_v[[i]]) > 1){
+    gxe_table <- add_row(gxe_table, h2_est)
+  } else {
+    h2_table <- add_row(h2_table, h2_est)
+  }
+  tryCatch({
+      save_plot(filename=file.path(outputdir, names(site_v)[i],
+                                   paste0("ASReml_performance_",
+                                                 names(site_v)[i], "_",
+                                                 names(subpop_v)[j],
+                                                 "_", phe_v[k], ".png")), 
+            plot = plot(asr_out))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  
+      }
+    }
+  }
+  write_csv(h2_table, file.path(outputdir, paste0("h2_df_", phe_v[1],
+                                                  "_related_functions_", 
+                                                  "of_weather_v1.csv")))
+  write_csv(gxe_table, file.path(outputdir, paste0("gxe_and_h2_df_", phe_v[1],
+                                                  "_related_functions_", 
+                                                  "of_weather_v1.csv")))
+}
+```
+
 
 # D2F 
 
@@ -662,5 +1180,122 @@ gulf_top <- readRDS(file.path(gwasdir, "Part-One-Output_Top-Effects-1000-SNPs_GR
 gulf_top %>%
   group_by(n_cond_in_top_set) %>%
   tally()
+
+gulf_top_manh2 <- gulf_top %>%
+  filter(max_score_log10p > 5.897) %>%
+  ggplot(aes(x = POS, y = max_score_log10p)) + 
+  geom_point(aes(color = Condition, shape = as_factor(n_cond_in_top_set))) + 
+  #geom_line(aes(group = Condition)) +
+  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  theme(legend.position = "top",
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+        labs(x = "Chromosome", y = "-log10(p value)") +
+        scale_x_continuous(expand = c(0.18, 0.18)) +
+  scale_color_viridis(discrete = TRUE, end = 0.97) +
+  scale_shape_manual(values = c(4, 16, 17, 18, 14, 3, 4))
+save_plot("../manuscript/plots/Gulf_G_BLUP_top_500_Manhattan_2.png", base_height = 5, base_asp = 2.5, plot = gulf_top_manh2)
+
+gulf_top_manh <- gulf_top %>%
+  filter(max_score_log10p > 5.897) %>%
+  ggplot(aes(x = POS, y = max_score_log10p)) + 
+  geom_point(aes(color = n_cond_in_top_set, shape = Condition)) + 
+  #geom_line(aes(group = Condition)) +
+  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  theme(legend.position = "top",
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+        labs(x = "Chromosome", y = "-log10(p value)") +
+        scale_x_continuous(expand = c(0.18, 0.18)) +
+  scale_color_viridis(option = "B", end = 0.9) +
+  scale_shape_manual(values = c(15, 16, 17, 18, 14, 3, 4))
+  
+save_plot("../manuscript/plots/Gulf_G_BLUP_top_500_Manhattan.png", base_height = 5, base_asp = 2.5, plot = gulf_top_manh)
 ```
+
+
+```{r}
+midw_top <- readRDS(file.path(gwasdir, "Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Midwest.rds"))
+
+midw_top %>%
+  group_by(n_cond_in_top_set) %>%
+  tally()
+
+midw_top_manh2 <- midw_top %>%
+  filter(max_score_log10p > 6) %>%
+  ggplot(aes(x = POS, y = max_score_log10p)) + 
+  geom_point(aes(color = Condition, shape = as_factor(n_cond_in_top_set))) + 
+  #geom_line(aes(group = Condition)) +
+  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  theme(legend.position = "top",
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+        labs(x = "Chromosome", y = "-log10(p value)") +
+        scale_x_continuous(expand = c(0.18, 0.18)) +
+  scale_color_viridis(discrete = TRUE, end = 0.97) +
+  scale_shape_manual(values = c(4, 16, 17, 18, 14, 3, 4))
+save_plot("../manuscript/plots/Midwest_G_BLUP_top_500_Manhattan_2.png", base_height = 5, base_asp = 2.5, plot = midw_top_manh2)
+
+midw_top_manh <- midw_top %>%
+  filter(max_score_log10p > 5.897) %>%
+  ggplot(aes(x = POS, y = max_score_log10p)) + 
+  geom_point(aes(color = n_cond_in_top_set, shape = Condition)) + 
+  #geom_line(aes(group = Condition)) +
+  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  theme(legend.position = "top",
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+        labs(x = "Chromosome", y = "-log10(p value)") +
+        scale_x_continuous(expand = c(0.18, 0.18)) +
+  scale_color_viridis(option = "B", end = 0.9) +
+  scale_shape_manual(values = c(15, 16, 17, 18, 14, 3, 4))
+  
+save_plot("../manuscript/plots/Midwest_G_BLUP_top_500_Manhattan.png", base_height = 5, base_asp = 2.5, plot = midw_top_manh)
+```
+
+```{r}
+gandm_top <- readRDS(file.path(gwasdir, "Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Gulf_and_Midwest.rds"))
+
+gandm_top %>%
+  group_by(n_cond_in_top_set) %>%
+  tally()
+
+gandm_top_manh2 <- gandm_top %>%
+  filter(max_score_log10p > 6) %>%
+  ggplot(aes(x = POS, y = max_score_log10p)) + 
+  geom_point(aes(color = Condition, shape = as_factor(n_cond_in_top_set))) + 
+  #geom_line(aes(group = Condition)) +
+  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  theme(legend.position = "top",
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+        labs(x = "Chromosome", y = "-log10(p value)") +
+        scale_x_continuous(expand = c(0.18, 0.18)) +
+  scale_color_viridis(discrete = TRUE, end = 0.97) +
+  scale_shape_manual(values = c(4, 16, 17, 18, 14, 3, 4))
+save_plot("../manuscript/plots/Gulf_and_Midwest_G_BLUP_top_500_Manhattan_2.png", base_height = 5, base_asp = 2.5, plot = gandm_top_manh2)
+
+gandm_top_manh <- gandm_top %>%
+  filter(max_score_log10p > 5.897) %>%
+  ggplot(aes(x = POS, y = max_score_log10p)) + 
+  geom_point(aes(color = n_cond_in_top_set, shape = Condition)) + 
+  #geom_line(aes(group = Condition)) +
+  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  theme(legend.position = "top",
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+        labs(x = "Chromosome", y = "-log10(p value)") +
+        scale_x_continuous(expand = c(0.18, 0.18)) +
+  scale_color_viridis(option = "B", end = 0.9) +
+  scale_shape_manual(values = c(15, 16, 17, 18, 14, 3, 4))
+  
+save_plot("../manuscript/plots/Gulf_and_Midwest_G_BLUP_top_500_Manhattan.png", base_height = 5, base_asp = 2.5, plot = gandm_top_manh)
+```
+
+## Overlap with QTL and between subpops
+```{r}
+
+```
+
+
 
