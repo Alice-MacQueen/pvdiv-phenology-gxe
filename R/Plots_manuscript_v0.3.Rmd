@@ -249,7 +249,7 @@ h2all %>%
 h2all %>%
   filter(site %in% c("eight_sites")) %>%
   mutate(GandGxE = Estimate + GxE_Estimate)  %>%
-  select(GandGxE, site:phe, Estimate, GxE_Estimate)
+  select(GandGxE, site:phe, Estimate, SE, GxE_Estimate, GxE_SE)
 ```
 
 
@@ -1115,7 +1115,7 @@ for(p in seq_along(phe_dfs)){
 }
 ```
 
-
+# ----
 # D2F 
 
 If flowering date frequently varies as a function of GDD in switchgrass, this explains observations that moving southern populations northwards delays flowering, and moving northern populations south hastens flowering (Sanderson et al 1996). < Indeed, we observed D2F for Midwest plants was shorter at TX than BRKG, and vice versa?>
@@ -1137,7 +1137,172 @@ summary(lm(mean_D2F ~ Latitude*SUBPOP, data = d2f_lat))
 82-55
 ```
 
-## G_BLUP GWAS
+# ----------------------------
+# G_BLUP GWAS
+
+The plan is to do GWAS on G_BLUP from an eight site model with GxE modeled as site:kinship for each subpopulation and both combined. The traits I will do GWAS on for G_BLUPs are as follows:
+
+eight_sites
+FL50 (to show other assoc are stronger)
+dyln_fl50
+cgdd_12c_gr2fl
+
+Maybe also do GWAS on G_BLUP from the North and Texas models as above, for the traits:
+tx_sites & north_sites
+FL50 (to show other assoc are stronger)
+dyln_fl50
+cgdd_12c_gr2fl
+crain_gr2fl
+crain_1d
+GR50
+cgdd_12c_10d
+
+All I really want to show are that there are stronger G associations for the weather-derived variables than for FL50 and GR50. And possibly exploring G associations at subpopulation home and away sites, for the second bit. 
+That might be too complicated. Eh.
+
+It's possible I might want to confirm some of these G candidates with the fourway - how we see similar patterns in this cross for FL50 vs dyln/GDD, and there are some similar associations.
+
+THEN, for the next section, do GWAS on the BLUPs from the eight single site models. For these traits:
+all single sites...
+FL50 (actually, maybe not)
+dyln_fl50
+cgdd_12c_gr2fl
+crain_gr2fl
+crain_1d
+--
+GR50 (or maybe not)
+cgdd_12c_10d
+
+Then do mash runs. First for single traits across all eight sites, to make U_hyp for the next step - take the U_ed with large percentage variance explained. Make U_hyp with those covariances but no covariance with anything else... 
+Then run all the flowering-related traits together. Talk about how then SNPs can have effects that are strongest in response to one type of environmental cue. And how cues can be present or absent at different sites. And how this kind of analysis can help reveal all the patterns at play, because it doesn't make assumptions about how effects are structured.
+
+Maybe bring back the QTL maps after this and talk about how patterns of effects differ across sites in these models, too. Though the Genstat model is less sensitive...
+
+```{r}
+h2all %>%
+  filter(site %in% c("eight_sites"))
+```
+
+## Make phenotype df for GWAS
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "heritability", "kinship_subpop")
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", MI = "MI", SD = "SD", eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_eight <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl")
+phe_txano <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d", "GR50", "cgdd_12c_10d")
+phe_single <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d", "GR50", "cgdd_12c_10d")
+phe_lists <- list(TX1 = phe_single, TX2 = phe_single, TX3 = phe_single, OK = phe_single, MO = phe_single,
+               NE = phe_single, MI = phe_single, SD = phe_single, eight_sites = phe_eight, tx_sites = phe_txano, north_sites = phe_txano)
+
+i = 9
+j = 1
+k = 1
+phe_gwas <- tibble()
+
+for(j in seq_along(subpop_v)){
+    for(i in seq_along(site_v)){
+      phe_v <- phe_lists[[i]]
+      for(k in seq_along(phe_v)){
+        phe_raw <- read_csv(file.path(outputdir, names(site_v)[i],
+                                      paste0("blups_", names(site_v)[i], "_",
+                                             names(subpop_v)[j], "_", phe_v[k],
+                                             ".csv")))
+        names(phe_raw)[2] <- paste0(phe_v[k], "_", names(site_v)[i])
+        phe_proc <- phe_raw %>%
+          separate(Effect, into = c("factor", "PLANT_ID"), sep = "\\)_") %>%
+          filter(!is.na(PLANT_ID) & !grepl("^SITE", factor)) %>%
+          left_join(metadata, by = "PLANT_ID") %>%
+          filter(SUBPOP %in% subpop_v[[j]]) %>%
+          select(PLANT_ID, 3)
+        if(i == 1 & k == 1){
+          phe_gwas <- phe_proc
+        } else {
+          phe_gwas <- phe_gwas %>%
+            left_join(phe_proc, by = "PLANT_ID")
+        }
+      }
+    }
+  phe_gwas <- phe_gwas %>%
+  select(PLANT_ID, ends_with("eight_sites"), ends_with("tx_sites"), ends_with("north_sites"), everything())
+  write_csv(phe_gwas, path = file.path(workingdir, "analysis", "gwas", "BLUPs",
+                                       paste0("BLUP_phenotypes_",
+                                              "for_gwas_GR_FL_",
+                                              names(subpop_v)[j],
+                                              ".csv")))
+}
+
+ggplot(data = phe_gwas, aes(x = phe_gwas$cgdd_12c_gr2fl_eight_sites)) + geom_histogram()
+
+
+```
+
+
+## Run GWAS 
+```{r}
+library(bigsnpr)
+library(tidyverse)
+library(switchgrassGWAS)
+library(AnnotationDbi)
+txdb <- loadDb(file = file.path("~", "Github", "pvdiv-genome",
+                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+inputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
+outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
+subpop_v <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest", Gulf = "Gulf")
+snp_v <- c("12\\.1M", "8\\.8M", "10\\.3M")
+
+inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
+                                   "inputkinship.txt"),  delim = " ", 
+                                   col_names = "SNPfiles")
+set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
+
+
+for(i in seq_along(subpop_v)){
+  for(j in seq_along(set_v)){
+    dir.create(file.path(outputdir, names(set_v)[j]), showWarnings = FALSE)
+    snp <- snp_attach(inputfiles$SNPfiles[i])
+    phe_df <- read_csv(file.path(inputdir, paste0("BLUP_phenotypes_",
+                                                  "for_gwas_GR_FL_",
+                                                  names(subpop_v)[i],
+                                                  ".csv"))) 
+  if(names(set_v)[j] != "single_sites"){
+    phe_df <- phe_df %>%
+    select(PLANT_ID, ends_with(names(set_v)[j]))
+  } else {
+    phe_df <- phe_df %>%
+    select(PLANT_ID, !ends_with("sites"))
+  }
+  pvdiv_standard_gwas(snp, df = phe_df, type = "linear", 
+                      outputdir = file.path(outputdir, names(set_v)[j]),
+                      savegwas = TRUE, saveannos = TRUE, txdb = txdb,
+                      minphe = 130)
+
+  gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir,
+                                                       names(set_v)[j]), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       snp_v[i]))
+  phenotypes <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+  out1 <- pvdiv_bigsnp2mashr(path = file.path(outputdir, names(set_v)[j]), 
+                             snp = snp, gwas_rds = gwas_rds, 
+                             phenotypes = phenotypes, numSNPs = 1000, 
+                             clump = FALSE, scaled = FALSE, saveoutput = TRUE,
+                             suffix = paste0("FL_", names(set_v)[j], "_",
+                                             names(subpop_v)[i]))
+  }
+}
+
+
+```
+
+
+
+
+
 
 ```{r}
 gwasdir <- file.path(workingdir, "analysis", "gwas", "G_BLUP")
