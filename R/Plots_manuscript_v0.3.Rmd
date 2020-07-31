@@ -41,16 +41,7 @@ h2gr <- h2gr %>%
   full_join(h2gr_gxe)
 h2fl <- h2fl %>%
   full_join(h2fl_gxe)
-```
-### older files to load
-h2fl <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/heritability/h2_df_FL50_related_functions_of_weather_v3.csv")
-h2gr <- read_csv("~/Github/pvdiv-phenology-gxe/analysis/heritability/h2_df_GR50_related_functions_of_weather_v2.csv")
-h2gr4 <- read_csv(file.path(workingdir, "analysis", "heritability", "h2_df_GR50_related_functions_of_weather_v4.csv"))
-h2gr <- h2gr %>%
-  full_join(h2gr4)
-
-# Overview
-Here I'm putting the code for any new analyses that I'm running to do new writeup for the manuscript v0.3.
+```a the code for any new analyses that I'm running to do new writeup for the manuscript v0.3.
 
 v0.2 has the ASReml h2 analysis, has BLUPs for G (which as of v0.3 probably needs a GxE term... define some possibilities below.)
 
@@ -1237,7 +1228,7 @@ for(j in seq_along(subpop_v)){
 
 ggplot(data = phe_gwas, aes(x = phe_gwas$cgdd_12c_gr2fl_eight_sites)) + geom_histogram()
 
-
+sites %>% arrange(manu_site)
 ```
 
 
@@ -1261,8 +1252,8 @@ inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
 set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
 
 
-for(i in seq_along(subpop_v)){
-  for(j in seq_along(set_v)){
+for(j in 4){#seq_along(set_v)){
+  for(i in seq_along(subpop_v)){
     dir.create(file.path(outputdir, names(set_v)[j]), showWarnings = FALSE)
     snp <- snp_attach(inputfiles$SNPfiles[i])
     phe_df <- read_csv(file.path(inputdir, paste0("BLUP_phenotypes_",
@@ -1271,10 +1262,14 @@ for(i in seq_along(subpop_v)){
                                                   ".csv"))) 
   if(names(set_v)[j] != "single_sites"){
     phe_df <- phe_df %>%
-    select(PLANT_ID, ends_with(names(set_v)[j]))
+    dplyr::select(PLANT_ID, ends_with(names(set_v)[j]))
   } else {
     phe_df <- phe_df %>%
-    select(PLANT_ID, !ends_with("sites"))
+    dplyr::select(PLANT_ID, !ends_with("sites"))
+    if(names(subpop_v)[i] != "Gulf"){
+      phe_df <- phe_df %>%
+    dplyr::select(PLANT_ID, ends_with("NE"), ends_with("MI"), ends_with("SD"))
+    }
   }
   pvdiv_standard_gwas(snp, df = phe_df, type = "linear", 
                       outputdir = file.path(outputdir, names(set_v)[j]),
@@ -1300,15 +1295,35 @@ for(i in seq_along(subpop_v)){
 ```
 
 
-
-
-
-
-```{r}
 gwasdir <- file.path(workingdir, "analysis", "gwas", "G_BLUP")
 log10p_gulf <- readRDS(file.path(gwasdir,                                 "log10p_strong_df_1000topSNPs_GR_FL_Gulf.rds"))
 log10p_midw <- readRDS(file.path(gwasdir,                                 "log10p_strong_df_1000topSNPs_GR_FL_Midwest.rds"))
 log10p_gandm <- readRDS(file.path(gwasdir,                                 "log10p_strong_df_1000topSNPs_GR_FL_Gulf_and_Midwest.rds"))
+
+```{r}
+j=1
+i=3
+
+names(set_v)[j]
+names(subpop_v)[i]
+bonferroni_v <- c(-log10(0.05/12100000), -log10(0.05/8800000), -log10(0.05/10300000))
+
+gwasdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", names(set_v)[j])
+log10p_gulf <- readRDS(file.path(gwasdir, 
+                                 paste0("log10p_strong_df_1000topSNPs_",
+                                        "FL_", names(set_v)[j], "_Gulf",
+                                        ".rds")))
+log10p_midw <- readRDS(file.path(gwasdir,
+                                 paste0("log10p_strong_df_1000topSNPs_", "FL_",
+                                 names(set_v)[j], "_", "Midwest.rds")))
+log10p_gandm <- readRDS(file.path(gwasdir,
+                                  paste0("log10p_strong_df_1000topSNPs_",
+                                         "FL_", names(set_v)[j], "_",
+                                         "Gulf_and_Midwest.rds")))
+log10p_df <- readRDS(file.path(gwasdir,
+                                  paste0("log10p_strong_df_1000topSNPs_",
+                                         "FL_", names(set_v)[j], "_",
+                                         names(subpop_v)[i], ".rds")))
 ```
 
 ```{r}
@@ -1317,150 +1332,254 @@ log10p_gulf %>%
   ungroup() %>%
   filter(log10p > -log10(0.05/10300000)) %>%
   group_by(PHE) %>%
-  tally() %>%
-  write_csv(., "../manuscript/tables/Gulf_SNPs_above_Bonferroni_by_trait.csv")
-```
+  tally() #%>%
+  #write_csv(., paste0("../manuscript/tables/Gulf_", names(set_v)[j], "_SNPs_above_Bonferroni_by_trait.csv"))
 
-```{r}
 log10p_midw %>%
   pivot_longer(cols = -(SNP:POS), names_to = "PHE", values_to = "log10p") %>%
   ungroup() %>%
   filter(log10p > -log10(0.05/8800000)) %>%
   group_by(PHE) %>%
-  tally() %>%
-  write_csv(., "../manuscript/tables/Midwest_SNPs_above_Bonferroni_by_trait.csv")
+  tally() #%>%
+  #write_csv(., paste0("../manuscript/tables/Midwest_", names(set_v)[j], "_SNPs_above_Bonferroni_by_trait.csv"))
 
 log10p_gandm %>%
   pivot_longer(cols = -(SNP:POS), names_to = "PHE", values_to = "log10p") %>%
   ungroup() %>%
   filter(log10p > -log10(0.05/12100000)) %>%
   group_by(PHE) %>%
-  tally() %>%
-  write_csv(., "../manuscript/tables/Gulf_and_Midwest_diversity_panel_SNPs_above_Bonferroni_by_trait.csv")
-```
-
-```{r}
-gulf_top <- readRDS(file.path(gwasdir, "Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Gulf.rds"))
-
-gulf_top %>%
-  group_by(n_cond_in_top_set) %>%
+  tally() #%>%
+  #write_csv(., paste0("../manuscript/tables/Gulf_and_Midwest_", names(set_v)[j], "__SNPs_above_Bonferroni_by_trait.csv"))
+  #
+log10p_gandm %>%
+  pivot_longer(cols = -(SNP:POS), names_to = "PHE", values_to = "log10p") %>%
+  ungroup() %>%
+  filter(log10p > -log10(0.05/12100000)) %>%
+  mutate(Pos_Mb = floor(POS/100000)/10) %>%
+  group_by(CHR, Pos_Mb) %>% tally()
+bonferroni <- -log10(0.05/12100000)
+log10p_gandm %>%
+  filter(cgdd_12c_gr2fl_eight_sites_log10p > -log10(0.05/12100000) |
+         FL50_eight_sites_log10p > -log10(0.05/12100000)) %>%
+  group_by(cgdd_12c_gr2fl_eight_sites_log10p > FL50_eight_sites_log10p) %>%
+  tally()
+log10p_gandm %>%
+  filter(dyln_fl50_eight_sites_log10p > -log10(0.05/12100000)  |
+         FL50_eight_sites_log10p > -log10(0.05/12100000)) %>%
+  group_by(dyln_fl50_eight_sites_log10p > FL50_eight_sites_log10p) %>%
   tally()
 
-gulf_top_manh2 <- gulf_top %>%
-  filter(max_score_log10p > 5.897) %>%
-  ggplot(aes(x = POS, y = max_score_log10p)) + 
-  geom_point(aes(color = Condition, shape = as_factor(n_cond_in_top_set))) + 
-  #geom_line(aes(group = Condition)) +
-  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
-  theme(legend.position = "top",
-        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
-        panel.background = element_rect(fill=NA)) +
-        labs(x = "Chromosome", y = "-log10(p value)") +
-        scale_x_continuous(expand = c(0.18, 0.18)) +
-  scale_color_viridis(discrete = TRUE, end = 0.97) +
-  scale_shape_manual(values = c(4, 16, 17, 18, 14, 3, 4))
-save_plot("../manuscript/plots/Gulf_G_BLUP_top_500_Manhattan_2.png", base_height = 5, base_asp = 2.5, plot = gulf_top_manh2)
+log10p_gandm %>%
+  ggplot(aes(x = dyln_fl50_eight_sites_log10p, y = FL50_eight_sites_log10p)) + 
+  geom_point(alpha = 0.5) + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) +
+  geom_vline(xintercept = bonferroni, color = "red", linetype = 2) + 
+  geom_hline(yintercept = bonferroni, color = "red", linetype = 2)
+```
+```{r}
+i=1 # subpop
+j=3 # site set 
 
-gulf_top_manh <- gulf_top %>%
-  filter(max_score_log10p > 5.897) %>%
-  ggplot(aes(x = POS, y = max_score_log10p)) + 
-  geom_point(aes(color = n_cond_in_top_set, shape = Condition)) + 
-  #geom_line(aes(group = Condition)) +
-  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
-  theme(legend.position = "top",
-        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
-        panel.background = element_rect(fill=NA)) +
-        labs(x = "Chromosome", y = "-log10(p value)") +
-        scale_x_continuous(expand = c(0.18, 0.18)) +
-  scale_color_viridis(option = "B", end = 0.9) +
-  scale_shape_manual(values = c(15, 16, 17, 18, 14, 3, 4))
-  
-save_plot("../manuscript/plots/Gulf_G_BLUP_top_500_Manhattan.png", base_height = 5, base_asp = 2.5, plot = gulf_top_manh)
+
+names(set_v)[j]
+names(subpop_v)[i]
+bonferroni_v <- c(-log10(0.05/12100000), -log10(0.05/8800000), -log10(0.05/10300000))
+
+gwasdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", names(set_v)[j])
+log10p_df <- readRDS(file.path(gwasdir,
+                                  paste0("log10p_strong_df_1000topSNPs_",
+                                         "FL_", names(set_v)[j], "_",
+                                         names(subpop_v)[i], ".rds")))
+top_set <- readRDS(file.path(gwasdir, 
+                                paste0("Part-One-Output_Top-Effects-1000-SNPs_",
+                                        "FL_", names(set_v)[j], "_",
+                                        names(subpop_v)[i], ".rds")))
+
+log10p_df %>%
+  pivot_longer(cols = -(SNP:POS), names_to = "PHE", values_to = "log10p") %>%
+  ungroup() %>%
+  filter(log10p > bonferroni_v[i]) %>%
+  group_by(CHR, POS) %>% tally()
+log10p_df %>%
+  pivot_longer(cols = -(SNP:POS), names_to = "PHE", values_to = "log10p") %>%
+  ungroup() %>%
+  filter(log10p > bonferroni_v[i]) %>%
+  mutate(Pos_Mb = floor(POS/100000)/10) %>%
+  group_by(CHR, Pos_Mb) %>% tally()
+
+top50 <- top_set %>% ungroup() %>%
+  top_n(100, max_score_log10p) %>%
+  mutate(SNP = paste(CHR, POS, sep = "_"))
+dyln_binom <- log10p_df %>%
+  filter(SNP %in% top50$SNP) %>%
+  group_by(dyln_fl50_north_sites_log10p > FL50_north_sites_log10p) %>%
+  tally()
+binom.test(x = dyln_binom$n[2], n = 100, alternative = "greater")
+
+cgdd_binom <- log10p_df %>%
+  filter(SNP %in% top50$SNP) %>%
+  group_by(cgdd_12c_gr2fl_north_sites_log10p > FL50_north_sites_log10p) %>%
+  tally()
+binom.test(x = cgdd_binom$n[2], n = 100, alternative = "greater")
+
+log10p_df %>%
+  ggplot(aes(x = dyln_fl50_north_sites_log10p, y = FL50_north_sites_log10p)) + 
+  geom_point(alpha = 0.5) + 
+  geom_abline(slope = 1, intercept = 0, linetype = 2) +
+  geom_vline(xintercept = bonferroni_v[i], color = "red", linetype = 2) + 
+  geom_hline(yintercept = bonferroni_v[i], color = "red", linetype = 2)
 ```
 
 
+## Plot top GWAS hits
 ```{r}
-midw_top <- readRDS(file.path(gwasdir, "Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Midwest.rds"))
-
-midw_top %>%
-  group_by(n_cond_in_top_set) %>%
-  tally()
-
-midw_top_manh2 <- midw_top %>%
-  filter(max_score_log10p > 6) %>%
-  ggplot(aes(x = POS, y = max_score_log10p)) + 
-  geom_point(aes(color = Condition, shape = as_factor(n_cond_in_top_set))) + 
-  #geom_line(aes(group = Condition)) +
-  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
-  theme(legend.position = "top",
-        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
-        panel.background = element_rect(fill=NA)) +
-        labs(x = "Chromosome", y = "-log10(p value)") +
-        scale_x_continuous(expand = c(0.18, 0.18)) +
-  scale_color_viridis(discrete = TRUE, end = 0.97) +
-  scale_shape_manual(values = c(4, 16, 17, 18, 14, 3, 4))
-save_plot("../manuscript/plots/Midwest_G_BLUP_top_500_Manhattan_2.png", base_height = 5, base_asp = 2.5, plot = midw_top_manh2)
-
-midw_top_manh <- midw_top %>%
-  filter(max_score_log10p > 5.897) %>%
-  ggplot(aes(x = POS, y = max_score_log10p)) + 
-  geom_point(aes(color = n_cond_in_top_set, shape = Condition)) + 
-  #geom_line(aes(group = Condition)) +
-  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
-  theme(legend.position = "top",
-        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
-        panel.background = element_rect(fill=NA)) +
-        labs(x = "Chromosome", y = "-log10(p value)") +
-        scale_x_continuous(expand = c(0.18, 0.18)) +
-  scale_color_viridis(option = "B", end = 0.9) +
-  scale_shape_manual(values = c(15, 16, 17, 18, 14, 3, 4))
-  
-save_plot("../manuscript/plots/Midwest_G_BLUP_top_500_Manhattan.png", base_height = 5, base_asp = 2.5, plot = midw_top_manh)
-```
-
-```{r}
-gandm_top <- readRDS(file.path(gwasdir, "Part-One-Output_Top-Effects-1000-SNPs_GR_FL_Gulf_and_Midwest.rds"))
-
-gandm_top %>%
-  group_by(n_cond_in_top_set) %>%
-  tally()
-
-gandm_top_manh2 <- gandm_top %>%
-  filter(max_score_log10p > 6) %>%
-  ggplot(aes(x = POS, y = max_score_log10p)) + 
-  geom_point(aes(color = Condition, shape = as_factor(n_cond_in_top_set))) + 
-  #geom_line(aes(group = Condition)) +
-  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
-  theme(legend.position = "top",
-        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
-        panel.background = element_rect(fill=NA)) +
-        labs(x = "Chromosome", y = "-log10(p value)") +
-        scale_x_continuous(expand = c(0.18, 0.18)) +
-  scale_color_viridis(discrete = TRUE, end = 0.97) +
-  scale_shape_manual(values = c(4, 16, 17, 18, 14, 3, 4))
-save_plot("../manuscript/plots/Gulf_and_Midwest_G_BLUP_top_500_Manhattan_2.png", base_height = 5, base_asp = 2.5, plot = gandm_top_manh2)
-
-gandm_top_manh <- gandm_top %>%
-  filter(max_score_log10p > 5.897) %>%
-  ggplot(aes(x = POS, y = max_score_log10p)) + 
-  geom_point(aes(color = n_cond_in_top_set, shape = Condition)) + 
-  #geom_line(aes(group = Condition)) +
-  facet_wrap( ~ CHR, nrow = 1, scales = "free_x", strip.position = "bottom") +
-  theme(legend.position = "top",
-        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
-        panel.background = element_rect(fill=NA)) +
-        labs(x = "Chromosome", y = "-log10(p value)") +
-        scale_x_continuous(expand = c(0.18, 0.18)) +
-  scale_color_viridis(option = "B", end = 0.9) +
-  scale_shape_manual(values = c(15, 16, 17, 18, 14, 3, 4))
-  
-save_plot("../manuscript/plots/Gulf_and_Midwest_G_BLUP_top_500_Manhattan.png", base_height = 5, base_asp = 2.5, plot = gandm_top_manh)
+for(i in seq_along(subpop_v)){
+  for(j in 1:3){
+    gwasdir <- file.path(workingdir, "analysis", "gwas", "BLUPs",
+                         names(set_v)[j])
+    top_set <- readRDS(file.path(gwasdir, 
+                                paste0("Part-One-Output_Top-Effects-1000-SNPs_",
+                                        "FL_", names(set_v)[j], "_",
+                                        names(subpop_v)[i], ".rds")))
+    top_set %>%
+      group_by(n_cond_in_top_set) %>%
+      tally()
+    
+    top_manh2 <- top_set %>%
+      filter(max_score_log10p > 5.897) %>%
+      ggplot(aes(x = POS, y = max_score_log10p)) + 
+      geom_point(aes(color = Condition, shape = as_factor(n_cond_in_top_set))) + 
+      #geom_line(aes(group = Condition)) +
+      facet_wrap( ~ CHR, nrow = 1, scales = "free_x", 
+                  strip.position = "bottom") +
+      theme(legend.position = "top",
+            axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+            panel.background = element_rect(fill=NA)) +
+            labs(x = "Chromosome", y = "-log10(p value)") +
+            scale_x_continuous(expand = c(0.18, 0.18)) +
+      scale_color_viridis(discrete = TRUE, end = 0.97) +
+      scale_shape_manual(values = c(4, 16, 17, 18, 14, 3, 4))
+    save_plot(paste0("../manuscript/plots/", "FL_", names(set_v)[j], "_",
+                     names(subpop_v)[i], "_top_500_Manhattan.png"), 
+              base_height = 5, base_asp = 2.5, plot = top_manh2)
+        
+  }
+}
 ```
 
 ## Overlap with QTL and between subpops
-```{r}
 
+All I really want to show are that there are stronger G associations for the weather-derived variables than for FL50 and GR50. And possibly exploring G associations at subpopulation home and away sites, for the second bit. 
+That might be too complicated. Eh.
+
+It's possible I might want to confirm some of these G candidates with the fourway - how we see similar patterns in this cross for FL50 vs dyln/GDD, and there are some similar associations.
+
+
+Comparing the top 100 hits within and between subpopulations, X of Y were found in the same 100kb regions.
+```{r}
+i=3 # subpop
+j=1 # site set 
+
+
+names(set_v)[j]
+names(subpop_v)[i]
+bonferroni_v <- c(-log10(0.05/12100000), -log10(0.05/8800000), -log10(0.05/10300000))
+
+top_pos <- list()
+
+gwasdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", names(set_v)[j])
+log10p_df <- readRDS(file.path(gwasdir,
+                                  paste0("log10p_strong_df_1000topSNPs_",
+                                         "FL_", names(set_v)[j], "_",
+                                         names(subpop_v)[i], ".rds")))
+for(i in 1:3){
+top_set <- readRDS(file.path(gwasdir, 
+                                paste0("Part-One-Output_Top-Effects-1000-SNPs_",
+                                        "FL_", names(set_v)[j], "_",
+                                        names(subpop_v)[i], ".rds")))
+
+top_pos[[i]] <- top_set %>%
+  ungroup() %>%
+  top_n(n = 100, wt = max_score_log10p) %>%
+  mutate(Pos_Mb = floor(POS/100000)/10) %>%
+  group_by(CHR, Pos_Mb) %>%
+  tally()
+}
+  
+gandm_m <- top_pos[[1]] %>%
+  inner_join(top_pos[[2]])
+gandm_g <- top_pos[[1]] %>%
+  inner_join(top_pos[[3]])
+m_g <- top_pos[[2]] %>%
+  inner_join(top_pos[[3]])
+c(nrow(gandm_m)/nrow(top_pos[[1]]), nrow(gandm_m)/nrow(top_pos[[2]]),
+  nrow(gandm_g)/nrow(top_pos[[1]]), nrow(gandm_g)/nrow(top_pos[[3]]),
+  nrow(m_g)/nrow(top_pos[[2]]), nrow(m_g)/nrow(top_pos[[3]])
+  )
+
+top50 <- top_set %>% ungroup() %>%
+  top_n(100, max_score_log10p) %>%
+  mutate(SNP = paste(CHR, POS, sep = "_"))
+dyln_binom <- log10p_df %>%
+  filter(SNP %in% top50$SNP) 
 ```
 
+```{r}
+i=3 # subpop
+j=1 # site set 
 
 
+names(set_v)[j]
+names(subpop_v)[i]
+bonferroni_v <- c(-log10(0.05/12100000), -log10(0.05/8800000), -log10(0.05/10300000))
+
+top_pos <- list()
+
+
+log10p_df <- readRDS(file.path(gwasdir,
+                                  paste0("log10p_strong_df_1000topSNPs_",
+                                         "FL_", names(set_v)[j], "_",
+                                         names(subpop_v)[i], ".rds")))
+for(j in 1:3){
+  gwasdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", names(set_v)[j])
+  top_set <- readRDS(file.path(gwasdir, 
+                                paste0("Part-One-Output_Top-Effects-1000-SNPs_",
+                                        "FL_", names(set_v)[j], "_",
+                                        names(subpop_v)[i], ".rds")))
+
+top_pos[[j]] <- top_set %>%
+  ungroup() %>%
+  top_n(n = 500, wt = max_score_log10p) %>%
+  mutate(Pos_Mb = floor(POS/100000)/10) %>%
+  group_by(CHR, Pos_Mb) %>%
+  tally()
+}
+  
+gandm_m <- top_pos[[1]] %>%
+  inner_join(top_pos[[2]])
+gandm_g <- top_pos[[1]] %>%
+  inner_join(top_pos[[3]])
+m_g <- top_pos[[2]] %>%
+  inner_join(top_pos[[3]])
+c(nrow(gandm_m)/nrow(top_pos[[1]]), nrow(gandm_m)/nrow(top_pos[[2]]),
+  nrow(gandm_g)/nrow(top_pos[[1]]), nrow(gandm_g)/nrow(top_pos[[3]]),
+  nrow(m_g)/nrow(top_pos[[2]]), nrow(m_g)/nrow(top_pos[[3]])
+  )
+
+top50 <- top_set %>% ungroup() %>%
+  top_n(100, max_score_log10p) %>%
+  mutate(SNP = paste(CHR, POS, sep = "_"))
+dyln_binom <- log10p_df %>%
+  filter(SNP %in% top50$SNP) 
+```
+for gulf and midwest:
+4.3-6.5% overlap in top 100 between eight and tx; no overlap in top 100 between eight and north or north and texas.
+500: 8% eight and texas; 1.6% eight and north. 0.9% north and texas.
+
+for midwest:
+5% overlap in top 500 eight and texas; 18% overlap eight and north; 1.7% north and texas.
+
+for gulf:
+6.2% overlap eight and texas in top 500; 5.2% overlap eight and north; 2.7% overlap north and texas.
+
+I think the top 500 SNPs are good here - give you large enough numbers.
