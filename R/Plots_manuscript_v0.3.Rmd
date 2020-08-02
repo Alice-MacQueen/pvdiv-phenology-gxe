@@ -1293,7 +1293,57 @@ for(j in 4){#seq_along(set_v)){
 
 
 ```
+## Run mash
+Then do mash runs. First for single traits across all eight sites, to make U_hyp for the next step - take the U_ed with large percentage variance explained. Make U_hyp with those covariances but no covariance with anything else... 
+Then run all the flowering-related traits together. Talk about how then SNPs can have effects that are strongest in response to one type of environmental cue. And how cues can be present or absent at different sites. And how this kind of analysis can help reveal all the patterns at play, because it doesn't make assumptions about how effects are structured.
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", MI = "MI", SD = "SD")#, eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_single <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d", "GR50", "cgdd_12c_10d")
+```
 
+single traits across all eight sites...
+```{r}
+i=1 # site
+j=1 # phe
+k=1 # subpop
+phe_suffix <- paste(phe_single[j], names(subpop_v)[k], 
+                    sep = "_")
+gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir,
+                                                       names(set_v)[j]), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       snp_v[i]))
+phenotypes <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+out1 <- pvdiv_bigsnp2mashr(path = file.path(outputdir, names(set_v)[j]), 
+                           snp = snp, gwas_rds = gwas_rds, 
+                           phenotypes = phenotypes, numSNPs = 1000, 
+                           clump = FALSE, scaled = FALSE, saveoutput = TRUE,
+                           suffix = paste0("FL_", names(set_v)[j], "_",
+                                           names(subpop_v)[i]))
+numSNPs <- c(28000, 10000, 4000, 10000)
+
+gulf_loc <- c("CLMB", "KBSM", "KING", "PKLE", "TMPL")
+midw_loc <- c("CLMB", "KBSM", "PKLE")
+atl_loc <- c("CLMB", "KBSM", "LINC", "PKLE", "TMPL")
+midwgulf_loc <- c("BRKG", "CLMB", "KBSM", "KING", "LINC", "PKLE", "STIL",
+                  "TMPL")
+U_gulf <- read_rds(file.path(path, "U_hyp_gulf.rds"))
+i = 2
+U_ed <- file.path(path, "Mash_data_driven_covariances_10000_gulf.rds")
+  m_out <- mash_standard_run(path = path, numSNPs = numSNPs[i], U_ed = U_ed,
+                             U_hyp = U_gulf, suffix = phe_suffix[i],
+                             saveoutput = TRUE)
+```
+
+
+## Analyze GWAS Results
+
+May want to rerun pvdiv_bigsnp2mashr function so that I'm looking at GR & FL top 1000 SNPs separately.
 
 gwasdir <- file.path(workingdir, "analysis", "gwas", "G_BLUP")
 log10p_gulf <- readRDS(file.path(gwasdir,                                 "log10p_strong_df_1000topSNPs_GR_FL_Gulf.rds"))
