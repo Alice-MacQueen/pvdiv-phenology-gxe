@@ -1,0 +1,217 @@
+sites,subpop,phe,CHR,POS_Mb,Gene ID,distance from gene,FDR Adjusted p value,Arabidopsis thaliana homolog,A. thaliana gene name,A. thaliana gene annotation,Rice gene annotation,Rice homolog
+north_sites,Midwest,cgdd_12c_10d,Chr01K,51.34,Pavir.1KG510213,662,4.886609781466586e-7,AT3G42170.1,NA,BED zinc finger ;hAT family dimerisation domain,"OsFBO6 - F-box and other domain containing protein, expressed",LOC_Os11g36790.1
+north_sites,Midwest,cgdd_12c_10d,Chr03K,31.36,Pavir.3KG228132,724,7.515565555962934e-7,NA,NA,NA,NA,NA
+north_sites,Midwest,cgdd_12c_10d,Chr03N,40.88,Pavir.3NG162600,9338,7.592614633075896e-7,NA,NA,NA,NA,NA
+north_sites,Midwest,cgdd_12c_10d,Chr04K,28.21,Pavir.4KG258900,4368,1.9041743217532143e-6,AT1G67140.3,SWEETIE,HEAT repeat-containing protein,"HEAT repeat family protein, putative, expressed",LOC_Os06g30901.1
+north_sites,Midwest,cgdd_12c_10d,Chr04N,10.49,Pavir.4NG144700,163,7.592614633075896e-7,AT5G28460.1,NA,Pentatricopeptide repeat (PPR) superfamily protein,"pentatricopeptide, putative, expressed",LOC_Os06g13950.1
+north_sites,Midwest,cgdd_12c_10d,Chr04N,25.92,Pavir.4NG133200,1743,7.592614633075896e-7,NA,NA,NA,"zinc knuckle family protein, expressed",LOC_Os06g28300.1
+north_sites,Midwest,cgdd_12c_10d,Chr05N,60.78,Pavir.5NG544272,4399,1.704096247825612e-6,AT3G05220.1,NA,Heavy metal transport/detoxification superfamily protein ,"heavy metal-associated domain containing protein, expressed",LOC_Os03g22490.1
+north_sites,Midwest,cgdd_12c_10d,Chr07K,14.08,NA,NA,7.592614633075896e-7,NA,NA,NA,NA,NA
+north_sites,Midwest,cgdd_12c_10d,Chr07K,51.08,Pavir.7KG386100,320,7.592614633075896e-7,AT1G18490.1,NA,Protein of unknown function (DUF1637),"2-aminoethanethiol dioxygenase, putative, expressed",LOC_Os08g03870.1
+north_sites,Midwest,cgdd_12c_10d,Chr07K,51.08,Pavir.7KG386100,276,7.592614633075896e-7,AT1G18490.1,NA,Protein of unknown function (DUF1637),"2-aminoethanethiol dioxygenase, putative, expressed",LOC_Os08g03870.1
+north_sites,Gulf,cgdd_12c_10d,Chr01N,7.31,Pavir.1NG087500,2115,0.19383791407490955,AT5G28850.2,NA,Calcium-binding EF-hand family protein,"serine/threonine-protein phosphatase 2A regulatory subunit B subunitbeta, putative, expressed",LOC_Os02g09840.1
+north_sites,Gulf,cgdd_12c_10d,Chr01N,37.95,Pavir.1NG388600,4806,0.19383791407490955,NA,NA,NA,expressed protein,LOC_Os04g54759.1
+north_sites,Gulf,cgdd_12c_10d,Chr02K,7.88,Pavir.2KG084516,15510,0.1463175190130776,NA,NA,NA,"OsFBX237 - F-box domain containing protein, expressed",LOC_Os07g35050.1
+north_sites,Gulf,cgdd_12c_10d,Chr03K,1.52,Pavir.3KG020100,593,0.13190864630650886,AT3G50520.1,NA,Phosphoglycerate mutase family protein,"pentatricopeptide, putative, expressed",LOC_Os12g04110.1
+north_sites,Gulf,cgdd_12c_10d,Chr04K,36.32,Pavir.4KG287330,3573,0.1231854631462866,NA,NA,NA,NA,NA
+north_sites,Gulf,cgdd_12c_10d,Chr04N,40.99,Pavir.4NG182700,16942,0.13190864630650886,NA,NA,NA,NA,NA
+north_sites,Gulf,cgdd_12c_10d,Chr04N,40.99,Pavir.4NG182700,16951,0.07948877863393465,NA,NA,NA,NA,NA
+north_sites,Gulf,cgdd_12c_10d,Chr05K,53.07,Pavir.5KG603814,573,0.13190864630650886,AT1G69530.3,"AT-EXP1,ATEXP1,ATEXPA1,ATHEXP ALPHA 1.2,EXP1,EXPA1",expansin A1,"expansin precursor, putative, expressed",LOC_Os02g16839.1
+north_sites,Gulf,cgdd_12c_10d,Chr09N,47.49,Pavir.9NG371456,16067,0.13190864630650886,AT3G58050.1,NA,NA,expressed protein,LOC_Os10g01610.1
+north_sites,Gulf,cgdd_12c_10d,Chr09N,47.5,Pavir.9NG371456,6827,0.1463175190130776,AT3G58050.1,NA,NA,expressed protein,LOC_Os10g01610.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr01N,52.47,Pavir.1NG244300,1074,2.135666425491352e-7,NA,NA,NA,"RIPER1 - Ripening-related family protein precursor, expressed",LOC_Os02g42450.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr05N,4.71,Pavir.5NG054300,3049,1.230261286821715e-6,AT5G15130.1,"ATWRKY72,WRKY72",WRKY DNA-binding protein 72,"WRKY107, expressed",LOC_Os01g09080.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09K,26.12,Pavir.9KG196300,3281,2.135666425491352e-7,AT4G14746.1,NA,NA,"MTN26L3 - MtN26 family protein precursor, putative, expressed",LOC_Os10g28380.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09K,26.13,Pavir.9KG196300,6372,1.0659972779356123e-6,AT4G14746.1,NA,NA,"MTN26L3 - MtN26 family protein precursor, putative, expressed",LOC_Os10g28380.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09K,26.13,Pavir.9KG196300,10495,2.135666425491352e-7,AT4G14746.1,NA,NA,"MTN26L3 - MtN26 family protein precursor, putative, expressed",LOC_Os10g28380.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09K,26.13,Pavir.9KG196300,10604,4.038780407845616e-10,AT4G14746.1,NA,NA,"MTN26L3 - MtN26 family protein precursor, putative, expressed",LOC_Os10g28380.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09K,26.13,Pavir.9KG196300,11501,2.135666425491352e-7,AT4G14746.1,NA,NA,"MTN26L3 - MtN26 family protein precursor, putative, expressed",LOC_Os10g28380.1
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09N,73.36,Pavir.9NG851701,1962,1.230261286821715e-6,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09N,73.36,Pavir.9NG851701,290,2.135666425491352e-7,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,cgdd_12c_10d,Chr09N,76.1,Pavir.9NG817700,2006,2.135666425491352e-7,AT1G34630.1,NA,NA,expressed protein,LOC_Os03g09090.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr02N,66.77,Pavir.2NG646650,1479,0.21959218184908205,NA,NA,NA,NA,NA
+north_sites,Midwest,cgdd_12c_gr2fl,Chr03N,69.14,Pavir.3NG266200,2328,0.21959218184908205,NA,NA,NA,expressed protein,LOC_Os06g12876.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr04N,17.26,Pavir.4NG156462,325,0.21959218184908205,NA,NA,NA,NA,NA
+north_sites,Midwest,cgdd_12c_gr2fl,Chr05K,36.16,Pavir.5KG295300,4193,0.09698141569409303,AT5G08020.1,"ATRPA70B,RPA70B",RPA70-kDa subunit B,"retrotransposon protein, putative, unclassified, expressed",LOC_Os03g08400.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr05K,36.16,Pavir.5KG295300,4206,0.09698141569409303,AT5G08020.1,"ATRPA70B,RPA70B",RPA70-kDa subunit B,"retrotransposon protein, putative, unclassified, expressed",LOC_Os03g08400.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr05K,59.85,Pavir.5KG745400,220,0.21959218184908205,AT5G61840.1,GUT1,Exostosin family protein,"exostosin family domain containing protein, expressed",LOC_Os01g70180.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr06K,30.7,Pavir.6KG220500,835,0.21959218184908205,AT2G26160.1,NA,F-box family protein with a domain of unknown function (DUF295),"OsFBDUF66 - F-box and DUF domain containing protein, expressed",LOC_Os12g39520.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr08K,3.44,Pavir.8KG028002,2293,0.21959218184908205,AT1G62670.1,RPF2,rna processing factor 2,"Rf1, mitochondrial precursor, putative, expressed",LOC_Os10g35240.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr09K,66.59,Pavir.9KG601901,4156,0.09698141569409303,AT5G08020.1,"ATRPA70B,RPA70B",RPA70-kDa subunit B,"retrotransposon protein, putative, unclassified, expressed",LOC_Os03g08400.1
+north_sites,Midwest,cgdd_12c_gr2fl,Chr09N,32.77,Pavir.9NG404814,770,0.21959218184908205,AT3G01120.1,"ATCYS1,CGS,CGS1,MTO1",Pyridoxal phosphate (PLP)-dependent transferases superfamily protein,"cystathionine gamma-synthase, putative, expressed",LOC_Os10g25950.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr01K,29.24,Pavir.1KG218005,2571,0.03279498771655797,NA,NA,NA,"retrotransposon protein, putative, unclassified, expressed",LOC_Os08g21060.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr03K,3.73,Pavir.3KG053400,1758,0.027223642831625115,AT5G09220.1,AAP2,amino acid permease 2,"amino acid transporter, putative, expressed",LOC_Os12g08090.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr04N,1.69,Pavir.4NG019200,4686,0.050696366810801335,AT5G07270.1,XBAT33,XB3 ortholog 3 in Arabidopsis thaliana,"pollen ankyrin, putative, expressed",LOC_Os06g03800.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr05K,27.11,NA,NA,0.03814013851278225,NA,NA,NA,NA,NA
+north_sites,Gulf,cgdd_12c_gr2fl,Chr05N,35.58,Pavir.5NG392700,8652,0.03279498771655797,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr05N,35.59,Pavir.5NG392700,5606,0.050696366810801335,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr05N,35.59,Pavir.5NG392700,2984,0.050696366810801335,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr06K,36.67,Pavir.6KG269400,16889,0.050696366810801335,AT4G37940.1,AGL21,AGAMOUS-like 21,"OsMADS27 - MADS-box family gene with MIKCc type-box, expressed",LOC_Os02g36924.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr06K,36.69,Pavir.6KG269400,575,0.0033030110567547812,AT4G37940.1,AGL21,AGAMOUS-like 21,"OsMADS27 - MADS-box family gene with MIKCc type-box, expressed",LOC_Os02g36924.1
+north_sites,Gulf,cgdd_12c_gr2fl,Chr07K,41.4,Pavir.7KG272300,2827,0.03464398638926852,NA,NA,NA,expressed protein,LOC_Os01g38880.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr01N,0.86,Pavir.1NG007000,4263,4.743427115172055e-6,AT1G28530.2,NA,NA,expressed protein,LOC_Os02g01970.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr01N,41.09,Pavir.1NG250600,18273,2.445506777612588e-7,AT5G13170.1,SAG29,senescence-associated gene 29,"nodulin MtN3 family protein, putative, expressed",LOC_Os02g30910.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr04N,17.37,Pavir.4NG152100,15647,4.398187832057083e-6,AT1G05260.1,"RCI3,RCI3A",Peroxidase superfamily protein,"peroxidase precursor, putative, expressed",LOC_Os06g29470.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr05N,4.51,Pavir.5NG039800,322,3.5442301569690006e-6,AT5G51980.1,NA,Transducin/WD40 repeat-like superfamily protein,"WD domain, G-beta repeat domain containing protein, expressed",LOC_Os01g09252.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr05N,36.99,Pavir.5NG248200,4410,3.400038250298041e-6,AT5G66390.1,NA,Peroxidase superfamily protein,"peroxidase precursor, putative, expressed",LOC_Os01g36240.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr07K,9.91,Pavir.7KG096400,839,3.5442301569690006e-6,AT5G45480.1,NA,Protein of unknown function (DUF594),expressed protein,LOC_Os07g01520.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr07K,9.91,Pavir.7KG096400,2298,3.400038250298041e-6,AT5G45480.1,NA,Protein of unknown function (DUF594),expressed protein,LOC_Os07g01520.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr08K,13.21,Pavir.8KG349600,23733,4.431406620880167e-6,AT4G11290.1,NA,Peroxidase superfamily protein,"peroxidase precursor, putative, expressed",LOC_Os05g06970.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr09N,64.73,Pavir.9NG590700,333,4.398187832057083e-6,AT2G30320.1,NA,Pseudouridine synthase family protein,"tRNA pseudouridine synthase family protein, putative, expressed",LOC_Os03g21980.1
+north_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr09N,64.73,Pavir.9NG590700,237,3.400038250298041e-6,AT2G30320.1,NA,Pseudouridine synthase family protein,"tRNA pseudouridine synthase family protein, putative, expressed",LOC_Os03g21980.1
+north_sites,Midwest,crain_1d,Chr01K,51.77,Pavir.1KG264643,1072,0.04594100933514325,AT5G65160.1,NA,tetratricopeptide repeat (TPR)-containing protein,"dnaJ homolog subfamily C member 7, putative, expressed",LOC_Os02g51730.1
+north_sites,Midwest,crain_1d,Chr01K,55.08,Pavir.1KG535000,234,0.07352303872899014,AT3G59290.1,NA,ENTH/VHS family protein,"ENTH domain containing protein, expressed",LOC_Os02g56270.1
+north_sites,Midwest,crain_1d,Chr01K,55.08,Pavir.1KG535000,2203,0.07352303872899014,AT3G59290.1,NA,ENTH/VHS family protein,"ENTH domain containing protein, expressed",LOC_Os02g56270.1
+north_sites,Midwest,crain_1d,Chr02N,9.45,Pavir.2NG096246,17460,0.06321754557354296,NA,NA,NA,expressed protein,LOC_Os11g05710.1
+north_sites,Midwest,crain_1d,Chr03K,4.66,Pavir.3KG064527,2574,0.02811567542964956,AT5G45480.1,NA,Protein of unknown function (DUF594),expressed protein,LOC_Os06g03380.1
+north_sites,Midwest,crain_1d,Chr05N,19.68,Pavir.5NG344200,5637,0.0015871781224841331,AT1G56720.3,NA,Protein kinase superfamily protein,"serine/threonine-protein kinase, putative, expressed",LOC_Os01g21960.1
+north_sites,Midwest,crain_1d,Chr06K,33.97,Pavir.6KG238100,4160,0.012872290903737168,AT5G12100.1,NA,pentatricopeptide (PPR) repeat-containing protein,"PPR repeat domain containing protein, putative, expressed",LOC_Os08g31110.1
+north_sites,Midwest,crain_1d,Chr07N,24.85,Pavir.7NG131500,18521,0.029669417751289857,AT5G43260.1,NA,chaperone protein dnaJ-related,"drought-induced protein 1, putative, expressed",LOC_Os02g30320.1
+north_sites,Midwest,crain_1d,Chr08K,16.87,Pavir.8KG158901,1669,0.019933905161881878,NA,NA,NA,NA,NA
+north_sites,Midwest,crain_1d,Chr08K,16.87,Pavir.8KG158901,1596,0.019933905161881878,NA,NA,NA,NA,NA
+north_sites,Midwest,crain_1d,Chr08N,3,Pavir.8NG086602,1463,0.006091459136266223,NA,NA,NA,"ribosome inactivating protein, expressed",LOC_Os11g06460.1
+north_sites,Gulf,crain_1d,Chr02K,6.17,Pavir.2KG081600,2363,7.0952753809618115e-6,AT4G02680.1,EOL1,ETO1-like 1,"BTBT2 - Bric-a-Brac, Tramtrack, Broad Complex BTB domain with tetratricopeptide repeats, expressed",LOC_Os07g08120.1
+north_sites,Gulf,crain_1d,Chr03N,68.46,Pavir.3NG272001,4339,2.7132545345794865e-4,NA,NA,NA,"OsFBX408 - F-box domain containing protein, expressed",LOC_Os11g09640.1
+north_sites,Gulf,crain_1d,Chr03N,68.46,Pavir.3NG272001,4336,2.7132545345794865e-4,NA,NA,NA,"OsFBX408 - F-box domain containing protein, expressed",LOC_Os11g09640.1
+north_sites,Gulf,crain_1d,Chr04K,5.63,Pavir.4KG060033,2619,2.9238434243892533e-4,NA,NA,NA,NA,NA
+north_sites,Gulf,crain_1d,Chr05N,17.42,Pavir.5NG196400,11013,7.0952753809618115e-6,AT4G33420.1,NA,Peroxidase superfamily protein,"peroxidase precursor, putative, expressed",LOC_Os01g19020.1
+north_sites,Gulf,crain_1d,Chr07K,49.88,Pavir.7KG423700,4216,2.9238434243892533e-4,AT1G16260.1,NA,Wall-associated kinase family protein,"OsWAK54 - OsWAK short gene, expressed",LOC_Os04g55750.1
+north_sites,Gulf,crain_1d,Chr08K,5.24,Pavir.8KG054400,783,2.9238434243892533e-4,AT5G10200.1,NA,ARM-repeat/Tetratricopeptide repeat (TPR)-like protein,expressed protein,LOC_Os05g34820.1
+north_sites,Gulf,crain_1d,Chr08K,30.84,NA,NA,2.9238434243892533e-4,NA,NA,NA,NA,NA
+north_sites,Gulf,crain_1d,Chr09K,29.61,Pavir.9KG269800,10002,2.9238434243892533e-4,NA,NA,NA,NA,NA
+north_sites,Gulf,crain_1d,Chr09N,61.98,Pavir.9NG555700,5387,2.9353285043717825e-4,AT5G57520.1,"ATZFP2,ZFP2",zinc finger protein 2,"ZOS9-11 - C2H2 zinc finger protein, expressed",LOC_Os09g26200.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr01K,40.15,Pavir.1KG371500,2039,0.001779270122446785,AT1G05805.1,NA,basic helix-loop-helix (bHLH) DNA-binding superfamily protein,"helix-loop-helix DNA-binding domain containing protein, expressed",LOC_Os02g39140.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr01K,53.45,Pavir.1KG514600,570,0.009100412218231919,AT3G14067.1,NA,Subtilase family protein,"OsSub22 - Putative Subtilisin homologue, expressed",LOC_Os02g53860.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr02N,9.43,NA,NA,0.011163253653400155,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,crain_1d,Chr02N,39.97,Pavir.2NG228103,2482,0.011575943095608974,AT5G43080.1,CYCA3;1,Cyclin A3;1,"cyclin, putative, expressed",LOC_Os12g39210.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr02N,39.97,Pavir.2NG228103,1316,0.001779270122446785,AT5G43080.1,CYCA3;1,Cyclin A3;1,"cyclin, putative, expressed",LOC_Os12g39210.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr02N,39.97,Pavir.2NG228103,676,0.004252398500419751,AT5G43080.1,CYCA3;1,Cyclin A3;1,"cyclin, putative, expressed",LOC_Os12g39210.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr03N,65.98,Pavir.3NG295000,5429,0.007770826804457293,AT5G28770.2,"AtbZIP63,BZO2H3",bZIP transcription factor family protein,"bZIP transcription factor domain containing protein, expressed",LOC_Os12g40920.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr08K,15.04,Pavir.8KG120003,993,0.009100412218231919,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,crain_1d,Chr08N,33.15,Pavir.8NG223504,250,0.009648711101299648,AT3G27000.1,"ARP2,ATARP2,WRM",actin related protein 2,"actin, putative, expressed",LOC_Os08g28190.1
+north_sites,Gulf_and_Midwest,crain_1d,Chr08N,36.85,Pavir.8NG104700,4568,0.009696505783702373,AT2G38130.1,ATMAK3,Acyl-CoA N-acyltransferases (NAT) superfamily protein,"acetyltransferase, GNAT family, putative, expressed",LOC_Os11g32280.1
+north_sites,Midwest,crain_gr2fl,Chr02K,49.2,Pavir.2KG400000,3676,0.3347808428681222,AT1G76280.1,NA,Tetratricopeptide repeat (TPR)-like superfamily protein,"PPR repeat domain containing protein, putative, expressed",LOC_Os09g29790.1
+north_sites,Midwest,crain_gr2fl,Chr02K,63.93,Pavir.2KG556530,1304,0.35913426433089585,NA,NA,NA,NA,NA
+north_sites,Midwest,crain_gr2fl,Chr02N,6.51,Pavir.2NG058900,281,0.35913426433089585,AT5G49160.1,"DDM2,DMT01,DMT1,MET1,MET2,METI",methyltransferase 1,"C-5 cytosine-specific DNA methylase, putative, expressed",LOC_Os07g08500.1
+north_sites,Midwest,crain_gr2fl,Chr02N,65.07,Pavir.2NG581500,5897,0.3347808428681222,NA,NA,NA,"EGG APPARATUS-1, putative, expressed",LOC_Os07g41410.1
+north_sites,Midwest,crain_gr2fl,Chr04N,11.8,Pavir.4NG099900,1136,0.35913426433089585,AT5G37820.1,"NIP4;2,NLM5",NOD26-like intrinsic protein 4;2,"aquaporin protein, putative, expressed",LOC_Os06g12310.1
+north_sites,Midwest,crain_gr2fl,Chr05N,40.11,Pavir.5NG363500,945,0.29378755255728967,AT5G11970.1,NA,Protein of unknown function (DUF3511),expressed protein,LOC_Os01g38660.1
+north_sites,Midwest,crain_gr2fl,Chr08N,36.03,Pavir.8NG210300,15442,0.35913426433089585,AT4G35160.1,NA,O-methyltransferase family protein,"O-methyltransferase, putative, expressed",LOC_Os05g43930.1
+north_sites,Midwest,crain_gr2fl,Chr09K,49.71,Pavir.9KG371100,175,0.3347808428681222,AT4G02860.1,NA,Phenazine biosynthesis PhzC/PhzF protein,"phenazine biosynthesis protein, putative, expressed",LOC_Os03g32040.1
+north_sites,Midwest,crain_gr2fl,Chr09N,24.14,Pavir.9NG298700,4181,0.3347808428681222,AT2G28630.1,KCS12,3-ketoacyl-CoA synthase 12,"3-ketoacyl-CoA synthase precursor, putative, expressed",LOC_Os10g33370.1
+north_sites,Midwest,crain_gr2fl,Chr09N,73.51,Pavir.9NG841400,5005,0.3347808428681222,AT1G18350.1,"ATMKK7,BUD1,MKK7",MAP kinase kinase 7,"STE_MEK_ste7_MAP2K.6 - STE kinases include homologs to sterile 7, sterile 11 and sterile 20 from yeast, expressed",LOC_Os03g12390.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.58,Pavir.5NG392700,2435,0.001956237894209152,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.58,Pavir.5NG392700,8652,0.001956237894209152,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,5606,0.001956237894209152,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,3991,0.0029171864767330367,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,2984,0.001956237894209152,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,2486,0.0055660964351295856,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,2254,0.0029171864767330367,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,2247,0.0052082256016771486,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,1773,0.0055660964351295856,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf,crain_gr2fl,Chr09N,64.12,Pavir.9NG583400,6398,0.0029171864767330367,AT1G09060.3,NA,"Zinc finger, RING-type;Transcription factor jumonji/aspartyl beta-hydroxylase","jmjC domain containing protein, expressed",LOC_Os03g22540.1
+north_sites,Gulf,crain_gr2fl,Chr09N,64.13,Pavir.9NG583400,3667,0.0055660964351295856,AT1G09060.3,NA,"Zinc finger, RING-type;Transcription factor jumonji/aspartyl beta-hydroxylase","jmjC domain containing protein, expressed",LOC_Os03g22540.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr05K,40.91,Pavir.5KG448300,1496,0.006027634874615003,AT5G64410.1,"ATOPT4,OPT4",oligopeptide transporter 4,"oligopeptide transporter, putative, expressed",LOC_Os01g43940.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr05N,12.94,Pavir.5NG162200,9270,0.004520801455083854,AT5G07680.2,"ANAC079,ANAC080,ATNAC4,NAC080",NAC domain containing protein 80,"no apical meristem protein, putative, expressed",LOC_Os01g29840.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr05N,24.49,Pavir.5NG232700,8668,0.006027634874615003,AT2G39080.1,NA,NAD(P)-binding Rossmann-fold superfamily protein,expressed protein,LOC_Os01g26970.5
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr05N,24.5,Pavir.5NG232700,14193,0.006027634874615003,AT2G39080.1,NA,NAD(P)-binding Rossmann-fold superfamily protein,expressed protein,LOC_Os01g26970.5
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,2247,0.006027634874615003,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr05N,35.59,Pavir.5NG392700,1773,0.006027634874615003,AT1G65810.1,NA,P-loop containing nucleoside triphosphate hydrolases superfamily protein,"tRNA-splicing endonuclease positive effector-related, putative, expressed",LOC_Os04g51090.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr05N,39.71,Pavir.5NG255600,17622,0.006027634874615003,AT1G68530.1,"CER6,CUT1,G2,KCS6,POP1",3-ketoacyl-CoA synthase 6,"3-ketoacyl-CoA synthase, putative, expressed",LOC_Os06g14810.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr06K,35.66,Pavir.6KG251718,1888,0.006027634874615003,AT4G00980.1,NA,zinc knuckle (CCHC-type) family protein,expressed protein,LOC_Os08g32560.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr09N,64.12,Pavir.9NG583400,6398,0.004520801455083854,AT1G09060.3,NA,"Zinc finger, RING-type;Transcription factor jumonji/aspartyl beta-hydroxylase","jmjC domain containing protein, expressed",LOC_Os03g22540.1
+north_sites,Gulf_and_Midwest,crain_gr2fl,Chr09N,64.13,Pavir.9NG583400,3667,0.006027634874615003,AT1G09060.3,NA,"Zinc finger, RING-type;Transcription factor jumonji/aspartyl beta-hydroxylase","jmjC domain containing protein, expressed",LOC_Os03g22540.1
+north_sites,Midwest,dyln_fl50,Chr02K,47.94,Pavir.2KG351005,6016,5.102964004656583e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,dyln_fl50,Chr02K,47.94,Pavir.2KG351005,6017,5.102964004656583e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,dyln_fl50,Chr02K,47.94,Pavir.2KG351005,6122,5.102964004656583e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,dyln_fl50,Chr02K,47.94,Pavir.2KG351005,6133,5.102964004656583e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,dyln_fl50,Chr04K,33.77,Pavir.4KG265120,277,5.102964004656583e-5,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+north_sites,Midwest,dyln_fl50,Chr04K,33.77,Pavir.4KG265120,598,5.102964004656583e-5,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+north_sites,Midwest,dyln_fl50,Chr04K,33.77,Pavir.4KG265120,601,5.102964004656583e-5,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+north_sites,Midwest,dyln_fl50,Chr06N,1.69,Pavir.6NG015175,3881,5.102964004656583e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,dyln_fl50,Chr07K,46.21,Pavir.7KG346100,199,5.102964004656583e-5,AT2G19330.1,PIRL6,plant intracellular ras group-related LRR 6,"leucine rich repeat containing protein, expressed",LOC_Os04g51580.1
+north_sites,Midwest,dyln_fl50,Chr07K,46.21,Pavir.7KG346100,134,5.102964004656583e-5,AT2G19330.1,PIRL6,plant intracellular ras group-related LRR 6,"leucine rich repeat containing protein, expressed",LOC_Os04g51580.1
+north_sites,Midwest,dyln_fl50,Chr07N,23.24,Pavir.7NG121700,647,5.102964004656583e-5,AT4G23180.1,"CRK10,RLK4",cysteine-rich RLK (RECEPTOR-like protein kinase) 10,"TKL_IRAK_DUF26-lh.1 - DUF26 kinases have homology to DUF26 containing loci, expressed",LOC_Os01g26390.1
+north_sites,Gulf,dyln_fl50,Chr01N,5.8,Pavir.1NG072200,482,0.00108113422329143,NA,NA,NA,expressed protein,LOC_Os02g08080.1
+north_sites,Gulf,dyln_fl50,Chr01N,18.62,Pavir.1NG226357,2749,0.003269870380218972,AT2G31610.1,NA,Ribosomal protein S3 family protein,"40S ribosomal protein S3-1, putative, expressed",LOC_Os07g41750.1
+north_sites,Gulf,dyln_fl50,Chr01N,59.81,Pavir.1NG407300,6696,0.003922455581903859,AT5G37690.1,NA,SGNH hydrolase-type esterase superfamily protein,"GDSL-like lipase/acylhydrolase, putative, expressed",LOC_Os06g14630.1
+north_sites,Gulf,dyln_fl50,Chr02N,64.81,Pavir.2NG578400,947,0.0022066647507609986,AT5G09520.1,NA,hydroxyproline-rich glycoprotein family protein,expressed protein,LOC_Os07g40910.1
+north_sites,Gulf,dyln_fl50,Chr05N,0.91,Pavir.5NG004600,2360,0.002003069211514531,AT3G16260.1,TRZ4,tRNAse Z4,"metallo-beta-lactamase family protein, putative, expressed",LOC_Os01g13150.1
+north_sites,Gulf,dyln_fl50,Chr06K,17.18,Pavir.6KG170600,1411,0.00108113422329143,AT1G30840.1,"ATPUP4,PUP4",purine permease 4,"purine permease, putative, expressed",LOC_Os01g31940.1
+north_sites,Gulf,dyln_fl50,Chr07K,42.46,Pavir.7KG285720,7550,0.00108113422329143,AT1G63650.3,"ATMYC-2,EGL1,EGL3",basic helix-loop-helix (bHLH) DNA-binding superfamily protein,"anthocyanin regulatory Lc protein, putative, expressed",LOC_Os04g47080.1
+north_sites,Gulf,dyln_fl50,Chr08N,10.32,Pavir.8NG197900,2549,0.00108113422329143,AT2G43970.1,NA,RNA-binding protein,"la domain containing protein, expressed",LOC_Os11g14300.1
+north_sites,Gulf,dyln_fl50,Chr08N,10.33,Pavir.8NG197900,3698,0.00108113422329143,AT2G43970.1,NA,RNA-binding protein,"la domain containing protein, expressed",LOC_Os11g14300.1
+north_sites,Gulf,dyln_fl50,Chr08N,10.33,Pavir.8NG197900,834,0.00108113422329143,AT2G43970.1,NA,RNA-binding protein,"la domain containing protein, expressed",LOC_Os11g14300.1
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr01N,65.93,Pavir.1NG555900,2825,0.002631302646337014,AT3G10360.1,"APUM4,PUM4",pumilio 4,"pumilio-family RNA binding protein, putative, expressed",LOC_Os02g57390.1
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr05N,3.55,Pavir.5NG047500,3072,0.002651220154000245,AT2G25760.1,NA,Protein kinase family protein,"CK1_CaseinKinase_1a.5 - CK1 includes the casein kinase 1 kinases, expressed",LOC_Os05g11140.3
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr05N,3.55,Pavir.5NG047500,3071,0.002651220154000245,AT2G25760.1,NA,Protein kinase family protein,"CK1_CaseinKinase_1a.5 - CK1 includes the casein kinase 1 kinases, expressed",LOC_Os05g11140.3
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr05N,3.55,Pavir.5NG047500,1890,0.002651220154000245,AT2G25760.1,NA,Protein kinase family protein,"CK1_CaseinKinase_1a.5 - CK1 includes the casein kinase 1 kinases, expressed",LOC_Os05g11140.3
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr08N,32.49,Pavir.8NG230200,314,8.505540893459627e-4,AT5G44400.1,NA,FAD-binding Berberine family protein,"reticuline oxidase-like protein precursor, putative, expressed",LOC_Os11g30310.1
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr09K,23.41,Pavir.9KG213000,1157,7.603683830495882e-4,AT3G16857.2,"ARR1,RR1",response regulator 1,"two-component response regulator, putative, expressed",LOC_Os02g55320.1
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr09K,23.41,Pavir.9KG213000,2039,7.603683830495882e-4,AT3G16857.2,"ARR1,RR1",response regulator 1,"two-component response regulator, putative, expressed",LOC_Os02g55320.1
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr09K,23.41,Pavir.9KG213000,3970,8.505540893459627e-4,AT3G16857.2,"ARR1,RR1",response regulator 1,"two-component response regulator, putative, expressed",LOC_Os02g55320.1
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr09K,23.46,NA,NA,0.0013786524895631207,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr09K,23.47,NA,NA,7.603683830495882e-4,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,dyln_fl50,Chr09K,23.51,Pavir.9KG213285,6544,7.603683830495882e-4,AT2G02310.1,"AtPP2-B6,PP2-B6",phloem protein 2-B6,"OsFBX261 - F-box domain containing protein, expressed",LOC_Os08g05480.1
+north_sites,Midwest,FL50,Chr03K,16.04,Pavir.3KG295800,927,0.035958343347268294,AT2G33770.1,"ATUBC24,PHO2,UBC24",phosphate 2,"ubiquitin conjugating enzyme protein, putative, expressed",LOC_Os05g48390.1
+north_sites,Midwest,FL50,Chr04K,33.77,Pavir.4KG265120,136,0.03475861910798073,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+north_sites,Midwest,FL50,Chr04K,33.77,Pavir.4KG265120,277,0.015843043897420417,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+north_sites,Midwest,FL50,Chr04K,33.77,Pavir.4KG265120,598,0.015843043897420417,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+north_sites,Midwest,FL50,Chr04K,33.77,Pavir.4KG265120,601,0.015843043897420417,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+north_sites,Midwest,FL50,Chr04K,33.78,Pavir.4KG265125,138,0.02337087560964211,AT2G02030.1,NA,F-box family protein,"OsFBX120 - F-box domain containing protein, expressed",LOC_Os04g11790.1
+north_sites,Midwest,FL50,Chr04K,33.88,NA,NA,0.015843043897420417,NA,NA,NA,NA,NA
+north_sites,Midwest,FL50,Chr04K,33.89,NA,NA,0.015843043897420417,NA,NA,NA,NA,NA
+north_sites,Midwest,FL50,Chr04K,33.93,Pavir.4KG266400,8389,0.015843043897420417,AT3G14470.1,NA,NB-ARC domain-containing disease resistance protein,expressed protein,LOC_Os10g04570.1
+north_sites,Midwest,FL50,Chr04K,44.39,Pavir.4KG403300,4258,0.035958343347268294,AT4G21320.1,HSA32,Aldolase-type TIM barrel family protein,"phosphosulfolactate synthase-related protein, putative, expressed",LOC_Os06g46900.1
+north_sites,Midwest,FL50,Chr04K,44.39,Pavir.4KG403300,4250,0.035958343347268294,AT4G21320.1,HSA32,Aldolase-type TIM barrel family protein,"phosphosulfolactate synthase-related protein, putative, expressed",LOC_Os06g46900.1
+north_sites,Midwest,FL50,Chr04K,44.39,Pavir.4KG403300,4206,0.035958343347268294,AT4G21320.1,HSA32,Aldolase-type TIM barrel family protein,"phosphosulfolactate synthase-related protein, putative, expressed",LOC_Os06g46900.1
+north_sites,Gulf,FL50,Chr01N,5.8,Pavir.1NG072200,482,5.835153287940501e-4,NA,NA,NA,expressed protein,LOC_Os02g08080.1
+north_sites,Gulf,FL50,Chr01N,5.8,Pavir.1NG072200,534,0.0026526088915357023,NA,NA,NA,expressed protein,LOC_Os02g08080.1
+north_sites,Gulf,FL50,Chr01N,18.62,Pavir.1NG226357,2749,0.0028188933289315585,AT2G31610.1,NA,Ribosomal protein S3 family protein,"40S ribosomal protein S3-1, putative, expressed",LOC_Os07g41750.1
+north_sites,Gulf,FL50,Chr02N,64.81,Pavir.2NG578400,947,7.925926640570315e-4,AT5G09520.1,NA,hydroxyproline-rich glycoprotein family protein,expressed protein,LOC_Os07g40910.1
+north_sites,Gulf,FL50,Chr05N,0.91,Pavir.5NG004600,2360,0.003059467535763765,AT3G16260.1,TRZ4,tRNAse Z4,"metallo-beta-lactamase family protein, putative, expressed",LOC_Os01g13150.1
+north_sites,Gulf,FL50,Chr06K,17.18,Pavir.6KG170600,1411,5.835153287940501e-4,AT1G30840.1,"ATPUP4,PUP4",purine permease 4,"purine permease, putative, expressed",LOC_Os01g31940.1
+north_sites,Gulf,FL50,Chr07K,42.46,Pavir.7KG285720,7550,5.835153287940501e-4,AT1G63650.3,"ATMYC-2,EGL1,EGL3",basic helix-loop-helix (bHLH) DNA-binding superfamily protein,"anthocyanin regulatory Lc protein, putative, expressed",LOC_Os04g47080.1
+north_sites,Gulf,FL50,Chr08N,10.32,Pavir.8NG197900,2549,5.835153287940501e-4,AT2G43970.1,NA,RNA-binding protein,"la domain containing protein, expressed",LOC_Os11g14300.1
+north_sites,Gulf,FL50,Chr08N,10.33,Pavir.8NG197900,3698,5.835153287940501e-4,AT2G43970.1,NA,RNA-binding protein,"la domain containing protein, expressed",LOC_Os11g14300.1
+north_sites,Gulf,FL50,Chr08N,10.33,Pavir.8NG197900,834,5.835153287940501e-4,AT2G43970.1,NA,RNA-binding protein,"la domain containing protein, expressed",LOC_Os11g14300.1
+north_sites,Gulf_and_Midwest,FL50,Chr01N,41.09,Pavir.1NG250600,18273,4.5990336523243515e-5,AT5G13170.1,SAG29,senescence-associated gene 29,"nodulin MtN3 family protein, putative, expressed",LOC_Os02g30910.1
+north_sites,Gulf_and_Midwest,FL50,Chr02K,45.55,Pavir.2KG342102,5304,8.537054874365841e-5,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,FL50,Chr04N,17.37,Pavir.4NG152100,15647,8.537054874365841e-5,AT1G05260.1,"RCI3,RCI3A",Peroxidase superfamily protein,"peroxidase precursor, putative, expressed",LOC_Os06g29470.1
+north_sites,Gulf_and_Midwest,FL50,Chr05N,3.56,Pavir.5NG047500,2072,5.4580180335534363e-5,AT2G25760.1,NA,Protein kinase family protein,"CK1_CaseinKinase_1a.5 - CK1 includes the casein kinase 1 kinases, expressed",LOC_Os05g11140.3
+north_sites,Gulf_and_Midwest,FL50,Chr09K,23.41,Pavir.9KG213000,1157,5.4580180335534363e-5,AT3G16857.2,"ARR1,RR1",response regulator 1,"two-component response regulator, putative, expressed",LOC_Os02g55320.1
+north_sites,Gulf_and_Midwest,FL50,Chr09K,23.41,Pavir.9KG213000,2039,5.4580180335534363e-5,AT3G16857.2,"ARR1,RR1",response regulator 1,"two-component response regulator, putative, expressed",LOC_Os02g55320.1
+north_sites,Gulf_and_Midwest,FL50,Chr09K,23.41,Pavir.9KG213000,3970,5.4580180335534363e-5,AT3G16857.2,"ARR1,RR1",response regulator 1,"two-component response regulator, putative, expressed",LOC_Os02g55320.1
+north_sites,Gulf_and_Midwest,FL50,Chr09K,23.46,NA,NA,8.537054874365841e-5,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,FL50,Chr09K,23.47,NA,NA,5.4580180335534363e-5,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,FL50,Chr09K,23.51,Pavir.9KG213285,6544,5.4580180335534363e-5,AT2G02310.1,"AtPP2-B6,PP2-B6",phloem protein 2-B6,"OsFBX261 - F-box domain containing protein, expressed",LOC_Os08g05480.1
+north_sites,Midwest,GR50,Chr03N,40.88,Pavir.3NG162600,9338,9.470311117551628e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,GR50,Chr04K,36.97,Pavir.4KG300100,8110,9.470311117551628e-5,AT3G15980.4,NA,"Coatomer, beta\' subunit","coatomer subunit beta, putative, expressed",LOC_Os02g11830.2
+north_sites,Midwest,GR50,Chr04N,10.49,Pavir.4NG144700,163,9.470311117551628e-5,AT5G28460.1,NA,Pentatricopeptide repeat (PPR) superfamily protein,"pentatricopeptide, putative, expressed",LOC_Os06g13950.1
+north_sites,Midwest,GR50,Chr04N,25.92,Pavir.4NG133200,1743,9.470311117551628e-5,NA,NA,NA,"zinc knuckle family protein, expressed",LOC_Os06g28300.1
+north_sites,Midwest,GR50,Chr05K,9.93,Pavir.5KG131200,404,9.470311117551628e-5,AT5G38280.1,PR5K,PR5-like receptor kinase,"protein kinase domain containing protein, expressed",LOC_Os01g02390.1
+north_sites,Midwest,GR50,Chr07K,14.08,NA,NA,9.470311117551628e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,GR50,Chr07K,19.25,Pavir.7KG066458,13730,9.470311117551628e-5,NA,NA,NA,NA,NA
+north_sites,Midwest,GR50,Chr07K,21.71,Pavir.7KG018600,906,9.470311117551628e-5,AT2G02850.1,ARPN,plantacyanin,"plastocyanin-like domain containing protein, putative, expressed",LOC_Os04g34480.1
+north_sites,Midwest,GR50,Chr07K,51.08,Pavir.7KG386100,320,9.470311117551628e-5,AT1G18490.1,NA,Protein of unknown function (DUF1637),"2-aminoethanethiol dioxygenase, putative, expressed",LOC_Os08g03870.1
+north_sites,Midwest,GR50,Chr07K,51.08,Pavir.7KG386100,276,9.470311117551628e-5,AT1G18490.1,NA,Protein of unknown function (DUF1637),"2-aminoethanethiol dioxygenase, putative, expressed",LOC_Os08g03870.1
+north_sites,Gulf,GR50,Chr01N,39.04,Pavir.1NG211800,763,0.01231726166419744,AT2G24200.1,NA,Cytosol aminopeptidase family protein,"leucine aminopeptidase, chloroplast precursor, putative, expressed",LOC_Os02g55140.1
+north_sites,Gulf,GR50,Chr01N,39.05,Pavir.1NG211800,18715,0.027686297727995173,AT2G24200.1,NA,Cytosol aminopeptidase family protein,"leucine aminopeptidase, chloroplast precursor, putative, expressed",LOC_Os02g55140.1
+north_sites,Gulf,GR50,Chr01N,39.06,Pavir.1NG211800,21103,0.006671257203815142,AT2G24200.1,NA,Cytosol aminopeptidase family protein,"leucine aminopeptidase, chloroplast precursor, putative, expressed",LOC_Os02g55140.1
+north_sites,Gulf,GR50,Chr01N,39.18,NA,NA,0.011433342036643923,NA,NA,NA,NA,NA
+north_sites,Gulf,GR50,Chr01N,39.26,Pavir.1NG247500,1952,0.026303859857041756,AT2G38430.1,NA,NA,expressed protein,LOC_Os02g30140.1
+north_sites,Gulf,GR50,Chr04N,40.99,Pavir.4NG182700,16951,0.026303859857041756,NA,NA,NA,NA,NA
+north_sites,Gulf,GR50,Chr05K,27.06,NA,NA,0.027686297727995173,NA,NA,NA,NA,NA
+north_sites,Gulf,GR50,Chr05K,54.16,Pavir.5KG620400,548,0.026303859857041756,AT3G46540.1,NA,ENTH/VHS family protein,"ENTH domain containing protein, expressed",LOC_Os01g62370.1
+north_sites,Gulf,GR50,Chr07K,28.37,Pavir.7KG116300,3263,0.011433342036643923,AT5G65750.1,NA,"2-oxoglutarate dehydrogenase, E1 component","2-oxoglutarate dehydrogenase E1 component, mitochondrial precursor, putative, expressed",LOC_Os04g32020.1
+north_sites,Gulf,GR50,Chr09K,2.61,Pavir.9KG392621,943,0.026303859857041756,AT3G14750.1,NA,NA,"protein kinase PKN/PRK1, effector, putative, expressed",LOC_Os03g60360.1
+north_sites,Gulf_and_Midwest,GR50,Chr05K,3.61,Pavir.5KG052500,482,6.96654111653484e-6,AT2G03630.1,NA,NA,expressed protein,LOC_Os01g09730.2
+north_sites,Gulf_and_Midwest,GR50,Chr07K,28.37,Pavir.7KG116300,3263,6.96654111653484e-6,AT5G65750.1,NA,"2-oxoglutarate dehydrogenase, E1 component","2-oxoglutarate dehydrogenase E1 component, mitochondrial precursor, putative, expressed",LOC_Os04g32020.1
+north_sites,Gulf_and_Midwest,GR50,Chr09K,0.4,Pavir.9KG023100,80,6.098403576551655e-5,NA,NA,NA,NA,NA
+north_sites,Gulf_and_Midwest,GR50,Chr09K,26.13,Pavir.9KG196300,10604,9.516756217331786e-6,AT4G14746.1,NA,NA,"MTN26L3 - MtN26 family protein precursor, putative, expressed",LOC_Os10g28380.1
+north_sites,Gulf_and_Midwest,GR50,Chr09K,63.91,Pavir.9KG633800,3410,1.6343239560760863e-5,AT4G37640.1,ACA2,calcium ATPase 2,"calcium-transporting ATPase, plasma membrane-type, putative, expressed",LOC_Os03g10640.1
+north_sites,Gulf_and_Midwest,GR50,Chr09N,47.48,Pavir.9NG371442,1871,1.0196497346474372e-5,NA,NA,NA,expressed protein,LOC_Os10g10320.1
+north_sites,Gulf_and_Midwest,GR50,Chr09N,47.48,Pavir.9NG371442,1908,6.96654111653484e-6,NA,NA,NA,expressed protein,LOC_Os10g10320.1
+north_sites,Gulf_and_Midwest,GR50,Chr09N,47.48,Pavir.9NG371442,6288,2.5693654869472423e-6,NA,NA,NA,expressed protein,LOC_Os10g10320.1
+north_sites,Gulf_and_Midwest,GR50,Chr09N,47.5,Pavir.9NG371456,13614,3.335617453756155e-5,AT3G58050.1,NA,NA,expressed protein,LOC_Os10g01610.1
+north_sites,Gulf_and_Midwest,GR50,Chr09N,76.1,Pavir.9NG817700,2006,1.270246920404237e-6,AT1G34630.1,NA,NA,expressed protein,LOC_Os03g09090.1
