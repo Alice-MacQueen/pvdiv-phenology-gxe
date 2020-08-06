@@ -1,0 +1,92 @@
+sites,subpop,phe,CHR,POS_Mb,Gene ID,distance from gene,FDR Adjusted p value,Arabidopsis thaliana homolog,A. thaliana gene name,A. thaliana gene annotation,Rice gene annotation,Rice homolog
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr01K,56.75,Pavir.1KG558100,1083,0.149942738,AT2G21280.1,"ATSULA,GC1,SULA",NAD(P)-binding Rossmann-fold superfamily protein,"cell division inhibitor, putative, expressed",LOC_Os02g58790.1
+eight_sites,Gulf,FL50,Chr01K,56.75,Pavir.1KG558100,1083,0.060039593,AT2G21280.1,"ATSULA,GC1,SULA",NAD(P)-binding Rossmann-fold superfamily protein,"cell division inhibitor, putative, expressed",LOC_Os02g58790.1
+eight_sites,Gulf,FL50,Chr01N,14.83,Pavir.1NG144400,9490,0.068957194,AT5G53120.2,"ATSPDS3,SPDS3,SPMS",spermidine synthase 3,"spermidine synthase, putative, expressed",LOC_Os02g15550.2
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr01N,58.74,Pavir.1NG461071,4275,0.149942738,AT2G41905.1,NA,NA,"arabinogalactan peptide 23 precursor, putative, expressed",LOC_Os06g21410.1
+eight_sites,Gulf,dyln_fl50,Chr01N,58.74,Pavir.1NG461071,4275,0.013845391,AT2G41905.1,NA,NA,"arabinogalactan peptide 23 precursor, putative, expressed",LOC_Os06g21410.1
+eight_sites,Gulf,FL50,Chr01N,58.74,Pavir.1NG461071,4275,0.072337893,AT2G41905.1,NA,NA,"arabinogalactan peptide 23 precursor, putative, expressed",LOC_Os06g21410.1
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr01N,65.97,Pavir.1NG555500,444,4.64E-04,AT2G37010.1,"ATNAP12,NAP12",non-intrinsic ABC protein 12,"white-brown complex homolog protein, putative, expressed",LOC_Os11g22350.1
+eight_sites,Midwest,FL50,Chr02N,2.3,Pavir.2NG041258,17,0.370575684,NA,NA,NA,expressed protein,LOC_Os01g24080.1
+eight_sites,Midwest,FL50,Chr02N,18.23,NA,NA,0.370575684,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr03K,38.23,NA,NA,0.001783261,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr03K,38.23,NA,NA,1.40E-04,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr03K,40.87,Pavir.3KG245981,14499,4.63E-04,NA,NA,NA,NA,NA
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr03K,50.84,Pavir.3KG393200,19955,0.149942738,AT5G04870.1,"ATCPK1,CPK1",calcium dependent protein kinase 1,"CAMK_CAMK_like.47 - CAMK includes calcium/calmodulin depedent protein kinases, expressed",LOC_Os12g30150.1
+eight_sites,Gulf,dyln_fl50,Chr03K,50.84,Pavir.3KG393200,19955,0.03123195,AT5G04870.1,"ATCPK1,CPK1",calcium dependent protein kinase 1,"CAMK_CAMK_like.47 - CAMK includes calcium/calmodulin depedent protein kinases, expressed",LOC_Os12g30150.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr03K,53.43,Pavir.3KG463700,1247,0.122487038,AT1G58390.1,NA,Disease resistance protein (CC-NBS-LRR class) family,"resistance protein, putative, expressed",LOC_Os08g42670.2
+eight_sites,Midwest,FL50,Chr03K,53.43,Pavir.3KG463700,1247,0.259867419,AT1G58390.1,NA,Disease resistance protein (CC-NBS-LRR class) family,"resistance protein, putative, expressed",LOC_Os08g42670.2
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr03N,1.47,Pavir.3NG011800,4916,0.001824785,AT5G03380.1,NA,Heavy metal transport/detoxification superfamily protein ,"heavy-metal-associated domain-containing protein, putative, expressed",LOC_Os11g05010.3
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr03N,31.73,Pavir.3NG131600,1991,0.028391705,AT2G23600.1,"ACL,ATME8,ATMES2,ME8,MES2",acetone-cyanohydrin lyase,"esterase, putative, expressed",LOC_Os05g30760.1
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr03N,31.73,Pavir.3NG131600,1991,2.99E-04,AT2G23600.1,"ACL,ATME8,ATMES2,ME8,MES2",acetone-cyanohydrin lyase,"esterase, putative, expressed",LOC_Os05g30760.1
+eight_sites,Gulf,dyln_fl50,Chr03N,31.73,Pavir.3NG131600,2319,0.03123195,AT2G23600.1,"ACL,ATME8,ATMES2,ME8,MES2",acetone-cyanohydrin lyase,"esterase, putative, expressed",LOC_Os05g30760.1
+eight_sites,Gulf,dyln_fl50,Chr03N,31.73,Pavir.3NG131600,1991,0.009497726,AT2G23600.1,"ACL,ATME8,ATMES2,ME8,MES2",acetone-cyanohydrin lyase,"esterase, putative, expressed",LOC_Os05g30760.1
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr03N,31.73,Pavir.3NG131600,1991,2.34E-05,AT2G23600.1,"ACL,ATME8,ATMES2,ME8,MES2",acetone-cyanohydrin lyase,"esterase, putative, expressed",LOC_Os05g30760.1
+eight_sites,Gulf,FL50,Chr03N,31.73,Pavir.3NG131600,1991,0.010494646,AT2G23600.1,"ACL,ATME8,ATMES2,ME8,MES2",acetone-cyanohydrin lyase,"esterase, putative, expressed",LOC_Os05g30760.1
+eight_sites,Gulf_and_Midwest,FL50,Chr03N,31.73,Pavir.3NG131600,1991,5.72E-04,AT2G23600.1,"ACL,ATME8,ATMES2,ME8,MES2",acetone-cyanohydrin lyase,"esterase, putative, expressed",LOC_Os05g30760.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr04K,7.17,Pavir.4KG095100,1080,0.122487038,AT1G72310.1,ATL3,RING/U-box superfamily protein,"zinc finger, C3HC4 type domain containing protein, expressed",LOC_Os06g09310.1
+eight_sites,Midwest,FL50,Chr04K,7.17,Pavir.4KG095100,1080,0.036151139,AT1G72310.1,ATL3,RING/U-box superfamily protein,"zinc finger, C3HC4 type domain containing protein, expressed",LOC_Os06g09310.1
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr04K,8.07,Pavir.4KG175633,435,3.02E-05,AT3G13960.1,"AtGRF5,GRF5",growth-regulating factor 5,"growth regulating factor protein, putative, expressed",LOC_Os06g10310.1
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr04K,8.07,Pavir.4KG175633,435,2.02E-05,AT3G13960.1,"AtGRF5,GRF5",growth-regulating factor 5,"growth regulating factor protein, putative, expressed",LOC_Os06g10310.1
+eight_sites,Gulf_and_Midwest,FL50,Chr04K,8.07,Pavir.4KG175633,435,3.17E-04,AT3G13960.1,"AtGRF5,GRF5",growth-regulating factor 5,"growth regulating factor protein, putative, expressed",LOC_Os06g10310.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr04K,13.81,Pavir.4KG222710,6879,0.122487038,AT5G05800.2,NA,NA,"transposon protein, putative, CACTA, En/Spm sub-class, expressed",LOC_Os04g16940.1
+eight_sites,Midwest,FL50,Chr04K,13.81,Pavir.4KG222710,6879,0.17669332,AT5G05800.2,NA,NA,"transposon protein, putative, CACTA, En/Spm sub-class, expressed",LOC_Os04g16940.1
+eight_sites,Midwest,dyln_fl50,Chr04K,33.77,Pavir.4KG265120,598,3.95E-04,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+eight_sites,Midwest,dyln_fl50,Chr04K,33.77,Pavir.4KG265120,601,3.95E-04,AT5G25840.1,NA,Protein of unknown function (DUF1677),expressed protein,LOC_Os06g36040.1
+eight_sites,Midwest,dyln_fl50,Chr04K,44.39,Pavir.4KG403300,4258,8.83E-04,AT4G21320.1,HSA32,Aldolase-type TIM barrel family protein,"phosphosulfolactate synthase-related protein, putative, expressed",LOC_Os06g46900.1
+eight_sites,Midwest,dyln_fl50,Chr04K,44.39,Pavir.4KG403300,4250,8.83E-04,AT4G21320.1,HSA32,Aldolase-type TIM barrel family protein,"phosphosulfolactate synthase-related protein, putative, expressed",LOC_Os06g46900.1
+eight_sites,Midwest,dyln_fl50,Chr04K,44.39,Pavir.4KG403300,4206,8.83E-04,AT4G21320.1,HSA32,Aldolase-type TIM barrel family protein,"phosphosulfolactate synthase-related protein, putative, expressed",LOC_Os06g46900.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr04N,12.39,Pavir.4NG076219,5075,0.16298526,AT1G19260.1,NA,TTF-type zinc finger protein with HAT dimerisation domain,"hAT dimerisation domain-containing protein, putative, expressed",LOC_Os01g08610.1
+eight_sites,Midwest,FL50,Chr04N,16.52,Pavir.4NG219700,7529,0.340033536,AT3G08505.2,NA,zinc finger (CCCH-type/C3HC4-type RING finger) family protein,"Zinc finger C-x8-C-x5-C-x3-H type domain containing protein, expressed",LOC_Os06g21390.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr05K,20.17,Pavir.5KG223200,5587,0.122487038,AT3G62700.1,"ATMRP10,MRP10",multidrug resistance-associated protein 10,"multidrug resistance-associated protein, putative, expressed",LOC_Os01g25386.1
+eight_sites,Midwest,FL50,Chr05K,20.17,Pavir.5KG223200,5587,0.17669332,AT3G62700.1,"ATMRP10,MRP10",multidrug resistance-associated protein 10,"multidrug resistance-associated protein, putative, expressed",LOC_Os01g25386.1
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr05K,23.5,Pavir.5KG248600,4005,0.001824785,AT4G03020.2,NA,transducin family protein / WD-40 repeat family protein,"WD domain, G-beta repeat domain containing protein, expressed",LOC_Os01g28680.3
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr05K,23.51,Pavir.5KG248600,155,0.001066292,AT4G03020.2,NA,transducin family protein / WD-40 repeat family protein,"WD domain, G-beta repeat domain containing protein, expressed",LOC_Os01g28680.3
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr05K,23.51,Pavir.5KG248600,155,4.64E-04,AT4G03020.2,NA,transducin family protein / WD-40 repeat family protein,"WD domain, G-beta repeat domain containing protein, expressed",LOC_Os01g28680.3
+eight_sites,Gulf_and_Midwest,FL50,Chr05K,46.69,Pavir.5KG468900,1012,0.005271857,AT2G34420.1,"LHB1B2,LHCB1.5",photosystem II light harvesting complex gene B1B2,"chlorophyll A-B binding protein, putative, expressed",LOC_Os01g41710.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr05N,10.9,Pavir.5NG142162,9402,0.122487038,NA,NA,NA,NA,NA
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr05N,24.61,Pavir.5NG232724,12608,0.149942738,NA,NA,NA,NA,NA
+eight_sites,Gulf,dyln_fl50,Chr05N,24.61,Pavir.5NG232724,12608,0.02873064,NA,NA,NA,NA,NA
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr05N,24.78,NA,NA,0.149942738,NA,NA,NA,NA,NA
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr05N,24.78,NA,NA,0.149942738,NA,NA,NA,NA,NA
+eight_sites,Gulf,dyln_fl50,Chr05N,24.78,NA,NA,0.01762762,NA,NA,NA,NA,NA
+eight_sites,Gulf,dyln_fl50,Chr05N,24.78,NA,NA,0.013845391,NA,NA,NA,NA,NA
+eight_sites,Gulf,FL50,Chr05N,24.78,NA,NA,0.064894824,NA,NA,NA,NA,NA
+eight_sites,Gulf,FL50,Chr05N,24.78,NA,NA,0.060039593,NA,NA,NA,NA,NA
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr05N,44.5,Pavir.5NG300300,936,0.122487038,AT1G48950.1,NA,C3HC zinc finger-like ,"zinc ion binding protein, putative, expressed",LOC_Os01g42080.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr05N,50.13,Pavir.5NG419300,1061,0.122487038,AT4G39250.1,"ATRL1,RL1,RSM2",RAD-like 1,"MYB family transcription factor, putative, expressed",LOC_Os01g47370.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr05N,50.13,Pavir.5NG419300,1147,0.122487038,AT4G39250.1,"ATRL1,RL1,RSM2",RAD-like 1,"MYB family transcription factor, putative, expressed",LOC_Os01g47370.1
+eight_sites,Midwest,cgdd_12c_gr2fl,Chr05N,50.13,Pavir.5NG419300,1211,0.122487038,AT4G39250.1,"ATRL1,RL1,RSM2",RAD-like 1,"MYB family transcription factor, putative, expressed",LOC_Os01g47370.1
+eight_sites,Midwest,FL50,Chr05N,50.13,Pavir.5NG419300,1061,0.34249627,AT4G39250.1,"ATRL1,RL1,RSM2",RAD-like 1,"MYB family transcription factor, putative, expressed",LOC_Os01g47370.1
+eight_sites,Midwest,FL50,Chr05N,50.13,Pavir.5NG419300,1147,0.34249627,AT4G39250.1,"ATRL1,RL1,RSM2",RAD-like 1,"MYB family transcription factor, putative, expressed",LOC_Os01g47370.1
+eight_sites,Midwest,FL50,Chr05N,50.13,Pavir.5NG419300,1211,0.34249627,AT4G39250.1,"ATRL1,RL1,RSM2",RAD-like 1,"MYB family transcription factor, putative, expressed",LOC_Os01g47370.1
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr05N,64.86,Pavir.5NG109745,4113,0.149942738,AT2G28510.1,NA,Dof-type zinc finger DNA-binding family protein,"dof zinc finger domain containing protein, putative, expressed",LOC_Os01g64590.1
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr05N,64.86,Pavir.5NG109745,4113,0.001783261,AT2G28510.1,NA,Dof-type zinc finger DNA-binding family protein,"dof zinc finger domain containing protein, putative, expressed",LOC_Os01g64590.1
+eight_sites,Gulf,FL50,Chr05N,64.86,Pavir.5NG109745,4113,0.060039593,AT2G28510.1,NA,Dof-type zinc finger DNA-binding family protein,"dof zinc finger domain containing protein, putative, expressed",LOC_Os01g64590.1
+eight_sites,Gulf_and_Midwest,FL50,Chr05N,64.86,Pavir.5NG109745,4113,0.005271857,AT2G28510.1,NA,Dof-type zinc finger DNA-binding family protein,"dof zinc finger domain containing protein, putative, expressed",LOC_Os01g64590.1
+eight_sites,Gulf,FL50,Chr06K,9.36,Pavir.6KG093200,780,0.064894824,AT4G04885.1,PCFS4,PCF11P-similar protein 4,expressed protein,LOC_Os08g08830.1
+eight_sites,Gulf,dyln_fl50,Chr06K,17.18,Pavir.6KG170600,1411,0.01762762,AT1G30840.1,"ATPUP4,PUP4",purine permease 4,"purine permease, putative, expressed",LOC_Os01g31940.1
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr06K,35.67,Pavir.6KG251900,788,0.001824785,AT1G19250.1,FMO1,flavin-dependent monooxygenase 1,"flavin-containing monooxygenase family protein, putative, expressed",LOC_Os06g10170.1
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr06K,37.5,Pavir.6KG281306,187,5.60E-04,AT5G48930.1,HCT,hydroxycinnamoyl-CoA shikimate/quinate hydroxycinnamoyl transferase,"transferase family protein, putative, expressed",LOC_Os09g25460.1
+eight_sites,Gulf_and_Midwest,FL50,Chr06K,41.96,Pavir.6KG122912,7900,0.007378681,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,FL50,Chr06K,43.86,Pavir.6KG362900,1733,0.00563552,AT1G76490.1,"HMG1,HMGR1",hydroxy methylglutaryl CoA reductase 1,"3-hydroxy-3-methylglutaryl-coenzyme A reductase, putative, expressed",LOC_Os08g40180.1
+eight_sites,Midwest,dyln_fl50,Chr06N,1.69,Pavir.6NG015175,3881,8.83E-04,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,FL50,Chr07K,33.33,Pavir.7KG166400,3830,0.005271857,AT1G59740.1,NA,Major facilitator superfamily protein,"peptide transporter PTR2, putative, expressed",LOC_Os04g36040.1
+eight_sites,Gulf_and_Midwest,FL50,Chr07K,33.33,Pavir.7KG166400,1371,0.007378681,AT1G59740.1,NA,Major facilitator superfamily protein,"peptide transporter PTR2, putative, expressed",LOC_Os04g36040.1
+eight_sites,Midwest,dyln_fl50,Chr07K,46.21,Pavir.7KG346100,199,0.001115666,AT2G19330.1,PIRL6,plant intracellular ras group-related LRR 6,"leucine rich repeat containing protein, expressed",LOC_Os04g51580.1
+eight_sites,Midwest,dyln_fl50,Chr07K,46.21,Pavir.7KG346100,134,0.001115666,AT2G19330.1,PIRL6,plant intracellular ras group-related LRR 6,"leucine rich repeat containing protein, expressed",LOC_Os04g51580.1
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr09K,27.34,Pavir.9KG172100,61,0.001066292,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr09K,27.34,Pavir.9KG172100,61,4.63E-04,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,FL50,Chr09K,27.34,Pavir.9KG172100,61,0.00563552,NA,NA,NA,NA,NA
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr09N,5.89,Pavir.9NG307773,198,0.03791066,AT2G22070.1,NA,pentatricopeptide (PPR) repeat-containing protein,"pentatricopeptide, putative, expressed",LOC_Os03g56400.1
+eight_sites,Gulf,dyln_fl50,Chr09N,5.89,Pavir.9NG307773,198,0.009497726,AT2G22070.1,NA,pentatricopeptide (PPR) repeat-containing protein,"pentatricopeptide, putative, expressed",LOC_Os03g56400.1
+eight_sites,Gulf,FL50,Chr09N,5.89,Pavir.9NG307773,198,0.009421609,AT2G22070.1,NA,pentatricopeptide (PPR) repeat-containing protein,"pentatricopeptide, putative, expressed",LOC_Os03g56400.1
+eight_sites,Gulf,dyln_fl50,Chr09N,7.67,Pavir.9NG097300,347,0.031257038,AT1G69120.1,"AGL7,AP1",K-box region and MADS-box transcription factor family protein ,"OsMADS14 - MADS-box family gene with MIKCc type-box, expressed",LOC_Os03g54160.2
+eight_sites,Gulf,FL50,Chr09N,14.63,Pavir.9NG246746,850,0.072337893,AT5G17860.1,CAX7,calcium exchanger 7,"sodium/calcium exchanger protein, putative, expressed",LOC_Os03g45370.1
+eight_sites,Midwest,dyln_fl50,Chr09N,23.72,Pavir.9NG301946,728,0.002554728,NA,NA,NA,NA,NA
+eight_sites,Midwest,dyln_fl50,Chr09N,23.72,Pavir.9NG301946,93,0.002554728,NA,NA,NA,NA,NA
+eight_sites,Gulf_and_Midwest,cgdd_12c_gr2fl,Chr09N,26.06,Pavir.9NG334900,2608,0.001783261,AT4G09980.1,EMB1691,Methyltransferase MT-A70 family protein,"EMB1691, putative, expressed",LOC_Os10g31030.1
+eight_sites,Gulf_and_Midwest,FL50,Chr09N,26.06,Pavir.9NG334900,2608,0.00563552,AT4G09980.1,EMB1691,Methyltransferase MT-A70 family protein,"EMB1691, putative, expressed",LOC_Os10g31030.1
+eight_sites,Gulf,cgdd_12c_gr2fl,Chr09N,33.04,Pavir.9NG406814,6773,0.149942738,AT3G06190.1,"ATBPM2,BPM2",BTB-POZ and MATH domain 2,"MBTB7 - Bric-a-Brac, Tramtrack, Broad Complex BTB domain with Meprin and TRAF Homology MATH domain, expressed",LOC_Os04g53410.1
+eight_sites,Midwest,dyln_fl50,Chr09N,33.25,Pavir.9NG411900,11377,6.88E-05,AT3G13050.1,NA,Major facilitator superfamily protein,"transporter family protein, putative, expressed",LOC_Os03g43720.2
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr09N,51.15,Pavir.9NG456400,1681,4.63E-04,AT3G60150.1,NA,Protein of unknown function (DUF498/DUF598),"AGAP003819-PA, putative, expressed",LOC_Os10g42090.1
+eight_sites,Gulf_and_Midwest,dyln_fl50,Chr09N,51.15,Pavir.9NG456400,435,5.60E-04,AT3G60150.1,NA,Protein of unknown function (DUF498/DUF598),"AGAP003819-PA, putative, expressed",LOC_Os10g42090.1

@@ -41,7 +41,8 @@ h2gr <- h2gr %>%
   full_join(h2gr_gxe)
 h2fl <- h2fl %>%
   full_join(h2fl_gxe)
-```a the code for any new analyses that I'm running to do new writeup for the manuscript v0.3.
+```
+as well as the code for any new analyses that I'm running to do new writeup for the manuscript v0.3.
 
 v0.2 has the ASReml h2 analysis, has BLUPs for G (which as of v0.3 probably needs a GxE term... define some possibilities below.)
 
@@ -1426,6 +1427,7 @@ log10p_gandm %>%
   geom_vline(xintercept = bonferroni, color = "red", linetype = 2) + 
   geom_hline(yintercept = bonferroni, color = "red", linetype = 2)
 ```
+
 ```{r}
 i=1 # subpop
 j=3 # site set 
@@ -1633,3 +1635,299 @@ for gulf:
 6.2% overlap eight and texas in top 500; 5.2% overlap eight and north; 2.7% overlap north and texas.
 
 I think the top 500 SNPs are good here - give you large enough numbers.
+
+## View Annotations
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+snp_v <- c("12\\.1M", "8\\.8M", "10\\.3M")
+subpop_v <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest", Gulf = "Gulf")
+set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
+
+for(j in seq_along(set_v)){
+  anno_list <- list()
+  annodir <- file.path(workingdir, "analysis", "gwas", "BLUPs",
+                       names(set_v)[j])
+  anno_v <- pvdiv_results_in_folder(path = annodir, pattern = "Annotation")
+
+  for(i in seq_along(anno_v)){
+  annos <- readRDS(file.path(annodir, anno_v[i]))
+  if(names(set_v)[j] != "single_sites"){
+  anno_info <- anno_v[i] %>% enframe(name = NULL, value = "File") %>%
+    mutate(phe = case_when(grepl("dyln_fl50", File) ~ "dyln_fl50",
+                           grepl("cgdd_12c_gr2fl", File) ~ "cgdd_12c_gr2fl",
+                           grepl("FL50", File) ~ "FL50",
+                           grepl("GR50", File) ~ "GR50",
+                           grepl("crain_gr2fl", File) ~ "crain_gr2fl",
+                           grepl("crain_1d", File) ~ "crain_1d",
+                           grepl("cgdd_12c_10d", File) ~ "cgdd_12c_10d"),
+           sites = case_when(grepl("eight_sites", File) ~ "eight_sites",
+                             grepl("north_sites", File) ~ "north_sites",
+                             grepl("tx_sites", File) ~ "tx_sites"),
+           subpop = case_when(grepl("8\\.8M", File) ~ "Midwest",
+                              grepl("10\\.3M", File) ~ "Gulf",
+                              grepl("12\\.1M", File) ~ "Gulf_and_Midwest"))
+  } else {
+    anno_info <- anno_v[i] %>% enframe(name = NULL, value = "File") %>%
+    mutate(phe = case_when(grepl("dyln_fl50", File) ~ "dyln_fl50",
+                           grepl("cgdd_12c_gr2fl", File) ~ "cgdd_12c_gr2fl",
+                           grepl("FL50", File) ~ "FL50",
+                           grepl("GR50", File) ~ "GR50",
+                           grepl("crain_gr2fl", File) ~ "crain_gr2fl",
+                           grepl("crain_1d", File) ~ "crain_1d",
+                           grepl("cgdd_12c_10d", File) ~ "cgdd_12c_10d"),
+           sites = case_when(grepl("TX1", File) ~ "TX1",
+                             grepl("TX2", File) ~ "TX2",
+                             grepl("TX3", File) ~ "TX3",
+                             grepl("OK", File) ~ "OK",
+                             grepl("MO", File) ~ "MO",
+                             grepl("MI", File) ~ "MI",
+                             grepl("NE", File) ~ "NE",
+                             grepl("SD", File) ~ "SD"),
+           subpop = case_when(grepl("8\\.8M", File) ~ "Midwest",
+                              grepl("10\\.3M", File) ~ "Gulf",
+                              grepl("12\\.1M", File) ~ "Gulf_and_Midwest"))
+  }
+  anno_list[[i]] <- annos$top500SNPs_within50000bp %>%
+    arrange(QUERYID, `distance from gene`) %>%
+    group_by(QUERYID) %>%
+    slice(1) %>%
+    ungroup() %>%
+    mutate(POS_Mb = floor(POS/10000)/100,
+           phe = anno_info$phe,
+           sites = anno_info$sites,
+           subpop = anno_info$subpop) %>%
+    select(sites, subpop, phe, CHR, POS_Mb, `Gene ID`, `distance from gene`, `FDR Adjusted p value`, `Arabidopsis thaliana homolog`:`A. thaliana gene annotation`, `Rice gene annotation`, `Rice homolog`)
+  }
+  
+  anno_df <- anno_list[[1]]
+  for(i in seq_along(anno_list)[-1]){
+    anno_df <- anno_df %>%
+      full_join(anno_list[[i]])
+  }
+  anno_df %>%
+    arrange(CHR, POS_Mb) %>%
+    filter(`FDR Adjusted p value` <= 0.1) %>%
+write_csv(., path = file.path(workingdir, "analysis", "gwas", "BLUPs",
+                                    paste0(names(set_v)[j],     
+                                           "_top_500_SNPs_above_FDR",
+                                           "_closest_annotations.csv")))
+}
+```
+Taylor et al 2019, Crop Science: switchgrass GWAS
+Grabowski et al 2017, New Phytologist - GWAS on ~509 individuals on heading date in New York
+Switchgrass GWAS at two locations: Frontiers in Plant Science
+Pavir.8NG050900: Pseudo Response Regulator 5 (PRR5) - important in flowering date
+Flowering locus T (on Chromosome 5N). FKF1, PRR5 COP1 GASA8 P450 - differentially expressed flowering genes between early and late flowering individuals.
+ 
+Pavir.2NG448600: PRR5
+Pavir.5KG044000 (FT)
+Pavir.2NG126000 (PRR7)
+Pavir.
+
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
+j = 1
+annos_df <- annos1
+for(j in seq_along(set_v)[-1]){
+annos1 <- read_csv(file = file.path(workingdir, "analysis", "gwas", "BLUPs",
+                                    paste0(names(set_v)[j],     
+                                           "_top_500_SNPs_above_FDR",
+                                           "_closest_annotations.csv")))
+annos_df <- annos_df %>%
+  full_join(annos1)
+}
+
+annos_plot <- annos_df %>%
+  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d"))) %>%
+  group_by(CHR, POS_Mb, sites, subpop, phe) %>% add_tally(name = "n_SNPs") %>%
+  arrange(CHR, POS_Mb) %>%
+  #filter(n_SNPs > 1) %>%
+  slice(1) %>%
+  group_by(CHR, POS_Mb) %>% add_tally(name = "n_Mb") %>%
+  filter(n_Mb > 7) %>% arrange(CHR, POS_Mb) %>%
+  select(n_SNPs, n_Mb, everything())
+```
+
+dyln, fl50, cgdd eight sites gulf & midwest, north sites gulf & midwest cgdd & dyln, tx crain gr2fl, dyln, cgdd
+```{r}
+qtldf
+```
+
+3 regions with the most 'independent' hits: Chr03K 50.84, Chr03N 31.73, Chr05N 64.86
+3N isn't potentially confirmed by any QTL. 3K doesn't overlap. 
+5N does!All four traits for QTL (dyln much higher lod).
+Then: Chr03K 38.23, Chr04K 8.07, Chr05N 2.79, Chr09N 69.33
+3K ~ 17 - 26. Not really.  4K 2.28-5.5 & 9.92 - 13.93, so definitely close/overlaps. 5N overlaps. 9N does not.
+
+So 5N (late), 5N (early), and 4K have overlaps thus far. Very strong result.
+
+Then: 
+Chr01K 56.75 (no), Chr02K 4.25 (yes), 3K 38.23, 38.27, 38.35, 40.87 (no), Chr04N 42.92 (no), Chr05N 49.05 (very close ~ 44.5 - 46.6), Chr07K 33.33 (very close 34.82), Chr08N 28.5 (yes), Chr08N 43.77 (no), Chr09N 21.45 26.06 30.04 (no but 21 is close: 6.88 - 17.31)
+
+So for 7 regions sig above FDR in >=8 subsets, 3 overlap, and overlap the 3 of the 4 biggest QTL.
+For the next 14 regions sig above FDR in 7 or more subsets, 2 overlap and 3 are very close. 
+So of the 12-13 QTL, we find overlap for 3 of the 4 biggest, and 2-5 of the remainder. We don't find big hits in GWAS on 2N.
+
+Biggest QTL: 2N, 4K, 5N (x2-3) (4-5)
+Other QTL: 2K (x2), 3K, 7K, 7N, 8N, 9K, 9N (8)
+
+nothing on 1K, 1N, 3N, 4N, 5K, 6K, 6N, 8K. Nothing!!
+
+I think this is good. And can write up this section focusing on this.
+```{r}
+qtldf <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv")
+
+qtldf <- qtldf %>%
+  separate(flank_lo, into = c("CHR", "Pos_Mb_lo"), sep = "_", convert = TRUE) %>%
+  separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
+  mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
+         Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
+  select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  arrange(CHR, Pos_Mb_lo)
+```
+
+## Combined Manhattan
+
+facet grid - rows are three sets of sites, colors are phenotypes, shapes are subpopulations. Then I can plot -log10 p values on the y axis and Chr/Pos on the x axis. 
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+subpop_v <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest", Gulf = "Gulf")
+set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
+j = 1
+i = 1
+
+for(i in seq_along(subpop_v)){
+  for(j in 1:3){
+    if(i == 1 & j ==1){
+      logpdf <- readRDS(file.path(workingdir, "analysis", "gwas", "BLUPs",
+                                  names(set_v)[j],
+                                  paste0("log10p_strong_df_1000topSNPs_FL_",
+                                         names(set_v)[j], "_",
+                                         names(subpop_v)[i], ".rds"))) %>%
+        mutate(subpop = names(subpop_v)[i]) %>% ungroup()
+      } else {
+        logpdf1 <- readRDS(file.path(workingdir, "analysis", "gwas", "BLUPs",
+                                  names(set_v)[j],
+                                  paste0("log10p_strong_df_1000topSNPs_FL_",
+                                         names(set_v)[j], "_", 
+                                         names(subpop_v)[i], ".rds"))) %>%
+        mutate(subpop = names(subpop_v)[i]) %>% ungroup()
+        logpdf <- logpdf %>%
+          full_join(logpdf1)
+      }
+  }
+}
+
+log10p_long <- logpdf %>%
+  select(-starts_with("GR50"), -starts_with("cgdd_12c_10d")) %>%
+  pivot_longer(cols = ends_with("log10p"), names_to = "File", values_to = "log10p") %>%
+  mutate(phe = case_when(grepl("dyln_fl50", File) ~ "dyln_fl50",
+                           grepl("cgdd_12c_gr2fl", File) ~ "cgdd_12c_gr2fl",
+                           grepl("FL50", File) ~ "FL50",
+                           grepl("GR50", File) ~ "GR50",
+                           grepl("crain_gr2fl", File) ~ "crain_gr2fl",
+                           grepl("crain_1d", File) ~ "crain_1d",
+                           grepl("cgdd_12c_10d", File) ~ "cgdd_12c_10d"),
+           sites = case_when(grepl("eight_site", File) ~ "eight_sites",
+                             grepl("north_site", File) ~ "north_sites",
+                             grepl("tx_site", File) ~ "tx_sites")) %>%
+  select(SNP:POS, sites, subpop, phe, log10p) %>%
+  filter(!is.na(log10p))
+  
+```
+
+```{r}
+
+annos_plot1 <- annos_plot %>% group_by(CHR, POS_Mb) %>% tally() %>%
+  mutate(POS = POS_Mb*1000000+5000)
+annos_plot2 <- annos_plot %>% group_by(CHR, POS_Mb) %>% tally() %>%
+  mutate(POS = POS_Mb*1000000) %>% filter(POS_Mb > 50)
+log10p_long$phe <- factor(log10p_long$phe, levels = c("crain_gr2fl", "cgdd_12c_gr2fl", "dyln_fl50", "crain_1d", "FL50"))
+
+log10p_plot <- log10p_long %>%
+  mutate(site = case_when(is.na(sites) ~ "all",
+                          sites == "eight_sites" ~ "All",
+                          sites == "tx_sites" ~ "Texas",
+                          sites == "north_sites" ~ "North",
+                          TRUE ~ sites),
+         subpop_name = case_when(subpop == "Gulf_and_Midwest" ~ "Gulf and Midwest",
+                                 subpop == "three_subpops" ~ "all",
+                                 TRUE ~ subpop),
+         phe = as.character(phe),
+         phe_name = case_when(phe == "FL50" ~ "50% flowering",
+                              phe == "dyln_fl50" ~ "Daylength",
+                              phe == "dyln_change_sec" ~ "daylength change (s)",
+                              phe == "cgdd_12c_gr2fl" ~ "GDD, GR to FL",
+                              phe == "crain_gr2fl" ~ "Rainfall, GR to FL",
+                              phe == "crain_1d" ~ "Rainfall, 1 day",
+                              phe == "crain_2d" ~ "Rainfall, 2d sum",
+                              phe == "crain_3d" ~ "Rainfall, 3d sum",
+                              phe == "crain_5d" ~ "Rainfall, 5d sum",
+                              phe == "crain_7d" ~ "Rainfall, 7d sum",
+                              TRUE ~ phe)) %>%
+  filter(!(phe %in% c("crain_1d", "FL50")) & !(subpop == "Midwest" & between(log10p, 9.242223, 9.242225)) & !(subpop == "Midwest" & between(log10p, 12.466318, 12.46632)))
+
+log10p_plot$site <- factor(log10p_plot$site, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North"))
+log10p_plot$phe_name <- factor(log10p_plot$phe_name, 
+                               levels = c("50% flowering", "Rainfall, GR to FL",
+                                          "GDD, GR to FL", "Daylength",
+                                          "daylength change (s)",
+                                          "Rainfall, 1 day",
+                                                  #"Rainfall, 2d sum",
+                                                  "Rainfall, 3d sum",
+                                                  "Rainfall, 5d sum"#,
+                                                  #"Rainfall, 7d sum"
+                                                  ))
+
+log10p_plot %>%
+  ggplot(aes(x = POS, y = log10p)) +
+  geom_vline(data = annos_plot1, aes(xintercept = POS), color = "grey70", 
+             size = 1.1) +
+  geom_point(aes(color = phe_name, shape = subpop_name)) +
+  facet_grid(site ~ CHR, scales = "free_x", space = "free_x", switch = "x") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+              legend.position = "top",
+            panel.background = element_rect(fill = "grey85")) +
+            labs(x = "Chromosome", y = "-log10(p value)") +
+            scale_x_continuous(breaks = c(20000000, 40000000, 60000000, 80000000, 100000000), labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb", ""), expand = c(0.4, 0.4)) +
+      scale_color_viridis(discrete = TRUE, end = 0.93,
+                          option = "B") +
+      scale_shape_manual(values = c(6, 4, 1, 4, 16, 4, 17, 18, 14, 3, 4)) +
+  ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2)
+save_plot(paste0("../manuscript/plots/", "G_BLUP_Combined_Manhattans_fl_phe_subpops_sites.png"), 
+              base_height = 4.5, base_asp = 3.5, plot = last_plot())
+
+log10p_long %>%
+  filter(subpop == "Midwest" & log10p > 7) %>% group_by(log10p) %>% tally() %>% arrange(desc(n)) # 9.242224 12.466319
+
+-log10(0.05/1200000)
+
+log10p_plot %>%
+  ungroup() %>%
+  group_by(CHR, POS) %>%
+  arrange(CHR, desc(POS)) %>%
+  slice(1)
+  summarise(minP = min(POS),
+            maxP = max(POS), .groups = "keep")
+
+log10p_plot %>%
+  filter(grepl("K", CHR)) %>%
+  ggplot(aes(x = POS, y = log10p)) +
+  geom_vline(data = filter(annos_plot1, grepl("K", CHR)),
+             aes(xintercept = POS), color = "grey70", size = 1.1) +
+  geom_point(aes(color = phe_name, shape = subpop_name)) +
+  facet_grid(site ~ CHR, scales = "free_x", space = "free_x", switch = "x", ) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+              legend.position = "top",
+            panel.background = element_rect(fill = "grey85")) +
+            labs(x = "Chromosome", y = "-log10(p value)") +
+            scale_x_continuous(breaks = c(20000000, 40000000, 60000000, 80000000, 100000000), labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb", ""), expand = c(0.15, 0.15)) +
+      scale_color_viridis(discrete = TRUE, end = 0.93,
+                          option = "B") +
+      scale_shape_manual(values = c(6, 4, 1, 4, 16, 4, 17, 18, 14, 3, 4)) +
+  ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2) + labs(subtitle = "K subgenome")
+save_plot(paste0("../manuscript/plots/", "G_BLUP_Combined_Manhattans_fl_phe_subpops_sites_K_subgenome.png"), 
+              base_height = 4, plot = last_plot())
+```
+
