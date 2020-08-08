@@ -1728,7 +1728,10 @@ Pavir.
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
 j = 1
-annos_df <- annos1
+annos_df <- annos1 <- read_csv(file = file.path(workingdir, "analysis", "gwas", "BLUPs",
+                                    paste0(names(set_v)[j],     
+                                           "_top_500_SNPs_above_FDR",
+                                           "_closest_annotations.csv")))
 for(j in seq_along(set_v)[-1]){
 annos1 <- read_csv(file = file.path(workingdir, "analysis", "gwas", "BLUPs",
                                     paste0(names(set_v)[j],     
@@ -1739,19 +1742,42 @@ annos_df <- annos_df %>%
 }
 
 annos_plot <- annos_df %>%
-  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d"))) %>%
+  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d", "FL50", "crain_1d"))) %>%
   group_by(CHR, POS_Mb, sites, subpop, phe) %>% add_tally(name = "n_SNPs") %>%
   arrange(CHR, POS_Mb) %>%
   #filter(n_SNPs > 1) %>%
   slice(1) %>%
   group_by(CHR, POS_Mb) %>% add_tally(name = "n_Mb") %>%
-  filter(n_Mb > 7) %>% arrange(CHR, POS_Mb) %>%
+  filter(n_Mb > 5) %>% arrange(CHR, POS_Mb) %>%
   select(n_SNPs, n_Mb, everything())
+annos_plot1 <- annos_plot %>% group_by(CHR, POS_Mb) %>% tally() %>%
+  mutate(POS_lo = POS_Mb*1000000,
+         POS_hi = POS_Mb*1000000+10000)
+
+annos_plot <- annos_df %>% 
+  mutate(POS_bin_lo = floor(POS_Mb*100/2),
+         POS_bin_hi = ceiling(POS_Mb*100/2)) %>%
+  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d", "FL50", "crain_1d", "crain_gr2fl"))) %>%
+  group_by(CHR, POS_bin_hi, sites, subpop, phe) %>% add_tally(name = "n_SNPs") %>%
+  arrange(CHR, POS_bin_hi) %>%
+  #filter(n_SNPs > 1) %>%
+  slice(1) %>%
+  group_by(CHR, POS_bin_hi) %>% add_tally(name = "n_Mb") %>%
+  filter(n_Mb > 4) %>% arrange(CHR, POS_bin_hi) %>%
+  select(n_SNPs, n_Mb, everything())
+annos_plot1 <- annos_plot %>% group_by(CHR, POS_bin_hi, POS_Mb) %>% tally() %>%
+  mutate(POS_lo = POS_Mb*1000000,
+         POS_hi = POS_Mb*1000000+10000)
 ```
 
 dyln, fl50, cgdd eight sites gulf & midwest, north sites gulf & midwest cgdd & dyln, tx crain gr2fl, dyln, cgdd
 ```{r}
-qtldf
+qtldf %>% arrange(CHR, Pos_Mb_lo) %>%
+  #filter(lodcolumn != "dyln_change_sec") %>%
+  ggplot(aes(x = Pos_Mb_lo, y = lod)) +
+  geom_jitter(aes(color = lodcolumn), height = 2) +
+  geom_errorbarh(aes(y = lod, xmin = Pos_Mb_lo, xmax = Pos_Mb_hi, color = lodcolumn), size = 1.5) +
+  facet_wrap(~CHR) + scale_color_manual(values = c("magenta", "yellow", "darkgreen", "blue")) + theme(legend.position = c(0.9, 0.15), panel.background = element_rect(fill = "grey90")) + xlim(c(0, 70)) + geom_vline(xintercept = 0)
 ```
 
 3 regions with the most 'independent' hits: Chr03K 50.84, Chr03N 31.73, Chr05N 64.86
@@ -1839,10 +1865,7 @@ log10p_long <- logpdf %>%
 
 ```{r}
 
-annos_plot1 <- annos_plot %>% group_by(CHR, POS_Mb) %>% tally() %>%
-  mutate(POS = POS_Mb*1000000+5000)
-annos_plot2 <- annos_plot %>% group_by(CHR, POS_Mb) %>% tally() %>%
-  mutate(POS = POS_Mb*1000000) %>% filter(POS_Mb > 50)
+
 log10p_long$phe <- factor(log10p_long$phe, levels = c("crain_gr2fl", "cgdd_12c_gr2fl", "dyln_fl50", "crain_1d", "FL50"))
 
 log10p_plot <- log10p_long %>%
@@ -1898,36 +1921,141 @@ log10p_plot %>%
 save_plot(paste0("../manuscript/plots/", "G_BLUP_Combined_Manhattans_fl_phe_subpops_sites.png"), 
               base_height = 4.5, base_asp = 3.5, plot = last_plot())
 
-log10p_long %>%
-  filter(subpop == "Midwest" & log10p > 7) %>% group_by(log10p) %>% tally() %>% arrange(desc(n)) # 9.242224 12.466319
 
--log10(0.05/1200000)
+log10p_lim <- log10p_plot %>%
+  dplyr::group_by(CHR) %>%
+  dplyr::summarise(maxP = max(POS)) %>%
+  mutate(minP = 0, maxP = maxP+2000000, log10p = 2) %>%
+  pivot_longer(names_to = "type", values_to = "POS", cols = minP:maxP)
+  
 
-log10p_plot %>%
-  ungroup() %>%
-  group_by(CHR, POS) %>%
-  arrange(CHR, desc(POS)) %>%
-  slice(1)
-  summarise(minP = min(POS),
-            maxP = max(POS), .groups = "keep")
-
-log10p_plot %>%
+k_subgenome <- log10p_plot %>%
   filter(grepl("K", CHR)) %>%
   ggplot(aes(x = POS, y = log10p)) +
   geom_vline(data = filter(annos_plot1, grepl("K", CHR)),
              aes(xintercept = POS), color = "grey70", size = 1.1) +
-  geom_point(aes(color = phe_name, shape = subpop_name)) +
-  facet_grid(site ~ CHR, scales = "free_x", space = "free_x", switch = "x", ) +
+  geom_point(aes(color = phe_name, shape = subpop_name), size = 0.7, stroke = 0.8) +
+  geom_blank(data = filter(log10p_lim, grepl("K", CHR))) +
+  facet_grid(site ~ CHR, scales = "free_x", space = "free_x", switch = "x") +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
               legend.position = "top",
-            panel.background = element_rect(fill = "grey85")) +
+            panel.background = element_rect(fill = "grey85"), panel.spacing.x = unit(0, 'cm')) +
             labs(x = "Chromosome", y = "-log10(p value)") +
-            scale_x_continuous(breaks = c(20000000, 40000000, 60000000, 80000000, 100000000), labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb", ""), expand = c(0.15, 0.15)) +
-      scale_color_viridis(discrete = TRUE, end = 0.93,
+            scale_x_continuous(breaks = c(20000000, 40000000, 60000000, 80000000), labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb"), expand = c(0.1, 0.1)) +
+      scale_color_viridis(discrete = TRUE, end = 0.88,
                           option = "B") +
-      scale_shape_manual(values = c(6, 4, 1, 4, 16, 4, 17, 18, 14, 3, 4)) +
-  ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2) + labs(subtitle = "K subgenome")
-save_plot(paste0("../manuscript/plots/", "G_BLUP_Combined_Manhattans_fl_phe_subpops_sites_K_subgenome.png"), 
-              base_height = 4, plot = last_plot())
+      scale_shape_manual(values = c(1, 4, 6, 4, 16, 4, 17, 18, 14, 3, 4)) +
+  ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2) + labs(subtitle = "K subgenome", x = "")
+
+n_subgenome <- log10p_plot %>%
+  filter(grepl("N", CHR)) %>%
+  ggplot(aes(x = POS, y = log10p)) +
+  geom_vline(data = filter(annos_plot1, grepl("N", CHR)),
+             aes(xintercept = POS), color = "grey70", size = 1.1) +
+  geom_point(aes(color = phe_name, shape = subpop_name), size = 0.7, stroke = 0.8) +
+  geom_blank(data = filter(log10p_lim, grepl("N", CHR))) +
+  facet_grid(site ~ CHR, scales = "free_x", space = "free_x", switch = "x") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+              legend.position = "none",
+            panel.background = element_rect(fill = "grey85"), panel.spacing.x = unit(0, 'cm')) +
+            scale_x_continuous(breaks = c(20000000, 40000000, 60000000, 80000000), labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb"), expand = c(0.1, 0.1)) +
+      scale_color_viridis(discrete = TRUE, end = 0.88,
+                          option = "B") +
+      scale_shape_manual(values = c(1, 4, 6, 4, 16, 4, 17, 18, 14, 3, 4)) +
+  ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2) + labs(subtitle = "N subgenome", x = "", y = "-log10(p value)")
+
+both_subgenomes <- plot_grid(k_subgenome, n_subgenome, nrow = 2, rel_heights = c(0.52, 0.47))
+save_plot(paste0("../manuscript/plots/", "G_BLUP_Combined_Manhattans_fl_phe_subpops_sites_by_subgenome.svg"), 
+              base_height = 7.5, base_width = 6.5, plot = both_subgenomes)
 ```
 
+## Manhattan QTL windows
+
+```{r}
+qtldf <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv")
+
+qtldf <- qtldf %>%
+  separate(flank_lo, into = c("CHR", "Pos_Mb_lo"), sep = "_", convert = TRUE) %>%
+  separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
+  mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
+         Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
+  select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  arrange(CHR, Pos_Mb_lo)
+
+qtlplot <- qtldf %>%
+  mutate(phe = case_when(lodcolumn == "FL50" ~ "50% flowering",
+                              lodcolumn == "dyln_fl50" ~ "Daylength",
+                              lodcolumn == "dyln_change_sec" ~ "daylength change (s)",
+                              lodcolumn == "CGDD_12C" ~ "GDD, GR to FL",
+                              lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
+  filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
+  mutate(POS_lo = Pos_Mb_lo * 1000000,
+         POS_hi = Pos_Mb_hi * 1000000)
+
+qtlplot$phe <- factor(qtlplot$phe, 
+                               levels = c("50% flowering", "Rainfall, GR to FL",
+                                          "GDD, GR to FL", "Daylength",
+                                          "daylength change (s)",
+                                          "Rainfall, 1 day",
+                                                  #"Rainfall, 2d sum",
+                                                  "Rainfall, 3d sum",
+                                                  "Rainfall, 5d sum"#,
+                                                  #"Rainfall, 7d sum"
+                                                  ))
+```
+
+```{r}
+k_subgenome <- log10p_plot %>%
+  filter(grepl("K", CHR) & phe != "crain_gr2fl") %>%
+  ggplot() +
+  geom_rect(data = filter(qtlplot, grepl("K", CHR)), mapping = aes(ymin = 6, ymax = 15, xmin = POS_lo, xmax = POS_hi, fill = phe), alpha = 0.2, color = "grey70", size = 0.4) +
+  geom_rect(data = filter(annos_plot1, grepl("K", CHR)), mapping = aes(ymin = 6, ymax = 15, xmin = POS_lo, xmax = POS_hi), fill = "grey70", color = "grey10", linetype = 2) +
+  geom_point(aes(x = POS, y = log10p, color = phe_name, shape = subpop_name),
+             size = 0.65, stroke = 0.75) +
+  geom_blank(data = filter(log10p_lim, grepl("K", CHR)), aes(x = POS, y = log10p)) +
+  facet_grid(site ~ CHR, scales = "free_x", space = "free_x", switch = "x") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+              legend.position = "top",
+            panel.background = element_rect(fill = "grey90"), panel.spacing.x = unit(0, 'cm')) +
+            labs(x = "Chromosome", y = "-log10(p value)") +
+            scale_x_continuous(breaks = c(20000000, 40000000, 60000000,
+                                          80000000), 
+                               labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb"),
+                               expand = c(0.1, 0.1)) +
+      scale_color_viridis(discrete = TRUE, begin = 0.35, end = 0.75, option = "B") +
+      scale_fill_viridis(discrete = TRUE, begin = 0.35, end = 0.75, option = "B") +
+      scale_shape_manual(values = c(1, 4, 6, 4, 16, 4, 17, 18, 14, 3, 4), guide = FALSE) +
+  ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2) + labs(subtitle = "K subgenome", x = "")
+
+n_subgenome <- log10p_plot %>%
+  filter(grepl("N", CHR) & phe != "crain_gr2fl") %>%
+  ggplot() +
+  geom_rect(data = filter(qtlplot, grepl("N", CHR)), mapping = aes(ymin = 6, ymax = 15, xmin = POS_lo, xmax = POS_hi, fill = phe), alpha = 0.2, color = "grey70", size = 0.4) +
+  geom_rect(data = filter(annos_plot1, grepl("N", CHR)), mapping = aes(ymin = 6, ymax = 15, xmin = POS_lo, xmax = POS_hi), fill = "grey70", color = "grey10", linetype = 2) +
+  geom_point(aes(x = POS, y = log10p, color = phe_name, shape = subpop_name),
+             size = 0.65, stroke = 0.75) +
+  geom_blank(data = filter(log10p_lim, grepl("N", CHR)), aes(x = POS, y = log10p)) +
+  facet_grid(site ~ CHR, scales = "free_x", space = "free_x", switch = "x") +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), 
+              legend.position = "top",
+            panel.background = element_rect(fill = "grey90"), panel.spacing.x = unit(0, 'cm')) +
+            labs(x = "Chromosome", y = "-log10(p value)") +
+            scale_x_continuous(breaks = c(20000000, 40000000, 60000000,
+                                          80000000), 
+                               labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb"),
+                               expand = c(0.1, 0.1)) +
+      scale_color_viridis(discrete = TRUE, begin = 0.35, end = 0.75, option = "B", guide = FALSE) +
+      scale_fill_viridis(discrete = TRUE, begin = 0.35, end = 0.75, option = "B", guide = FALSE) +
+      scale_shape_manual(values = c(1, 4, 6, 4, 16, 4, 17, 18, 14, 3, 4)) +
+  ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2) + labs(subtitle = "N subgenome", x = "")
+
+both_subgenomes <- plot_grid(k_subgenome, n_subgenome, nrow = 2)
+save_plot(paste0("../manuscript/plots/", "G_BLUP_Combined_Manhattans_GDD_dyln_",
+                 "subpops_sites_by_subgenome_with_QTL_and_20kb_",
+                 "common_associations.png"), base_height = 7, 
+          base_width = 7, plot = both_subgenomes)
+```
+
+## Manhattan QTL windows
+
+### GDD & DYLN only
