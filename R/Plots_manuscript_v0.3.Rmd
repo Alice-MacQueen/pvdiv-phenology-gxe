@@ -1728,7 +1728,7 @@ Pavir.
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
 j = 1
-annos_df <- annos1 <- read_csv(file = file.path(workingdir, "analysis", "gwas", "BLUPs",
+annos_df <- read_csv(file = file.path(workingdir, "analysis", "gwas", "BLUPs",
                                     paste0(names(set_v)[j],     
                                            "_top_500_SNPs_above_FDR",
                                            "_closest_annotations.csv")))
