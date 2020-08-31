@@ -1723,6 +1723,25 @@ Pavir.2NG448600: PRR5
 Pavir.5KG044000 (FT)
 Pavir.2NG126000 (PRR7)
 Pavir.
+```{r}
+annos_dyln$top500SNPs_within50000bp %>%
+  filter(CHR == "Chr05N" & region_start > 64700000)
+
+annos_df %>%
+  filter(CHR == "Chr05N" & POS_Mb > 64.6)
+
+annos_dyln$top500SNPs_within50000bp %>%
+  filter(CHR == "Chr05N" & region_start < 3000000 & region_start > 2000000) %>%
+  select(`Gene ID`, `distance from gene`, `Arabidopsis thaliana homolog`, `Rice homolog`)
+```
+	Pavir.5NG109746 (18.7kb), 	AT1G49200 RING/U-box superfamily protein
+		LOC_Os01g64620.1 highly expressed hypocotyl, silique
+	Pavir.5NG109743 (22.5kb), 	AT2G22590 UDP-Glycosyltransferase superfamily pt.
+	LOC_Os01g64540.1  highly expressed in mature flower petals
+	Pavir.5NG109744 (17.9kb), 		AT2G35930 (PUB23) plant U-box 23
+		LOC_Os01g64570.1 highly expressed in senescent leaf petiole; negative regulation of drought tolerance
+	Pavir.5NG109745 (4.1kb)     AT2G28510 Dof-type zinc finger DNA-binding family protein  highly expressed in the carpel of the young flower & in seeds during germination day 1; promotes leaf senescence in arabidopsis
+		LOC_Os01g64590.1
 
 ```{r}
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
