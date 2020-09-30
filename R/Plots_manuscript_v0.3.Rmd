@@ -1742,7 +1742,7 @@ annos_dyln$top500SNPs_within50000bp %>%
 		LOC_Os01g64570.1 highly expressed in senescent leaf petiole; negative regulation of drought tolerance
 	Pavir.5NG109745 (4.1kb)     AT2G28510 Dof-type zinc finger DNA-binding family protein  highly expressed in the carpel of the young flower & in seeds during germination day 1; promotes leaf senescence in arabidopsis
 		LOC_Os01g64590.1
-
+## ---- #### ---- ####
 ```{r}
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
