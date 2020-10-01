@@ -8,17 +8,48 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(ComplexUpset)
+library(cowplot)
+
 ```
 
 # Load data
 
-Xiaoyu's annotation file, QTL 
+Xiaoyu's annotation file, and FT keywords for rice from functionally annotated genes
 ```{r}
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
 sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
 ftanno <- read_csv(file.path(workingdir, "data/Pvirgatum_v5.1.annotation_FTGeneHomologs.csv"))
+ftkey <- read_delim(file.path(workingdir, "data", "OsGene_keyword_table.txt"), delim = "\t")
+ftanno %>%
+  filter(!is.na(OsGene)) %>%
+  left_join(ftkey, by = c("OsGene" = "Symbol")) %>%
+  filter(Keyword %in% c("flowering time", "heading date")) %>% unique()
+
+osgene_keyword_df <- ftkey %>%
+  select(-RAPdb, -MSU) %>%
+  group_by(Symbol, Keyword) %>%
+  slice(1) %>%
+  pivot_wider(names_from = Keyword, values_from = Title)
+
+osgene_ft_key <- osgene_keyword_df %>%
+  select(Symbol, `flowering time`, `heading date`, anther, flower, `floral meristem`, `floral meristem determinacy`, flowering, `flower development`, `carpel differentiation`, stamen, `stamen number`) %>%
+  pivot_longer(cols = -Symbol, names_to = "Keyword", values_to = "Title") %>%
+  filter(!is.na(Title)) %>%
+  pivot_wider(names_from = Keyword, values_from = Title)
+
+ft_annos <- ftanno %>%
+  filter(OsGene %in% osgene_ft_key$Symbol | !is.na(AtGene)) %>%
+  mutate(Pos_Mb = round(start/10000)/100,
+         #Pos_Mb_e = floor(start/10000)/100,
+         POS_bin = round(Pos_Mb*100/2)) %>%# ,
+         #POS_bin_hi = round(Pos_Mb_e*100/2))
+  select(OsGene, AtGene, everything())   
+1599 / 83260
 ```
+~1600 virgatum genes have rice or thaliana homologs with roles in flowering.
+1599 / 83260 total genes. 1.92% of genes.
 
 # Create dataframes to plot (usually end with "_plot")
 
@@ -134,7 +165,12 @@ log10p_lim <- log10p_plot %>%
   dplyr::summarise(maxP = max(POS)) %>%
   mutate(minP = 0, maxP = maxP+2000000, log10p = 2) %>%
   pivot_longer(names_to = "type", values_to = "POS", cols = minP:maxP)
-  
+
+log10p_long %>% arrange(log10p) %>%
+  group_by(sites, subpop, phe) %>%
+  slice(1) %>%
+  arrange(sites, subpop, phe) %>%
+  mutate(pval = 10^-log10p)
 ```
 
 ## Top annotations from G_BLUP GWAS
@@ -178,10 +214,18 @@ annos_plot <- annos_df %>%
 annos_plot %>% group_by(CHR, POS_bin_hi, POS_Mb) %>% tally() %>%
   mutate(POS_lo = POS_Mb*1000000,
          POS_hi = POS_Mb*1000000+10000)
+
+annos_df %>% 
+  arrange(desc(`FDR Adjusted p value`)) %>%
+  group_by(sites, subpop, phe) %>%
+  slice(1) %>%
+  arrange(sites, subpop, phe) %>%
+  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d", "FL50", "crain_1d", "crain_gr2fl"))) 
+  mutate(pval = 10^-log10p)
 ```
 
 
-# G_BLUP Manhattan with overlapping top hits
+# Manhattan with overlapping top hits (G_BLUP)
 
 ```{r}
 k_subgenome <- log10p_plot %>%
@@ -201,8 +245,8 @@ k_subgenome <- log10p_plot %>%
                                           80000000), 
                                labels = c("20 Mb", "40 Mb", "60 Mb", "80 Mb"),
                                expand = c(0.1, 0.1)) +
-      scale_color_viridis(discrete = TRUE, begin = 0.35, end = 0.75, option = "B") +
-      scale_fill_viridis(discrete = TRUE, begin = 0.35, end = 0.75, option = "B") +
+      scale_color_viridis_d(begin = 0.35, end = 0.75, option = "B") +
+      scale_fill_viridis_d(begin = 0.35, end = 0.75, option = "B") +
       scale_shape_manual(values = c(1, 4, 6, 4, 16, 4, 17, 18, 14, 3, 4), guide = FALSE) +
   ylim(c(6, 15)) + geom_hline(yintercept = c(8.3), linetype = 2) + labs(subtitle = "K subgenome", x = "")
 
@@ -235,8 +279,8 @@ save_plot(paste0("../manuscript/plots/", "G_BLUP_Combined_Manhattans_GDD_dyln_",
           base_width = 7, plot = both_subgenomes)
 ```
 
-
-# G_BLUP 20kb windows Upset plot
+# Definitions
+# Rice/thaliana FT
 
 anno_df: All are above a 10% FDR. If there are more than 500 SNPs above the FDR, only returns the top 500 by p value. Only gets the closest gene to each SNP. Should be three site sets and three subpop sets, several (four?) flowering phenotypes.
 
@@ -247,12 +291,8 @@ log10p_plot: Top 1000 SNPs for each GWAS.
 qtlplot: Significant QTL for flowering in fourway cross.
 ```{r}
 annos_df
-ft_annos <- ftanno %>%
-  filter(!is.na(OsGene) | !is.na(AtGene)) %>%
-  mutate(Pos_Mb = round(start/10000)/100,
-         #Pos_Mb_e = floor(start/10000)/100,
-         POS_bin = round(Pos_Mb*100/2))# ,
-         #POS_bin_hi = round(Pos_Mb_e*100/2))
+ft_annos
+osgene_ft_key
   
   # checked that gene start & end never fall into different 20kb bins.   filter(POS_bin_lo != POS_bin_hi)  filter(Pos_Mb_s != Pos_Mb_e)
 log10p_plot
@@ -267,8 +307,15 @@ annos_df %>%
 annos_df %>%
   group_by(`Gene ID`) %>% tally() %>%
   inner_join(ft_annos, by = c("Gene ID" = "locusName"))
+
+ft_annos <- ft_annos %>%
+  mutate(Pos_Mb1 = round(Pos_Mb, digits = 1))
+annos_plot %>%
+  mutate(Pos_Mb1 = round(POS_Mb, digits = 1)) %>%
+  inner_join(ft_annos, by = c("CHR" = "seqid", "Pos_Mb1"))
 ```
-2682 of 19963...
+528 of 19963...
+528 of 1599
 
 Are any of the 20kb regions in log10p_plot in the 20kb regions in ftanno?
 ```{r}
@@ -276,7 +323,7 @@ log10p_plot %>%
   mutate(Pos_Mb = round(POS/10000)/100) %>%
   inner_join(ft_annos, by = c("CHR" = "seqid", "Pos_Mb"))
 ```
-11324 of 110822 rows...
+1780 of 110822 rows...
 
 Do the QTL overlap any of the genes in ftanno?
 ```{r}
@@ -284,10 +331,67 @@ ft_annos %>%
   filter(seqid %in% qtldf$CHR[1] & between(Pos_Mb, qtldf$Pos_Mb_lo[1], qtldf$Pos_Mb_hi[1]))
 
 qtldf
-i=27
+i=24
 ft_annos %>%
   filter(seqid %in% qtldf$CHR[i] & between(Pos_Mb, qtldf$Pos_Mb_lo[i], qtldf$Pos_Mb_hi[i])) %>%
   select(OsGene, AtGene, everything())
 ```
 
 Yes. Lots. Very encouraging.
+
+# ----------------------------
+# Upset plots
+## 20kb windows Upset plot (G_BLUP)
+
+```{r}
+#annos_upset <- 
+annos_df %>% 
+  mutate(POS_bin_lo = floor(POS_Mb*100/2),
+         POS_bin_hi = ceiling(POS_Mb*100/2)) %>%
+  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d", "FL50", "crain_1d", "crain_gr2fl"))) %>%
+  select(sites, subpop, phe, CHR, POS_Mb) %>%
+  mutate(All = case_when(sites == "eight_sites" ~ TRUE,
+                         TRUE ~ FALSE),
+         North = case_when(sites == "north_sites" ~ TRUE,
+                         TRUE ~ FALSE),
+         Texas = case_when(sites == "tx_sites" ~ TRUE,
+                         TRUE ~ FALSE),
+         Midwest = case_when(subpop == "Midwest" ~ TRUE,
+                         TRUE ~ FALSE),
+         Gulf = case_when(subpop == "Gulf" ~ TRUE,
+                         TRUE ~ FALSE),
+         Gulf_and_Midwest = case_when(subpop == "Gulf_and_Midwest" ~ TRUE,
+                         TRUE ~ FALSE),
+         )
+
+upsetdf1 <- annos_df %>% 
+  mutate(POS_bin_lo = floor(POS_Mb*100/2),
+         POS_bin_hi = ceiling(POS_Mb*100/2)) %>%
+  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d", "FL50", "crain_1d", "crain_gr2fl"))) %>%
+  select(sites, subpop, phe, CHR, POS_Mb) %>%
+  unite(col = "Group", sites, subpop, phe) %>%
+  unite(col = "CHR_POS", CHR, POS_Mb) %>%
+  mutate(Sig = TRUE) %>%
+  complete(Group, CHR_POS, fill = list(Sig = FALSE)) %>%
+  group_by(Group, CHR_POS, Sig) %>%
+  slice(1) %>%
+  pivot_wider(names_from = Group, values_from = Sig)
+upset_v1 <- names(upsetdf1)[2:16]
+```
+
+
+```{r}
+freqplot_u <- upset(data = upsetdf1, intersect = upset_v1, 
+      name="20kb region frequency changes by sites/subpops/phenotype",
+      base_annotations=list(
+        'Intersection size'=intersection_size(text_aes=aes(label=paste0(round(intersection_size/nrow(upsetdf1) * 100), '%')))),
+      min_size = 10,
+      width_ratio = 0.125,
+      themes=upset_modify_themes(
+        list(
+            'overall_sizes'=theme(axis.text.x=element_text(angle=45, hjust =1))
+        ))) +
+  labs(caption = "Number of 20kb windows with a significant GWAS hit.")
+save_plot(filename = "../writeup/figures/Upset_plot_20kb_sig_allele_freq.png", plot = freqplot_u, base_height = 3)
+```
+
