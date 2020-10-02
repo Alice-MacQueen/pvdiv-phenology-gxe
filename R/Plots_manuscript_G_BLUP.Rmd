@@ -170,7 +170,8 @@ log10p_long %>% arrange(log10p) %>%
   group_by(sites, subpop, phe) %>%
   slice(1) %>%
   arrange(sites, subpop, phe) %>%
-  mutate(pval = 10^-log10p)
+  mutate(pval = 10^-log10p) %>%
+  arrange(pval)
 ```
 
 ## Top annotations from G_BLUP GWAS
@@ -220,10 +221,181 @@ annos_df %>%
   group_by(sites, subpop, phe) %>%
   slice(1) %>%
   arrange(sites, subpop, phe) %>%
-  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d", "FL50", "crain_1d", "crain_gr2fl"))) 
-  mutate(pval = 10^-log10p)
+  filter(sites %in% c("eight_sites", "tx_sites", "north_sites") & !(phe %in% c("GR50", "cgdd_12c_10d", "FL50", "crain_1d", "crain_gr2fl")) & !subpop %in% c("Gulf_and_Midwest")) %>%
+  arrange(`FDR Adjusted p value`)
+  
+  
+
+```
+# Get all SNPs above FDR from server.
+phe %in% c("dyln_fl50", "cgdd_12c_gr2fl", "FL50")
+sites %in% c("eight_sites", "tx_sites", "north_sites")
+```{r}
+phe_v <- c("dyln_fl50", "cgdd_12c_gr2fl", "FL50")
+site_v <- c("eight_sites", "tx_sites", "north_sites")
+i=1
+j=1
+gwas_FDR <- tibble()
+for(i in seq_along(phe_v)){
+  for(j in seq_along(site_v)){
+  gwas_files <- list.files(path = paste0("./", site_v[j]), pattern = paste0("GWAS_datatable_", phe_v[i]))
+  for(k in seq_along(gwas_files)){
+    gwas1 <- readRDS(file.path(site_v[j], gwas_files[k])) %>%
+      filter(FDR_adj < 0.1) %>%
+      mutate(sites = site_v[j],
+             phe = phe_v[i],
+             gwas = gwas_files[k])
+    gwas_FDR <- bind_rows(gwas_FDR, gwas1)
+  }
+}
+}
+saveRDS(gwas_FDR, file = "Univariate_G_BLUP_27_flowering_GWAS_SNPs_above_FDR10per.rds")
 ```
 
+# FDR GWAS hits
+```{r}
+gwas_fdr <- read_rds("../analysis/gwas/BLUPs/Univariate_G_BLUP_27_flowering_GWAS_SNPs_above_FDR10per.rds")
+
+gwas_fdr <- gwas_fdr %>%
+  mutate(subpop = case_when(grepl("8\\.8M", gwas) ~ "Midwest",
+                              grepl("10\\.3M", gwas) ~ "Gulf",
+                              grepl("12\\.1M", gwas) ~ "Gulf_and_Midwest"),
+         Pos_Mb = round(POS/10000)/100,
+         POS_bin = round(Pos_Mb*100/2),
+         Pos_Mb1 = round(Pos_Mb, digits = 1)) %>%
+  filter(!(subpop == "Midwest" & between(log10p, 9.242223, 9.242225)) & !(subpop == "Midwest" & between(log10p, 12.466318, 12.46632)))
+
+gwas_fdr %>%
+  filter(subpop %in% c("Midwest", "Gulf") & phe %in% c("dyln_fl50", "cgdd_12c_gr2fl")) %>%
+  group_by(sites, phe, subpop) %>%
+  tally()
+
+gwas_fdr %>%
+  filter(subpop %in% c("Midwest", "Gulf") & phe %in% c("dyln_fl50", "cgdd_12c_gr2fl")) %>%
+  group_by(CHR, POS) %>%
+  tally() %>% arrange(desc(n))
+
+gwas_fdr %>%
+  filter(subpop %in% c("Midwest", "Gulf") & phe %in% c("dyln_fl50", "cgdd_12c_gr2fl")) %>%
+  group_by(CHR, Pos_Mb1, POS_bin) %>%
+  tally() %>% arrange(desc(n))
+annos_plot1
+ft_annos
+
+gwas_fdr %>%
+  filter(subpop %in% c("Midwest", "Gulf") & phe %in% c("dyln_fl50", "cgdd_12c_gr2fl")) %>%
+  group_by(CHR, POS_bin) %>%
+  tally() %>% arrange(desc(n))
+
+gwas_fdr %>%
+  group_by(log10p) %>%
+  tally() %>% arrange(desc(n))
+```
+## Upset plot FDR
+```{r}
+fdr_upset <- gwas_fdr %>%
+  filter(subpop %in% c("Midwest", "Gulf") & phe %in% c("dyln_fl50", "cgdd_12c_gr2fl")) %>%
+  select(sites, subpop, phe, CHR, POS_bin) %>%
+  unite(col = "GWAS", sites, subpop, phe) %>%
+  unite(col = "CHR_POS", CHR, POS_bin) %>%
+  mutate(Sig = TRUE) %>%
+  complete(GWAS, CHR_POS, fill = list(Sig = FALSE)) %>%
+  group_by(GWAS, CHR_POS, Sig) %>%
+  slice(1) %>%
+  pivot_wider(names_from = GWAS, values_from = Sig)
+upset_v0 <- names(fdr_upset)[2:ncol(fdr_upset)]
+freqplot_u <- upset(data = fdr_upset, intersect = upset_v0, 
+      name="20kb region associations by univariate GWAS",
+      base_annotations=list(
+        'Intersection size'=intersection_size(text_aes=aes(label=paste0(round(intersection_size/nrow(fdr_upset) * 100), '%')))),
+      min_size = 10,
+      width_ratio = 0.125,
+      themes=upset_modify_themes(
+        list(
+            'overall_sizes'=theme(axis.text.x=element_text(angle=45, hjust =1))
+        ))) +
+  labs(caption = "Number of 20kb windows with a significant GWAS hit.")
+save_plot(filename = "../writeup/figures/Upset_plot_20kb_sig_allele_freq.png", plot = freqplot_u, base_height = 3)
+```
+
+Check out various smaller plots
+```{r}
+fdr_upset <- gwas_fdr %>%
+  filter(subpop %in% c("Midwest", "Gulf") & !phe %in% c("FL50")) %>%
+  select(sites, subpop, phe, CHR, POS_bin) %>%
+  unite(col = "GWAS", sites, subpop, phe) %>%
+  unite(col = "CHR_POS", CHR, POS_bin) %>%
+  mutate(Sig = TRUE) %>%
+  complete(GWAS, CHR_POS, fill = list(Sig = FALSE)) %>%
+  group_by(GWAS, CHR_POS, Sig) %>%
+  slice(1) %>%
+  pivot_wider(names_from = GWAS, values_from = Sig)
+upset_v0 <- names(fdr_upset)[2:ncol(fdr_upset)]
+upset(data = fdr_upset, intersect = upset_v0, 
+      name="20kb region associations by univariate GWAS",
+      base_annotations=list(
+        'Intersection size'=intersection_size()),
+      min_size = 0,
+      width_ratio = 0.125,
+      themes=upset_modify_themes(
+        list(
+            'overall_sizes'=theme(axis.text.x=element_text(angle=45, hjust =1))
+        ))) +
+  labs(caption = "Number of 20kb windows with a significant GWAS hit.")
+
+
+three_uni_gwas <- gwas_fdr %>%
+  filter(subpop %in% c("Midwest", "Gulf") & !phe %in% c("FL50")) %>%
+  group_by(sites, subpop, phe, CHR, POS_bin) %>%
+  tally() %>%
+  group_by(CHR, POS_bin) %>%
+  summarise(count = n()) %>% arrange(desc(count)) %>%
+  filter(count > 2)
+
+three_uni_gwas %>%
+  arrange(CHR, POS_bin) %>%
+  left_join(ft_annos, by = c("CHR" = "seqid", "POS_bin")) %>%
+  select(CHR, Pos_Mb, everything())
+
+gwas_fdr %>%
+  filter(log10p > 7) %>%
+  filter(subpop %in% c("Gulf", "Midwest") & !phe %in% c("FL50")) %>%
+  group_by(sites, subpop, phe, CHR, POS_bin) %>%
+  tally() %>%
+  group_by(CHR, POS_bin) %>%
+  summarise(count = n()) %>%
+  left_join(ft_annos, by = c("CHR" = "seqid", "POS_bin")) %>%
+  select(CHR, Pos_Mb, everything()) %>%
+  filter(!is.na(OsGene) | !is.na(AtGene)) %>%
+  left_join(osgene_ft_key, by = c("OsGene" = "Symbol")) # 93 out of 3148 rows contain candidates
+(9/223)/(1599/83260) # all regions log10p > 7   OR 2.1
+(26/793)/(1599/83260) # all regions log10p > 6   OR 1.7
+(65/2240)/(1599/83260) # all regions log10p > 5   OR 1.51
+(10/280)/(1599/83260) # all regions FDR 1%
+(43/1393)/(1599/83260) # all regions FDR 5%
+(95/3137)/(1599/83260) # all regions FDR 10%
+
+(10/268)/(1599/83260)
+(81/2551)/(1599/83260) # OR north sites 1.65
+(8/420)/(1599/83260) # OR tx sites 0.99! NS!
+(16/463)/(1599/83260) # OR all sites 1.80
+(95/3137)/(1599/83260)
+fisher.test(matrix(c(95, 1599, 3137, 83260), nrow = 2))
+fisher.test(matrix(c(16, 1599, 463, 83260), nrow = 2))
+fisher.test(matrix(c(81, 1599, 2551, 83260), nrow = 2))
+fisher.test(matrix(c(8, 1599, 420, 83260), nrow = 2))
+```
+For the Midwest subpop, there aren't sig assoc for dyln in TX. Just CGDD.
+For the Gulf, there aren't sig assoc for CGDD in TX. Just dyln.
+For G&M in Texas, 61% signals are just for dyln. 33% both dyln & CGDD. 6% CGDD.
+For G&M in North, 76% signals are just for CGDD. 20% both. 2% dyln.
+
+2K 52: FT
+3K 19 FTL10
+
+```{r}
+
+```
 
 # Manhattan with overlapping top hits (G_BLUP)
 
@@ -290,7 +462,8 @@ log10p_plot: Top 1000 SNPs for each GWAS.
 
 qtlplot: Significant QTL for flowering in fourway cross.
 ```{r}
-annos_df
+annos_df %>%
+  arrange(desc(`FDR Adjusted p value`))
 ft_annos
 osgene_ft_key
   
