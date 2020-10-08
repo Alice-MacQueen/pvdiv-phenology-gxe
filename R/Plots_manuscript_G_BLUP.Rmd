@@ -393,9 +393,129 @@ For G&M in North, 76% signals are just for CGDD. 20% both. 2% dyln.
 2K 52: FT
 3K 19 FTL10
 
+# Total # 20kb regions
+Midwest: 8824339 SNPs       52797 20kb regions
+Gulf: 10320201 SNPs         53025 20kb regions
+Gulf_and_Midwest: 12083955  53086 20kb regions
+53240 20kb regions total
 ```{r}
+phe_v <- c("dyln_fl50", "cgdd_12c_gr2fl", "FL50")
+site_v <- c("eight_sites", "tx_sites", "north_sites")
+i=1
+j=1
+k=1
 
+  gwas_files <- list.files(path = paste0("./", site_v[j]), pattern = paste0("GWAS_datatable_", phe_v[i]))
+  
+  gwas_files
+  
+  gwas_20kb <- tibble()
+subpop_v <- c("Midwest", "Gulf", "Gulf_and_Midwest")
+  
+for(k in seq_along(gwas_files)){
+  gwas1 <- readRDS(file.path(site_v[j], gwas_files[k]))
+gwas1 <- gwas1 %>%
+  mutate(Pos_Mb = round(POS/10000)/100,
+         POS_bin = round(Pos_Mb*100/2)) %>%
+  group_by(CHR, POS_bin) %>% 
+  tally() %>%
+  mutate(subpop = subpop_v[k])
+gwas_20kb <- bind_rows(gwas_20kb, gwas1)
+}
 ```
+
+
+# Overlaps phe across subpops
+
+Associations did or did not overlap significantly in the same phenotypes among subpopulations? What about in the same subpop between sets of sites? This is GxE at the continental scale, point out.
+In both Gulf & Midwest:
+All  dyln_fl50  Chr01N	229	2	   1 region 1/463     NS 0.08496942
+All cgdd_12c_gr2fl  0 regions   0/2
+All FL50  0 regions   0/18
+North  dyln_fl50 39 regions  39/2530      sig 0.00688
+North cgdd_12c_gr2fl  0 regions  0/59
+North  FL50    6 regions 5Nx2 6Kx2 8N 9K   6/1097     NS 0.141
+Texas  dyln_fl50         0 regions  0/232
+Texas  cgdd_12c_gr2fl    0 regions  0/190
+Texas  FL50             0 regions   0/64
+```{r}
+sitev <- "eight_sites"
+phev <- "dyln_fl50"
+popv <- list(Gulf = 53025, Midwest = 52797, Gulf_and_Midwest = 53086)
+i=2
+
+AandB <- gwas_fdr %>%
+  filter(subpop %in% names(popv)[c(1,2)] & phe %in% phev & sites %in% sitev) %>%
+    group_by(sites, subpop, phe, CHR, POS_bin) %>%
+    tally() %>%
+    group_by(CHR, POS_bin) %>%
+    summarise(count = n()) %>%
+    filter(count > 1)
+inB <- gwas_fdr %>%
+  filter(subpop %in% names(popv)[1] & phe %in% phev & sites %in% sitev) %>%
+    group_by(sites, subpop, phe, CHR, POS_bin) %>%
+    tally() %>%
+    group_by(CHR, POS_bin) %>%
+    summarise(count = n()) 
+notinB <- popv[[i]] - nrow(inB)
+inA <- gwas_fdr %>%
+  filter(subpop %in% names(popv)[2] & phe %in% phev & sites %in% sitev) %>%
+    group_by(sites, subpop, phe, CHR, POS_bin) %>%
+    tally() %>%
+    group_by(CHR, POS_bin) %>%
+    summarise(count = n()) 
+
+phyper(nrow(AandB), nrow(inB), notinB, nrow(inA), lower.tail = FALSE)
+```
+
+Eight & Texas:
+In Gulf
+dyln_fl50  22/274
+FL50
+cgdd_12c_gr2fl 0/2
+
+## Hypergeometric test for significance of overlaps
+phyper(10, 50, 200 - 50, 25, lower.tail = FALSE)
+phyper(A&B, inB, notinB, inA, lower.tail = FALSE)
+```{r}
+A <- "north_sites"
+B <- "tx_sites"
+phev <- "cgdd_12c_gr2fl"
+popv <- list(Gulf = 53025, Midwest = 52797, Gulf_and_Midwest = 53086)
+i=2
+
+AandB <- gwas_fdr %>%
+  filter(subpop %in% names(popv)[i] & phe %in% phev & sites %in% c(A,B)) %>%
+    group_by(sites, subpop, phe, CHR, POS_bin) %>%
+    tally() %>%
+    group_by(CHR, POS_bin) %>%
+    summarise(count = n()) %>%
+    filter(count > 1)
+inB <- gwas_fdr %>%
+  filter(subpop %in% names(popv)[i] & phe %in% phev & sites %in% c(B)) %>%
+    group_by(sites, subpop, phe, CHR, POS_bin) %>%
+    tally() %>%
+    group_by(CHR, POS_bin) %>%
+    summarise(count = n()) 
+notinB <- popv[[i]] - nrow(inB)
+inA <- gwas_fdr %>%
+  filter(subpop %in% names(popv)[i] & phe %in% phev & sites %in% c(A)) %>%
+    group_by(sites, subpop, phe, CHR, POS_bin) %>%
+    tally() %>%
+    group_by(CHR, POS_bin) %>%
+    summarise(count = n()) 
+
+phyper(nrow(AandB), nrow(inB), notinB, nrow(inA), lower.tail = FALSE)
+8/232
+```
+tx & north dyln Gulf 0.0078 (8 overlaps)
+eight & north cgdd Gulf 1.13e-06
+eight & north dyln Gulf 5.36e-31 (25 overlaps)
+eight & tx dyln Gulf 2.2e-38 (22 overlaps)
+
+eight & north dyln Midwest 4.42e-242
+Very few overlaps between site sets for the Midwest subpopulation.
+Lots of overlaps & sig for Gulf_and_Midwest, if we trust this.
 
 # Manhattan with overlapping top hits (G_BLUP)
 
@@ -501,14 +621,33 @@ log10p_plot %>%
 Do the QTL overlap any of the genes in ftanno?
 ```{r}
 ft_annos %>%
-  filter(seqid %in% qtldf$CHR[1] & between(Pos_Mb, qtldf$Pos_Mb_lo[1], qtldf$Pos_Mb_hi[1]))
+  filter(seqid %in% gtldf3$CHR[1] & between(Pos_Mb, gtldf3$Pos_Mb_lo[1], gtldf3$Pos_Mb_hi[1]))
 
-qtldf
-i=24
+gtldf3 <- qtldf %>% filter(lod > 30 & lodcolumn == "dyln_fl50")
+i=4
 ft_annos %>%
-  filter(seqid %in% qtldf$CHR[i] & between(Pos_Mb, qtldf$Pos_Mb_lo[i], qtldf$Pos_Mb_hi[i])) %>%
-  select(OsGene, AtGene, everything())
+  filter(seqid %in% gtldf3$CHR[i] & between(Pos_Mb, gtldf3$Pos_Mb_lo[i], gtldf3$Pos_Mb_hi[i])) %>%
+  select(OsGene, AtGene, everything()) %>%
+  left_join(osgene_ft_key, by = c("OsGene" = "Symbol"))
 ```
+## start here QTL candidate genes
+Chr02N	57.23	58.81	   SIP1|OsSUF4	SUF4
+SIP1 participates in regulation of flowering time in rice by recruiting OsTrx1 to Ehd1.
+
+Chr04K	4.23	5.50     6 genes including Hd3a	FT
+	Hd3a, a rice ortholog of the Arabidopsis FT gene, promotes transition to flowering downstream of Hd1 under short-day conditions
+	Phytochrome dependent quantitative control of Hd3a transcription is the basis of the night break effect in rice flowering
+	Variations in Hd1 proteins, Hd3a promoters, and Ehd1 expression levels contribute to diversity of flowering time in cultivated rice
+	
+Chr04K	9.92	13.93    3 genes including Hd3a	FT ( a different copy)
+Hd3a, a rice ortholog of the Arabidopsis FT gene, promotes transition to flowering downstream of Hd1 under short-day conditions
+	Phytochrome dependent quantitative control of Hd3a transcription is the basis of the night break effect in rice flowering
+	OsMFT1 increases spikelets per panicle and delays heading date in rice by suppressing Ehd1, FZP and SEPALLATA-like genes.
+
+Chr05N	2.04	3.44     5 genes including FT and OsFTL1	FT &&&&& OSMADS3:
+Genetic Enhancer Analysis Reveals that FLORAL ORGAN NUMBER2 and OsMADS3 Cooperatively Regulate Maintenance and Determinacy of the Flower Meristem in Rice.
+
+Chr05N	64.27	65.98	  3 genes including OsFTL10 and OsABF1|OsABI5|OREB1|OsbZIP10: 	A Drought-inducible bZIP Transcription Factor OsABF1 Delays Reproductive Timing in Rice.
 
 Yes. Lots. Very encouraging.
 
