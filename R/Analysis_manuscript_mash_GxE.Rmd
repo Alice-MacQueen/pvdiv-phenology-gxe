@@ -1,0 +1,162 @@
+---
+title: "Analysis_manuscript_mash_GxE"
+author: "Alice MacQueen"
+date: "10/8/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
+library(bigsnpr)
+#library(mashr)
+#install_github("alice-macqueen/switchgrassGWAS")
+library(switchgrassGWAS)
+```
+
+THEN, for the next section, do GWAS on the BLUPs from the eight single site models. For these traits:
+all single sites...
+FL50 (actually, maybe not)
+dyln_fl50
+cgdd_12c_gr2fl
+crain_gr2fl
+crain_1d
+--
+GR50 (or maybe not)
+cgdd_12c_10d
+
+Then do mash runs. First for single traits across all eight sites, to make U_hyp for the next step - take the U_ed with large percentage variance explained. Make U_hyp with those covariances but no covariance with anything else... 
+Then run all the flowering-related traits together. Talk about how then SNPs can have effects that are strongest in response to one type of environmental cue. And how cues can be present or absent at different sites. And how this kind of analysis can help reveal all the patterns at play, because it doesn't make assumptions about how effects are structured.
+
+Maybe bring back the QTL maps after this and talk about how patterns of effects differ across sites in these models, too. Though the Genstat model is less sensitive...
+
+# Genotype-by-environment effects of flowering as functions of environmental cues
+
+While the presence of different associations at the Texas and North gardens demonstrated GxE in flowering at a continental scale, our analysis of G and GxE within each of our eight common gardens also suggested the presence of GxE for rainfall, GDD, and photoperiod cues for flowering, for which variation was more visible outside of each subpopulations’ native range. We evaluated GxE in flowering as a function of five environmental cues: as a function of daylength at flowering (‘flowering daylength’), as a function of daylength change from the previous day on the day of flowering (‘flowering daylength change’) as a function of cumulative GDD between greenup and flowering (‘flowering GDD’), as a function of rainfall on the day of flowering (‘flowering rainfall’), and as a function of rainfall between greenup and flowering (‘cumulative rainfall’). We conducted univariate GWAS at each common garden for these flowering functions, then analyzed the allelic effects of unlinked SNPs across common garden sites for the top XK SNPs using mash. When the same SNP set is used in multiple univariate GWAS, a subsequent mash analysis shares information on patterns of effect size and direction for SNPs across these GWAS, improving the power to detect significant, shared results.
+
+## Make phenotype df for GWAS
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "heritability", "kinship_subpop")
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", MI = "MI", SD = "SD", eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_eight <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl")
+phe_txano <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d", "GR50", "cgdd_12c_10d")
+phe_single <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d", "GR50", "cgdd_12c_10d")
+phe_lists <- list(TX1 = phe_single, TX2 = phe_single, TX3 = phe_single, OK = phe_single, MO = phe_single,
+               NE = phe_single, MI = phe_single, SD = phe_single, eight_sites = phe_eight, tx_sites = phe_txano, north_sites = phe_txano)
+
+i = 9
+j = 1
+k = 1
+phe_gwas <- tibble()
+
+for(j in seq_along(subpop_v)){
+    for(i in seq_along(site_v)){
+      phe_v <- phe_lists[[i]]
+      for(k in seq_along(phe_v)){
+        phe_raw <- read_csv(file.path(outputdir, names(site_v)[i],
+                                      paste0("blups_", names(site_v)[i], "_",
+                                             names(subpop_v)[j], "_", phe_v[k],
+                                             ".csv")))
+        names(phe_raw)[2] <- paste0(phe_v[k], "_", names(site_v)[i])
+        phe_proc <- phe_raw %>%
+          separate(Effect, into = c("factor", "PLANT_ID"), sep = "\\)_") %>%
+          filter(!is.na(PLANT_ID) & !grepl("^SITE", factor)) %>%
+          left_join(metadata, by = "PLANT_ID") %>%
+          filter(SUBPOP %in% subpop_v[[j]]) %>%
+          select(PLANT_ID, 3)
+        if(i == 1 & k == 1){
+          phe_gwas <- phe_proc
+        } else {
+          phe_gwas <- phe_gwas %>%
+            left_join(phe_proc, by = "PLANT_ID")
+        }
+      }
+    }
+  phe_gwas <- phe_gwas %>%
+  select(PLANT_ID, ends_with("eight_sites"), ends_with("tx_sites"), ends_with("north_sites"), everything())
+  write_csv(phe_gwas, path = file.path(workingdir, "analysis", "gwas", "BLUPs",
+                                       paste0("BLUP_phenotypes_",
+                                              "for_gwas_GR_FL_",
+                                              names(subpop_v)[j],
+                                              ".csv")))
+}
+```
+
+## Run GWAS 
+In Plots_manuscript_v0.3.Rmd
+
+## Run mash
+Then do mash runs. First for single traits across all eight sites, to make U_hyp for the next step - take the U_ed with large percentage variance explained. Make U_hyp with those covariances but no covariance with anything else... 
+Then run all the flowering-related traits together. Talk about how then SNPs can have effects that are strongest in response to one type of environmental cue. And how cues can be present or absent at different sites. And how this kind of analysis can help reveal all the patterns at play, because it doesn't make assumptions about how effects are structured.
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", MI = "MI", SD = "SD")#, eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf_and_Midwest = "363g_12.1M", Midwest = "134g_8.8M", Gulf = "229g_10.3M")
+phe_single <- c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d", "GR50", "cgdd_12c_10d")
+inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
+                                   "inputkinship.txt"),  delim = " ", 
+                                   col_names = "SNPfiles")
+```
+
+single traits across all eight sites...
+```{r}
+i=1 # site
+j=1 # phe
+k=3 # subpop: G&M, M, Gulf
+for(j in seq_along(phe_single)){
+  for(k in c(1,3)){
+phe_suffix <- paste(phe_single[j], subpop_v[k], 
+                    sep = "*.*")
+snp <- snp_attach(inputfiles$SNPfiles[k])
+gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix))
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir), 
+                           snp = snp, gwas_rds = gwas_rds, 
+                           phenotypes = phenotypes, numSNPs = 1000, 
+                           clump = TRUE, scaled = TRUE, saveoutput = TRUE,
+                           suffix = paste0("single_phe_", names(subpop_v)[k], 
+                                           "_", phe_single[j]))
+
+m_out <- mash_standard_run(path = outputdir, numSNPs = 1000, 
+                           suffix = paste0("single_phe_", names(subpop_v)[k], 
+                                           "_", phe_single[j]),
+                           saveoutput = TRUE)
+  }
+}
+```
+Some of the Midwest traits don't work well. Haven't run that subpop yet. 
+
+Looking at the results for the other subsets first before I go back and fix the Midwest.
+
+# View single trait mash outputs
+```{r}
+i=1 # site
+j=1 # phe
+k=1 # subpop: G&M, M, Gulf
+suffix <- paste0("single_phe_", names(subpop_v)[k], "_", phe_single[j])
+
+m_out <- readRDS(file.path(outputdir, paste0("Strong_Effects1000SNPs_", 
+                                                     suffix, ".rds")))
+switchgrassGWAS::get_U_by_mass(m_out)
+switchgrassGWAS::mash_plot_covar(m_out)
+switchgrassGWAS::mash_plot_Ulist(m_out, range = get_U_by_mass(m_out))
+mash_plot_sig_by_condition(m_out)
+mash_plot_manhattan_by_condition(m_out)
+mash_plot_pairwise_sharing(m_out, reorder = FALSE)
+
+```
+
+Keep covariance matrices with point mass > 0.05 and add them to U_hyp

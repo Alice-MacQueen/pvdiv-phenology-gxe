@@ -1153,7 +1153,7 @@ All I really want to show are that there are stronger G associations for the wea
 That might be too complicated. Eh.
 
 It's possible I might want to confirm some of these G candidates with the fourway - how we see similar patterns in this cross for FL50 vs dyln/GDD, and there are some similar associations.
-
+# ---- moved to new doc: Analysis_manuscript_mash_GxE.Rmd ----
 THEN, for the next section, do GWAS on the BLUPs from the eight single site models. For these traits:
 all single sites...
 FL50 (actually, maybe not)
@@ -1169,6 +1169,8 @@ Then do mash runs. First for single traits across all eight sites, to make U_hyp
 Then run all the flowering-related traits together. Talk about how then SNPs can have effects that are strongest in response to one type of environmental cue. And how cues can be present or absent at different sites. And how this kind of analysis can help reveal all the patterns at play, because it doesn't make assumptions about how effects are structured.
 
 Maybe bring back the QTL maps after this and talk about how patterns of effects differ across sites in these models, too. Though the Genstat model is less sensitive...
+
+
 
 ```{r}
 h2all %>%
