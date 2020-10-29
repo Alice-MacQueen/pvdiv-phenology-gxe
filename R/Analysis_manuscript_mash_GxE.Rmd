@@ -144,7 +144,7 @@ Looking at the results for the other subsets first before I go back and fix the 
 # View single trait mash outputs
 ```{r}
 i=1 # site
-j=1 # phe
+j=7 # phe
 k=1 # subpop: G&M, M, Gulf
 suffix <- paste0("single_phe_", names(subpop_v)[k], "_", phe_single[j])
 
@@ -159,4 +159,112 @@ mash_plot_pairwise_sharing(m_out, reorder = FALSE)
 
 ```
 
-Keep covariance matrices with point mass > 0.05 and add them to U_hyp
+Keep covariance matrices with point mass > 0.05 and add them to U_hyp.
+Add them as single effects (the remaining phe are 0)
+And add them as combinations if possible.
+
+Need to figure out what order the traits are in, after I set up Shat and Bhat matrices for mash. Maybe do this for GR50 first. Only two phenotypes instead of five.
+
+1. Make mash inputs for five & two phenotypes for eight sites. Standardize phenotypes and clump SNPs.
+2. Find trait order.  The trait order is the same order as the 'phenotypes' vector.
+3. Make U_hyp in trait order.
+4. Run mash with U_hyp.
+
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", MI = "MI", SD = "SD")#, eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf_and_Midwest = "363g_12.1M", Midwest = "134g_8.8M", Gulf = "229g_10.3M")
+phe_mult <- list(flowering_5 = c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d"), greenup_2 = c("GR50", "cgdd_12c_10d"))
+inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
+                                   "inputkinship.txt"),  delim = " ", 
+                                   col_names = "SNPfiles")
+```
+
+```{r}
+j=2
+k=3
+for(j in seq_along(phe_mult)){
+  for(k in c(1,3)){
+phe_suffix <- paste(phe_mult[[j]], subpop_v[k], 
+                    sep = "*.*")
+snp <- snp_attach(inputfiles$SNPfiles[k])
+gwas_rds <- c()
+for(i in seq_along(phe_suffix)){
+gwas_rds1 <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix[i]))
+gwas_rds <- c(gwas_rds, gwas_rds1)
+}
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+
+phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir), 
+                           snp = snp, gwas_rds = gwas_rds, 
+                           phenotypes = phenotypes, numSNPs = numSNPs, 
+                           clump = TRUE, scaled = TRUE, saveoutput = TRUE,
+                           suffix = paste0("single_phe_", names(subpop_v)[k], 
+                                           "_", names(phe_mult)[j]))
+  }
+}
+```
+
+# Now make U_hyp in trait order. Try programmatically.
+```{r}
+library(rlist)
+v <- matrix(data = 0, nrow=length(phenotypes), ncol=length(phenotypes))
+v <- matrix(data = 0, nrow=16, ncol=16)
+
+i=2 # site
+j=2 # phe
+k=1 # subpop: G&M, M, Gulf
+suffix <- paste0("single_phe_", names(subpop_v)[k], "_", phe_mult[[j]][i])
+
+m_single <- readRDS(file.path(outputdir, paste0("Strong_Effects1000SNPs_", 
+                                                     suffix, ".rds")))
+
+U_single <- m_single$fitted_g$Ulist[get_U_by_mass(m_single)]
+names(m_single$fitted_g$Ulist)
+U_s <- U_single[!names(U_single) %in% c("equal_effects", "identity", "simple_het_1", "simple_het_2", "simple_het_3")]
+
+U_hyp <- list()
+  
+  for(q in seq_along(names(U_s))){
+    s_length <- dim(U_s[[1]])[1]
+    hyp1 <- v
+    hyp1[c((i*s_length-s_length+1):(i*s_length)),c((i*s_length-s_length+1):(i*s_length))] <- U_s[[q]]
+    U_hyp <- list.append(U_hyp, hyp1)
+  }
+q=1
+j=1
+U_single_list <- list()
+for(j in seq_along(phe_mult)){
+  suffix <- paste0("single_phe_", names(subpop_v)[k], "_", phe_mult[[j]][i])
+  m_single <- readRDS(file.path(outputdir, paste0("Strong_Effects1000SNPs_", 
+                                                  suffix, ".rds")))
+  U_single1 <- m_single$fitted_g$Ulist[get_U_by_mass(m_single)]
+  U_single_list <- list.append(U_single_list, U_single1)
+}
+
+for(n in )
+
+gwas_rds1 <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix[i]))
+phenotypes_1 <- str_sub(gwas_rds1, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+```
+
+
+```{r}
+m_out <- mash_standard_run(path = outputdir, numSNPs = numSNPs, 
+                           suffix = paste0(names(subpop_v)[k], 
+                                           "_", names(phe_mult)[j]),
+                           saveoutput = TRUE)
+```
+
+The trait order is the same order as the 'phenotypes' vector.

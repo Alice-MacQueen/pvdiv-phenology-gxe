@@ -1,0 +1,123 @@
+---
+title: "Manuscript_v0.5_genetic_covariances"
+author: "Alice MacQueen"
+date: "10/28/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(asreml)
+library(cowplot)
+library(switchgrassGWAS)
+```
+
+# Load data & prep multivariate model data frames.
+Add any data that needs to be loaded for these analyses here.
+```{r}
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "heritability")
+metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
+sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
+subpops <- read_rds(file.path(workingdir, "data", "subpop_color_coding.rds"))
+phe_gr_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_GR50.rds"))
+phe_fl_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_FL50.rds"))
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+
+fl50_cov_df <- phe_fl_df %>%
+  ungroup() %>%
+  left_join(select(sites, SITE, manu_site)) %>%
+  select(PLANT_ID, SUBPOP, manu_site, FL50) %>%
+  group_by(PLANT_ID, SUBPOP, manu_site) %>%
+  mutate(IND = row_number()) %>%
+  pivot_wider(names_from = manu_site, values_from = "FL50") %>%
+  mutate(PLANT_ID = as.factor(PLANT_ID),
+         IND = as.factor(IND)) %>%
+  select(-IL) %>%
+  select(PLANT_ID:TX2, TX3, OK, MO, NE, MI, SD)
+gr50_cov_df <- phe_fl_df %>%
+  ungroup() %>%
+  left_join(select(sites, SITE, manu_site)) %>%
+  select(PLANT_ID, SUBPOP, manu_site, GR50) %>%
+  group_by(PLANT_ID, SUBPOP, manu_site) %>%
+  mutate(IND = row_number()) %>%
+  pivot_wider(names_from = manu_site, values_from = "GR50") %>%
+  mutate(PLANT_ID = as.factor(PLANT_ID),
+         IND = as.factor(IND)) %>%
+  select(-IL) %>%
+  select(PLANT_ID:TX2, TX3, OK, MO, NE, MI, SD)
+```
+
+# In this document:
+For both GR50 and FL50, in Gulf, Midwest, and G&M subpops:
+fit 7 (or more) bivariate models; compare h^2 estimates between them for A-H.
+Fit trivariate models?
+Try to fit 8-way model? Run these models on the server so my laptop isn't overloaded.
+
+
+## bivariate analyses
+```{r}
+asr_1 <- asreml(cbind(PKLE, KBSM) ~ trait,
+                random = ~us(trait, init = c(1,0.1,1)):vm(PLANT_ID, k_full), #+
+                  #us(trait, init = c(1, 0.1, 1)):SUBPOP,
+                residual = ~units:us(trait, init = c(0.1, 0.1, 0.1)), 
+                #na.method(y = "omit", x = "omit"),
+                data = fl50_cor_df, 
+                workspace = "3gb")
+asr_1 <- update.asreml(asr_1)
+summary(asr_1)$varcomp
+
+vpredict(asr_1, h2_PKLE ~ V1/(V1+V5))
+vpredict(asr_1, h2_KBSM ~ V3/(V3+V7))
+vpredict(asr_1, r_G ~ V2/((V1*V3)^0.5))
+vpredict(asr_1, r_R ~ V6/((V5*V7)^0.5))
+
+
+# now try adding a factor to split trait by subpopulation. 
+# Nope. I don't think this is a good idea with the kinship matrix there too.
+# Maybe try this later if I ever try and partition variance by individuals. Could do for subpops and for individuals/genotypes, also.
+asr_2 <- asreml(cbind(PKLE, KBSM) ~ trait,
+                random = ~us(trait, init = c(1,0.1,1)):vm(PLANT_ID, k_full) +
+                  us(trait, init = c(1, 0.1, 1)):SUBPOP,
+                residual = ~units:us(trait, init = c(0.1, 0.1, 0.1)), 
+                #na.method(y = "omit", x = "omit"),
+                data = fl50_cor_df, 
+                workspace = "3gb")
+asr_2 <- update.asreml(asr_2)
+summary(asr_2)$varcomp
+vpredict(asr_2, h2_PKLE ~ V4/(V1+V4+V8))
+vpredict(asr_2, h2_KBSM ~ V3/(V3+V6+V10))
+vpredict(asr_2, r_S ~ V2/((V1*V3)^0.5))
+vpredict(asr_2, r_G ~ V5/((V4*V6)^0.5))
+
+# below works way better (with fewer warnings) when initial values are given. Order for init argument is specified below this code box.
+asr_3 <- asreml(cbind(PKLE, KBSM, CLMB) ~ trait,
+                random = ~us(trait, init = c(1,0.1, 1, 0.1, 0.1, 1)):vm(PLANT_ID, k_full), 
+                residual = ~units:us(trait, init = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1)), 
+                na.action = na.method(x = "omit"),
+                data = fl50_cor_df, 
+                workspace = "3gb")
+asr_3 <- update.asreml(asr_3)
+summary(asr_3)$varcomp
+
+vpredict(asr_3, h2_PKLE ~ V1/(V1+V8)) # 93.80
+vpredict(asr_3, h2_KBSM ~ V3/(V3+V10)) # 90.19
+vpredict(asr_3, h2_CLMB ~ V6/(V6+V13)) # 70.58
+vpredict(asr_3, r_PK ~ V2/((V1*V3)^0.5)) # 41.23
+vpredict(asr_3, r_KC ~ V5/((V3*V6)^0.5)) # 76.57
+vpredict(asr_3, r_CP ~ V4/((V1*V6)^0.5)) # 52.84
+?na.method()
+```
+order for init: AA, BA, BB, CA, CB, CC
+AA BA BB CA CB CC DA DB DC DD EA EB EC ED EE FA FB FC FD FE FF (6int) GG (7int) HH
+
+
+2 garden model: h2_PKLE	0.9328744	0.009197664	
+h2_KBSM	0.9151788	0.01180919	
+r_G	0.4239493	0.04072152	
+r_R	0.9709351	0.006573728	
+
