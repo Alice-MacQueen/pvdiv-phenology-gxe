@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(cowplot)
 library(bigsnpr)
+library(rlist)
 #library(mashr)
 #install_github("alice-macqueen/switchgrassGWAS")
 library(switchgrassGWAS)
@@ -163,13 +164,12 @@ Keep covariance matrices with point mass > 0.05 and add them to U_hyp.
 Add them as single effects (the remaining phe are 0)
 And add them as combinations if possible.
 
-Need to figure out what order the traits are in, after I set up Shat and Bhat matrices for mash. Maybe do this for GR50 first. Only two phenotypes instead of five.
 
 1. Make mash inputs for five & two phenotypes for eight sites. Standardize phenotypes and clump SNPs.
 2. Find trait order.  The trait order is the same order as the 'phenotypes' vector.
 3. Make U_hyp in trait order.
 4. Run mash with U_hyp.
-
+# ------- load for m_single to full mash part --
 ```{r}
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
@@ -182,7 +182,7 @@ inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
                                    "inputkinship.txt"),  delim = " ", 
                                    col_names = "SNPfiles")
 ```
-
+# make mashr inputs for 2 greenup and 5 flowering phenotypes via bigsnp2mashr
 ```{r}
 j=2
 k=3
@@ -207,21 +207,20 @@ out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir),
                            snp = snp, gwas_rds = gwas_rds, 
                            phenotypes = phenotypes, numSNPs = numSNPs, 
                            clump = TRUE, scaled = TRUE, saveoutput = TRUE,
-                           suffix = paste0("single_phe_", names(subpop_v)[k], 
-                                           "_", names(phe_mult)[j]))
+                           suffix = paste0(names(phe_mult)[j], "_phe_",
+                                           names(subpop_v)[k], "_subpop"))
   }
 }
 ```
 
-# Now make U_hyp in trait order. Try programmatically.
+# Now make U_hyp in trait order. Try programmatically. Tests here
 ```{r}
-library(rlist)
-v <- matrix(data = 0, nrow=length(phenotypes), ncol=length(phenotypes))
 v <- matrix(data = 0, nrow=16, ncol=16)
 
 i=2 # site
-j=2 # phe
+j=1 # phe
 k=1 # subpop: G&M, M, Gulf
+# test generate U_ed with point mass > 0.05 from one m_single run.
 suffix <- paste0("single_phe_", names(subpop_v)[k], "_", phe_mult[[j]][i])
 
 m_single <- readRDS(file.path(outputdir, paste0("Strong_Effects1000SNPs_", 
@@ -231,40 +230,152 @@ U_single <- m_single$fitted_g$Ulist[get_U_by_mass(m_single)]
 names(m_single$fitted_g$Ulist)
 U_s <- U_single[!names(U_single) %in% c("equal_effects", "identity", "simple_het_1", "simple_het_2", "simple_het_3")]
 
+q=1
 U_hyp <- list()
-  
-  for(q in seq_along(names(U_s))){
+
+# test generate U_hyp for multiple phenotypes from one m_single run.
+for(q in seq_along(names(U_s))){
     s_length <- dim(U_s[[1]])[1]
     hyp1 <- v
-    hyp1[c((i*s_length-s_length+1):(i*s_length)),c((i*s_length-s_length+1):(i*s_length))] <- U_s[[q]]
+    hyp1[c((i*s_length-s_length+1):(i*s_length)),
+         c((i*s_length-s_length+1):(i*s_length))] <- U_s[[q]]
     U_hyp <- list.append(U_hyp, hyp1)
-  }
-q=1
-j=1
-U_single_list <- list()
-for(j in seq_along(phe_mult)){
-  suffix <- paste0("single_phe_", names(subpop_v)[k], "_", phe_mult[[j]][i])
-  m_single <- readRDS(file.path(outputdir, paste0("Strong_Effects1000SNPs_", 
-                                                  suffix, ".rds")))
-  U_single1 <- m_single$fitted_g$Ulist[get_U_by_mass(m_single)]
-  U_single_list <- list.append(U_single_list, U_single1)
 }
+```
 
-for(n in )
-
-gwas_rds1 <- pvdiv_results_in_folder(path = file.path(outputdir), 
-                                      pattern = paste0("GWAS_datatable*.*",
-                                                       phe_suffix[i]))
-phenotypes_1 <- str_sub(gwas_rds1, start = 16, end = -42) %>%
-    str_replace(., "_$", "")
+# -------------------------
+# Create U_hyp programmatically
+```{r}
+library(tidyverse)
+library(cowplot)
+library(bigsnpr)
+library(rlist)
+library(switchgrassGWAS)
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
+site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
+               NE = "NE", MI = "MI", SD = "SD")#, eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf_and_Midwest = "363g_12.1M", Midwest = "134g_8.8M", Gulf = "229g_10.3M")
+phe_mult <- list(flowering_5 = c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
+               "crain_1d"), greenup_2 = c("GR50", "cgdd_12c_10d"))
 ```
 
 
 ```{r}
+j=1 # phe_mult: 1 is fl
+i=1
+k=1 # subpop 1 = Gulf   3 = G&M
+
+
+
+U_single_list <- list()
+# Make a list (from each phenotype) of lists of U_ed with point mass > 0.05.
+for(i in seq_along(phe_mult[[j]])){
+  suffix <- paste0("single_phe_", names(subpop_v)[k], "_", phe_mult[[j]][i])
+  m_single <- readRDS(file.path(outputdir, paste0("Strong_Effects1000SNPs_", 
+                                                  suffix, ".rds")))
+  U_single1 <- m_single$fitted_g$Ulist[get_U_by_mass(m_single)]
+  U_s1 <- U_single1[!names(U_single1) %in% c("equal_effects", "identity", "simple_het_1", "simple_het_2", "simple_het_3")]
+  U_single_list <- list.append(U_single_list, U_s1)
+}
+
+# Using U_single_list, generate U_hyp for multiple phenotypes.
+
+## part 1: determine size of matrix that U_ed will need to be
+s_total <- 0
+
+for(i in seq_along(U_single_list)){
+    s_length <- dim(as.data.frame(U_single_list[[i]][1]))[1]
+    s_total <- s_total+s_length 
+  }
+
+## part 2: Define null U_ed matrix
+v <- matrix(data = 0, nrow=s_total, ncol=s_total) 
+U_hyp <- list()
+for(i in seq_along(U_single_list)){
+  for(q in seq_along(names(U_single_list[[i]]))){
+    s_length <- dim(as.data.frame(U_single_list[[i]][q]))[1]
+    U_s1 <- matrix(unlist(U_single_list[[i]][q]), nrow = s_length, ncol = s_length)
+    hyp1 <- v
+    hyp1[c((i*s_length-s_length+1):(i*s_length)),c((i*s_length-s_length+1):(i*s_length))] <- U_s1
+    U_hyp <- list.append(U_hyp, hyp1)
+  }
+}
+
+# part 3: determine U_ed with the same names
+all_names <- c()
+for(i in seq_along(U_single_list)){
+  all_names <- c(all_names, names(U_single_list[[i]]))
+}
+U_hyp_comb_df <- enframe(all_names) %>% group_by(value) %>% tally() %>% filter(n > 1)  # these U_ed names have two or more phenotypes with point mass > 0.05.
+
+n=1
+U_hyp_comb <- list()
+for(n in seq_along(U_hyp_comb_df$value)){
+  name_U <- U_hyp_comb_df$value[n]
+  for(i in seq_along(U_single_list)){
+    for(q in seq_along(names(U_single_list[[i]]))){
+      if(i == 1 & q == 1){
+        s_length <- dim(as.data.frame(U_single_list[[i]][q]))[1]
+        hyp1 <- v
+      }
+      if(name_U == names(U_single_list[[i]])[q]){
+        U_s1 <- matrix(unlist(U_single_list[[i]][q]), nrow = s_length, 
+                       ncol = s_length)
+        hyp1[c((i*s_length-s_length+1):(i*s_length)),c((i*s_length-s_length+1):(i*s_length))] <- U_s1
+      }
+    }
+  }
+  
+  U_hyp_comb <- list.append(U_hyp_comb, hyp1)
+}
+# part 4: Combine U_single into a combined U_hyp if the names of the U_ed match. 
+# Probably there are better ways to do this but this is the best I can think of, apart from doing every last possible combination. That will also suck because I don't have any way to generate covariances between phenotypes. So, eh. Most likely none of these will get used.
+ 
+View(U_hyp_comb[[2]])
+U_hyp <- c(U_hyp, U_hyp_comb)
+```
+So between the 'single phenotype' U_hyp and the combined U_hyp, that will give me 16 U_hyp for the five flowering phenotypes, and 8 U_hyp for the greenup phenotypes.
+
+Got it! Now need to either save these U_hyp, or just use them in mash after I generate the relevant list.
+
+# Run mash on multiple phenotypes using these U_hyp
+
+j = 2; k = 1: greenup, Gulf
+
+
+```{r}
+j=2 # phe_mult 1 = flowering 2 = greenup
+k=3 # subpop 1 = Gulf   3 = G&M
+
+phe_suffix <- paste(phe_mult[[j]], subpop_v[k], 
+                    sep = "*.*")
+gwas_rds <- c()
+for(i in seq_along(phe_suffix)){
+gwas_rds1 <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix[i]))
+gwas_rds <- c(gwas_rds, gwas_rds1)
+}
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+
+phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+
 m_out <- mash_standard_run(path = outputdir, numSNPs = numSNPs, 
-                           suffix = paste0(names(subpop_v)[k], 
-                                           "_", names(phe_mult)[j]),
+                           U_hyp = U_hyp,
+                           suffix = paste0(names(phe_mult)[j], "_phe_",
+                                           names(subpop_v)[k], "_subpop"),
                            saveoutput = TRUE)
 ```
 
-The trait order is the same order as the 'phenotypes' vector.
+Another option, I suppose, is just running mash on multiple phenotypes for a very small subset of strong SNPs... just a thought. Would give covar between phenotypes, too, when now I just have covar within phenotypes. Really this is just using a much smaller subset of strong SNPs to define U_ed than I have been doing.
+
+For whatever reason (unknown as of 2020-11-02), finding the data-driven covariance matrices has taken more than a whole weekend for flowering phenotypes (5) in the Gulf subpop. I fear errors/the worst but will let it run a while longer to see. In case it's the number of conditions, I tried to run a separate mash on greenup phenotypes (2) in the Gulf subpop. We'll see if that completes faster. 
+
+```{r}
+(18+17+16+15+14+13+12+11+10+9+8+7+6+5+4+3+2+1)*3
+10/513
+```
+

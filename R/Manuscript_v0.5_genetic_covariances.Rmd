@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(asreml)
+#library(asreml)
 library(cowplot)
 library(switchgrassGWAS)
 ```
@@ -60,19 +60,21 @@ Try to fit 8-way model? Run these models on the server so my laptop isn't overlo
 
 
 ## bivariate analyses
+
+asr_1: test bivariate analysis.
 ```{r}
-asr_1 <- asreml(cbind(PKLE, KBSM) ~ trait,
+asr_1 <- asreml(cbind(TX2, MI) ~ trait,
                 random = ~us(trait, init = c(1,0.1,1)):vm(PLANT_ID, k_full), #+
                   #us(trait, init = c(1, 0.1, 1)):SUBPOP,
                 residual = ~units:us(trait, init = c(0.1, 0.1, 0.1)), 
                 #na.method(y = "omit", x = "omit"),
-                data = fl50_cor_df, 
+                data = fl50_cov_df, 
                 workspace = "3gb")
 asr_1 <- update.asreml(asr_1)
 summary(asr_1)$varcomp
 
-vpredict(asr_1, h2_PKLE ~ V1/(V1+V5))
-vpredict(asr_1, h2_KBSM ~ V3/(V3+V7))
+vpredict(asr_1, h2_TX2 ~ V1/(V1+V5))
+vpredict(asr_1, h2_MO ~ V3/(V3+V7))
 vpredict(asr_1, r_G ~ V2/((V1*V3)^0.5))
 vpredict(asr_1, r_R ~ V6/((V5*V7)^0.5))
 
@@ -85,32 +87,54 @@ asr_2 <- asreml(cbind(PKLE, KBSM) ~ trait,
                   us(trait, init = c(1, 0.1, 1)):SUBPOP,
                 residual = ~units:us(trait, init = c(0.1, 0.1, 0.1)), 
                 #na.method(y = "omit", x = "omit"),
-                data = fl50_cor_df, 
+                data = fl50_cov_df, 
                 workspace = "3gb")
 asr_2 <- update.asreml(asr_2)
 summary(asr_2)$varcomp
-vpredict(asr_2, h2_PKLE ~ V4/(V1+V4+V8))
-vpredict(asr_2, h2_KBSM ~ V3/(V3+V6+V10))
+vpredict(asr_2, h2_TX2 ~ V4/(V1+V4+V8))
+vpredict(asr_2, h2_MI ~ V3/(V3+V6+V10))
 vpredict(asr_2, r_S ~ V2/((V1*V3)^0.5))
 vpredict(asr_2, r_G ~ V5/((V4*V6)^0.5))
+```
 
+asr_3: trivariate analysis.  specifying initial values for variances and covariances.
+```{r}
 # below works way better (with fewer warnings) when initial values are given. Order for init argument is specified below this code box.
-asr_3 <- asreml(cbind(PKLE, KBSM, CLMB) ~ trait,
+asr_3 <- asreml(cbind(TX2, MI, MO) ~ trait,
                 random = ~us(trait, init = c(1,0.1, 1, 0.1, 0.1, 1)):vm(PLANT_ID, k_full), 
                 residual = ~units:us(trait, init = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1)), 
                 na.action = na.method(x = "omit"),
-                data = fl50_cor_df, 
-                workspace = "3gb")
+                data = fl50_cov_df, 
+                workspace = "3gb", maxiter = 30)
 asr_3 <- update.asreml(asr_3)
 summary(asr_3)$varcomp
 
-vpredict(asr_3, h2_PKLE ~ V1/(V1+V8)) # 93.80
-vpredict(asr_3, h2_KBSM ~ V3/(V3+V10)) # 90.19
-vpredict(asr_3, h2_CLMB ~ V6/(V6+V13)) # 70.58
-vpredict(asr_3, r_PK ~ V2/((V1*V3)^0.5)) # 41.23
-vpredict(asr_3, r_KC ~ V5/((V3*V6)^0.5)) # 76.57
-vpredict(asr_3, r_CP ~ V4/((V1*V6)^0.5)) # 52.84
+vpredict(asr_3, h2_TX2 ~ V1/(V1+V8)) # 93.80
+vpredict(asr_3, h2_MI ~ V3/(V3+V10)) # 90.19
+vpredict(asr_3, h2_MO ~ V6/(V6+V13)) # 70.58
+vpredict(asr_3, r_TX2MI ~ V2/((V1*V3)^0.5)) # 41.23
+vpredict(asr_3, r_MIMO ~ V5/((V3*V6)^0.5)) # 76.57
+vpredict(asr_3, r_TX2MO ~ V4/((V1*V6)^0.5)) # 52.84
 ?na.method()
+
+asr_4 <- asreml(cbind(TX1, TX2, TX3, OK) ~ trait,
+                random = ~us(trait, init = c(1, 0.1, 1, 0.1, 0.1, 1, 0.1, 0.1, 
+                                             0.1, 1)):vm(PLANT_ID, k_full), 
+                residual = ~units:us(trait, init = c(0.1, 0.1, 0.1, 0.1, 0.1, 
+                                                     0.1, 0.1, 0.1, 0.1, 0.1)), 
+                na.action = na.method(x = "omit"),
+                data = fl50_cov_df, 
+                workspace = "3gb", maxiter = 20)
+asr_4 <- update.asreml(asr_4)
+summary(asr_4)$varcomp
+
+vpredict(asr_4, h2_TX1 ~ V1/(V1+V12)) # 93.80
+vpredict(asr_4, h2_TX2 ~ V3/(V3+V14)) # 90.19
+vpredict(asr_4, h2_TX3 ~ V6/(V6+V17)) # 70.58
+vpredict(asr_4, h2_OK ~ V10/(V10+V21))
+vpredict(asr_4, r_TX2MI ~ V2/((V1*V3)^0.5)) # 41.23
+vpredict(asr_4, r_MIMO ~ V5/((V3*V6)^0.5)) # 76.57
+vpredict(asr_4, r_TX2MO ~ V4/((V1*V6)^0.5)) # 52.84
 ```
 order for init: AA, BA, BB, CA, CB, CC
 AA BA BB CA CB CC DA DB DC DD EA EB EC ED EE FA FB FC FD FE FF (6int) GG (7int) HH
@@ -120,4 +144,133 @@ AA BA BB CA CB CC DA DB DC DD EA EB EC ED EE FA FB FC FD FE FF (6int) GG (7int) 
 h2_KBSM	0.9151788	0.01180919	
 r_G	0.4239493	0.04072152	
 r_R	0.9709351	0.006573728	
+
+# On server:
+For both GR50 and FL50, in Gulf, Midwest, and G&M subpops.
+-> subset fl50_cov_df and gr50_cov_df to these three individual subsets. Six subsets.
+```{r}
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", 
+                 Gulf_and_Midwest = c("Gulf", "Midwest"))
+i=3
+phe_df <- list(FL50 = fl50_cov_df, GR50 = gr50_cov_df)
+j=2
+
+cov_df_use <- phe_df[[j]] %>%
+  filter(SUBPOP %in% subpop_v[[i]])
+```
+
+for Midwest, try just gardens with n>100 first.
+```{r}
+i=2
+j=2
+asr_3 <- asreml(cbind(TX2, MI, MO) ~ trait,
+                random = ~us(trait, init = c(1,0.1, 1, 0.1, 0.1, 1)):vm(PLANT_ID, k_full), 
+                residual = ~units:us(trait, init = c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1)), 
+                na.action = na.method(x = "omit"),
+                data = cov_df_use, 
+                workspace = "6gb", maxiter = 50)
+asr_3 <- update.asreml(asr_3, maxiter = 100)
+summary(asr_3)$varcomp
+
+vpredict(asr_3, h2_TX2 ~ V1/(V1+V8)) # 93.80
+vpredict(asr_3, h2_MI ~ V3/(V3+V10)) # 90.19
+vpredict(asr_3, h2_MO ~ V6/(V6+V13)) # 70.58
+vpredict(asr_3, r_TX2MI ~ V2/((V1*V3)^0.5)) # 41.23
+vpredict(asr_3, r_MIMO ~ V5/((V3*V6)^0.5)) # 76.57
+vpredict(asr_3, r_TX2MO ~ V4/((V1*V6)^0.5)) # 52.84
+saveRDS(asr_3, "analysis/genetic-covariances/GR50_asreml_cov_model_3_gardens_Midwest_subpop.rds") 
+# for the model running 2020-11-02 that will probably have a loglik around -778, which was run with i=2 and j=2.
+```
+
+
+```{r}
+
+# try all eight gardens first.
+asr_8 <- asreml(cbind(TX1, TX2, TX3, OK, MO, NE, MI, SD) ~ trait,
+                random = ~us(trait, init = c(1, 0.1, 1, 0.1, 0.1, 1, 
+                                             0.1, 0.1, 0.1, 1,
+                                             0.1, 0.1, 0.1, 0.1, 1,
+                                             0.1, 0.1, 0.1, 0.1, 0.1, 1,
+                                             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 1,
+                                             0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 1)):vm(PLANT_ID, k_full), 
+                residual = ~units:us(trait, init = rep(0.1, 36)), 
+                na.action = na.method(x = "omit"),
+                data = cov_df_use, 
+                workspace = "6gb", maxiter = 240)
+saveRDS(asr_8, "analysis/genetic-covariances/GR50_asreml_cov_model_8_gardens_Gulf_and_Midwest_subpop.rds") 
+summary(asr_8)$varcomp
+asr_8 <- update.asreml(asr_8)
+
+
+summary(asr_8)$varcomp
+
+saveRDS(asr_8, "analysis/genetic-covariances/GR50_asreml_cov_model_8_gardens_Gulf_and_Midwest_subpop.rds") 
+
+# for the model running 2020-11-03 that will probably have a loglik around ____, which was run with i=3 and j=2.
+
+#saveRDS(asr_8, "analysis/genetic-covariances/FL50_asreml_cov_model_8_gardens_Gulf_subpop.rds") 
+# for the model running 2020-11-02 that will probably have a loglik around -3978, which was run with i=1 and j=1.
+
+8+7+6+5+4+3+2+1 # 36 var and covar in eight garden model.
+# programmatically, each pair of two gardens, k and k+1. (special case of 8 & 1 also).
+```
+check model ran and saved ok on the server
+```{r}
+asr_8 <- readRDS("../analysis/genetic-covariances/GR50_asreml_cov_model_8_gardens_Gulf_subpop.rds")
+summary(asr_8)$varcomp
+vpredict(asr_8, h2_tx1 ~ V1/(V1+V38))
+vpredict(asr_8, h2_tx2 ~ V3/(V3+V40))
+vpredict(asr_8, h2_tx3 ~ V6/(V6+V43))
+vpredict(asr_8, h2_ok ~ V10/(V10+V47))  # all sig > 0 minus 2SE, ok is the closest to zero... only 3.8%
+vpredict(asr_8, h2_mo ~ V15/(V15+V52))
+vpredict(asr_8, h2_ne ~ V21/(V21+V58))
+vpredict(asr_8, h2_mi ~ V28/(V28+V65))
+vpredict(asr_8, h2_sd ~ V36/(V36+V73))
+
+vpredict(asr_8, cov_tx2tx1 ~ V2/((V1*V3)^0.5))  # sig pos
+
+vpredict(asr_8, cov_tx3tx1 ~ V4/((V1*V6)^0.5))   # sig pos
+vpredict(asr_8, cov_tx3tx2 ~ V5/((V6*V3)^0.5))   # sig pos
+
+vpredict(asr_8, cov_oktx1 ~ V7/((V1*V10)^0.5)) 
+vpredict(asr_8, cov_oktx2 ~ V8/((V3*V10)^0.5)) 
+vpredict(asr_8, cov_oktx3 ~ V9/((V6*V10)^0.5)) 
+
+vpredict(asr_8, cov_motx1 ~ V11/((V1*V15)^0.5)) 
+vpredict(asr_8, cov_motx2 ~ V12/((V3*V15)^0.5))  # ** sig neg even plus 2SE
+vpredict(asr_8, cov_motx3 ~ V13/((V6*V15)^0.5)) 
+vpredict(asr_8, cov_mook ~ V14/((V10*V15)^0.5)) 
+
+vpredict(asr_8, cov_netx1 ~ V16/((V1*V21)^0.5)) 
+vpredict(asr_8, cov_netx2 ~ V17/((V3*V21)^0.5)) 
+vpredict(asr_8, cov_netx3 ~ V18/((V6*V21)^0.5)) 
+vpredict(asr_8, cov_neok ~ V19/((V10*V21)^0.5)) 
+vpredict(asr_8, cov_nemo ~ V20/((V15*V21)^0.5))   # sig pos
+
+vpredict(asr_8, cov_mitx1 ~ V22/((V1*V28)^0.5)) 
+vpredict(asr_8, cov_mitx2 ~ V23/((V3*V28)^0.5)) # ** sig neg even plus 2SE
+vpredict(asr_8, cov_mitx3 ~ V24/((V6*V28)^0.5)) 
+vpredict(asr_8, cov_miok ~ V25/((V10*V28)^0.5)) 
+vpredict(asr_8, cov_mimo ~ V26/((V15*V28)^0.5)) # sig pos
+vpredict(asr_8, cov_mine ~ V27/((V21*V28)^0.5)) 
+
+vpredict(asr_8, cov_sdtx1 ~ V29/((V1*V36)^0.5)) # ** sig neg even plus 2SE
+vpredict(asr_8, cov_sdtx2 ~ V30/((V3*V36)^0.5)) # ** sig neg even plus 2SE
+vpredict(asr_8, cov_sdtx3 ~ V31/((V6*V36)^0.5)) # ** sig neg even plus 2SE
+vpredict(asr_8, cov_sdok ~ V32/((V10*V36)^0.5)) 
+vpredict(asr_8, cov_sdmo ~ V33/((V15*V36)^0.5)) # sig pos
+vpredict(asr_8, cov_sdne ~ V34/((V21*V36)^0.5)) 
+vpredict(asr_8, cov_sdmi ~ V35/((V28*V36)^0.5)) 
+
+#36.80566-(16.49249*2)
+```
+36.80566-(16.49249*2)
+
+
+fit 7 (or more) bivariate models; compare h^2 estimates between them for A-H.
+-> collect h^2 estimates and SE in tibbles, and compare/plot them.
+
+----------------------
+Fit trivariate models?
+Try to fit 8-way model? Run these models on the server so my laptop isn't overloaded.
 
