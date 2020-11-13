@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-#library(asreml)
+library(asreml)
 library(cowplot)
 library(switchgrassGWAS)
 ```
@@ -19,6 +19,7 @@ Add any data that needs to be loaded for these analyses here.
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 outputdir <- file.path(workingdir, "analysis", "heritability")
+inputdir <- file.path(workingdir, "analysis", "genetic-covariances")
 metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
 sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
 subpops <- read_rds(file.path(workingdir, "data", "subpop_color_coding.rds"))
@@ -97,6 +98,81 @@ vpredict(asr_2, r_S ~ V2/((V1*V3)^0.5))
 vpredict(asr_2, r_G ~ V5/((V4*V6)^0.5))
 ```
 
+# Will Midwest models converge for bivariate analyses?
+
+Can't get trivariate analysis to converge ever for the Midwest subpop, though the Gulf & G&M models do converge. 
+Unfortunately I will need to fit ~28 models per phenotype and subpop for bivariate models to get all of the genetic covariances. Blehhhhh.
+```{r}
+garden_v <- c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD")
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", 
+                 Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_df <- list(FL50 = fl50_cov_df, GR50 = gr50_cov_df)
+k=3; j = 1; i = 1; q = 1
+var_table <- tibble(Value = "Value", Estimate = 0, SE = 0, Phenotype = "Phenotype", Subpop = "Subpop", Garden_1 = "garden1", Garden_2 = "garden2", loglik = 0)
+
+append_vpredict_bivar <- function(vpredict_df, var_df, 
+                                  phenotype = names(phe_df)[j], 
+                                  subpop = names(subpop_v)[i], 
+                                  garden1 = garden_v[k],
+                                  garden2 = garden_v2[q], loglik = mloglik){
+  var_df <- vpredict_df %>%
+    as_tibble(rownames = "Value") %>%
+    mutate(Phenotype = phenotype,
+           Subpop = subpop,
+           Garden_1 = garden1,
+           Garden_2 = garden2,
+           loglik = mloglik) %>%
+       add_row(var_df, .)
+  return(var_df)
+}
+
+for(i in seq_along(subpop_v)){
+  for(j in seq_along(phe_df)){
+    for(k in seq_along(garden_v)){
+      garden_v2 <- garden_v[-(1:k)]
+      for(q in seq_along(garden_v2)){
+    cov_df_use <- phe_df[[j]] %>%
+  filter(SUBPOP %in% subpop_v[[i]]) %>%
+      rename(garden1 = garden_v[k], garden2 = garden_v2[q]) %>%
+      filter(!(is.na(garden1) & is.na(garden2)))
+    tryCatch({
+      asr_2 <- asreml(cbind(garden1, garden2) ~ trait,
+                      random = ~us(trait, init = c(1, 0.1, 1)):vm(PLANT_ID,
+                                                                    k_full), 
+                      residual = ~units:us(trait, init = c(0.1, 0.1, 0.1)), 
+                      na.action = na.method(x = "omit"),
+                      data = cov_df_use, 
+                      workspace = "8gb", maxiter = 300)
+      asr_2 <- update.asreml(asr_2, maxiter = 20)
+      saveRDS(asr_2, file.path(inputdir, paste0(names(phe_df)[j], "_asreml_cov_model_", garden_v[k], "_", garden_v2[q], "_gardens_", names(subpop_v)[i], "_subpop_200_iterations.rds")))
+      mloglik = asr_2$loglik[1]
+      var_table <- vpredict(asr_2, h2_garden1 ~ V1/(V1+V5)) %>% 
+        append_vpredict_bivar(., var_table)
+      var_table <- vpredict(asr_2, h2_garden2 ~ V3/(V3+V7)) %>% 
+        append_vpredict_bivar(.,var_table)
+      var_table <- vpredict(asr_2, r_G ~ V2/((V1*V3)^0.5)) %>% 
+        append_vpredict_bivar(., var_table)
+      }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+    saveRDS(var_table, file.path(inputdir,     
+                                 "Two_site_var_table_up_to_300_iterations.rds"))
+      }
+    }
+  }
+}
+
+
+```
+
+```{r}
+var_table <- read_rds(file.path(inputdir,     
+                                "Two_site_var_table_up_to_300_iterations.rds"))
+
+var_table %>%
+  write_csv(., file.path(inputdir,     
+                                "Two_site_var_table_up_to_300_iterations.csv"))
+```
+
+
 asr_3: trivariate analysis.  specifying initial values for variances and covariances.
 ```{r}
 # below works way better (with fewer warnings) when initial values are given. Order for init argument is specified below this code box.
@@ -159,6 +235,76 @@ cov_df_use <- phe_df[[j]] %>%
   filter(SUBPOP %in% subpop_v[[i]])
 ```
 
+#------------
+# Three site covariances loop
+```{r}
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", 
+                 Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_df <- list(FL50 = fl50_cov_df, GR50 = gr50_cov_df)
+
+var_table <- tibble(Value = "Value", Estimate = 0, SE = 0, Phenotype = "Phenotype", Subpop = "Subpop")
+
+for(i in seq_along(subpop_v)){
+  for(j in seq_along(phe_df)){
+    cov_df_use <- phe_df[[j]] %>%
+  filter(SUBPOP %in% subpop_v[[i]])
+      asr_3 <- asreml(cbind(TX2, MI, MO) ~ trait,
+                      random = ~us(trait, init = c(1, 0.1, 1, 
+                                                   0.1, 0.1, 1)):vm(PLANT_ID,
+                                                                    k_full), 
+                      residual = ~units:us(trait, init = c(0.1, 0.1, 0.1, 
+                                                           0.1, 0.1, 0.1)), 
+                      na.action = na.method(x = "omit"),
+                      data = cov_df_use, 
+                      workspace = "6gb", maxiter = 2600)
+      saveRDS(asr_3, paste0("analysis/genetic-covariances/", names(phe_df)[j], "_asreml_cov_model_3_gardens_", names(subpop_v)[i], "_subpop_2600_iterations.rds")) 
+      
+     var_table <- vpredict(asr_3, h2_TX2 ~ V1/(V1+V8)) %>% 
+       as_tibble(rownames = "Value") %>%
+       mutate(Phenotype = names(phe_df)[j],
+              Subpop = names(subpop_v)[i]) %>%
+       add_row(var_table, .)
+     var_table <- vpredict(asr_3, h2_MI ~ V3/(V3+V10)) %>% 
+       as_tibble(rownames = "Value") %>%
+       mutate(Phenotype = names(phe_df)[j],
+              Subpop = names(subpop_v)[i]) %>%
+       add_row(var_table, .)
+     var_table <- vpredict(asr_3, h2_MO ~ V6/(V6+V13)) %>% 
+       as_tibble(rownames = "Value") %>%
+       mutate(Phenotype = names(phe_df)[j],
+              Subpop = names(subpop_v)[i]) %>%
+       add_row(var_table, .) 
+     var_table <- vpredict(asr_3, r_TX2MI ~ V2/((V1*V3)^0.5)) %>% 
+       as_tibble(rownames = "Value") %>%
+       mutate(Phenotype = names(phe_df)[j],
+              Subpop = names(subpop_v)[i]) %>%
+       add_row(var_table, .) 
+     var_table <- vpredict(asr_3, r_MIMO ~ V5/((V3*V6)^0.5))  %>% 
+       as_tibble(rownames = "Value") %>%
+       mutate(Phenotype = names(phe_df)[j],
+              Subpop = names(subpop_v)[i]) %>%
+       add_row(var_table, .)
+     var_table <- vpredict(asr_3, r_TX2MO ~ V4/((V1*V6)^0.5)) %>% 
+       as_tibble(rownames = "Value") %>%
+       mutate(Phenotype = names(phe_df)[j],
+              Subpop = names(subpop_v)[i]) %>%
+       add_row(var_table, .) 
+      saveRDS(var_table, "Three_site_var_table_50_iterations_usually.rds")
+  
+
+  }
+}
+asr_3 <- update.asreml(asr_3, maxiter = 100)
+```
+ 
+## view ASReml output from three site covariance models
+```{r}
+var_table <- read_rds(file.path(inputdir,
+                          "Three_site_var_table_50_iterations_usually_v2.rds"))
+var_table %>% write_csv(., file.path(inputdir, "Three_site_var_table_50_iterations_or_more.csv"))
+```
+
+
 for Midwest, try just gardens with n>100 first.
 ```{r}
 i=2
@@ -214,54 +360,114 @@ saveRDS(asr_8, "analysis/genetic-covariances/GR50_asreml_cov_model_8_gardens_Gul
 8+7+6+5+4+3+2+1 # 36 var and covar in eight garden model.
 # programmatically, each pair of two gardens, k and k+1. (special case of 8 & 1 also).
 ```
-check model ran and saved ok on the server
+check models ran and saved ok on the server
+
+## View 8 output and save to a var_table
 ```{r}
 asr_8 <- readRDS("../analysis/genetic-covariances/GR50_asreml_cov_model_8_gardens_Gulf_subpop.rds")
+asr_8 <- readRDS("../analysis/genetic-covariances/FL50_asreml_cov_model_8_gardens_Gulf_subpop.rds")
 summary(asr_8)$varcomp
-vpredict(asr_8, h2_tx1 ~ V1/(V1+V38))
-vpredict(asr_8, h2_tx2 ~ V3/(V3+V40))
-vpredict(asr_8, h2_tx3 ~ V6/(V6+V43))
-vpredict(asr_8, h2_ok ~ V10/(V10+V47))  # all sig > 0 minus 2SE, ok is the closest to zero... only 3.8%
-vpredict(asr_8, h2_mo ~ V15/(V15+V52))
-vpredict(asr_8, h2_ne ~ V21/(V21+V58))
-vpredict(asr_8, h2_mi ~ V28/(V28+V65))
-vpredict(asr_8, h2_sd ~ V36/(V36+V73))
 
-vpredict(asr_8, cov_tx2tx1 ~ V2/((V1*V3)^0.5))  # sig pos
 
-vpredict(asr_8, cov_tx3tx1 ~ V4/((V1*V6)^0.5))   # sig pos
-vpredict(asr_8, cov_tx3tx2 ~ V5/((V6*V3)^0.5))   # sig pos
 
-vpredict(asr_8, cov_oktx1 ~ V7/((V1*V10)^0.5)) 
-vpredict(asr_8, cov_oktx2 ~ V8/((V3*V10)^0.5)) 
-vpredict(asr_8, cov_oktx3 ~ V9/((V6*V10)^0.5)) 
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", 
+                 Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_df <- list(FL50 = fl50_cov_df, GR50 = gr50_cov_df)
+j=1
+i=1
+summary(asr_8)$call
+var_table <- tibble(Value = "Value", Estimate = 0, SE = 0, Phenotype = "Phenotype", Subpop = "Subpop")
+append_vpredict <- function(vpredict_df, var_df, phenotype = names(phe_df)[j], 
+                            subpop = names(subpop_v)[i]){
+  var_df <- vpredict_df %>%
+    as_tibble(rownames = "Value") %>%
+    mutate(Phenotype = phenotype,
+           Subpop = subpop) %>%
+       add_row(var_df, .)
+  return(var_df)
+}
 
-vpredict(asr_8, cov_motx1 ~ V11/((V1*V15)^0.5)) 
-vpredict(asr_8, cov_motx2 ~ V12/((V3*V15)^0.5))  # ** sig neg even plus 2SE
-vpredict(asr_8, cov_motx3 ~ V13/((V6*V15)^0.5)) 
-vpredict(asr_8, cov_mook ~ V14/((V10*V15)^0.5)) 
+var_table <- vpredict(asr_8, h2_tx1 ~ V1/(V1+V38)) %>% 
+  append_vpredict(., var_table)
+var_table <- vpredict(asr_8, h2_tx2 ~ V3/(V3+V40)) %>% 
+  append_vpredict(., var_table)
+var_table <- vpredict(asr_8, h2_tx3 ~ V6/(V6+V43)) %>% 
+  append_vpredict(., var_table)
+var_table <- vpredict(asr_8, h2_ok ~ V10/(V10+V47)) %>% 
+  append_vpredict(., var_table)  # all sig > 0 minus 2SE, ok is the closest to zero... only 3.8%
+var_table <- vpredict(asr_8, h2_mo ~ V15/(V15+V52)) %>% 
+  append_vpredict(., var_table)
+var_table <- vpredict(asr_8, h2_ne ~ V21/(V21+V58)) %>% 
+  append_vpredict(., var_table)
+var_table <- vpredict(asr_8, h2_mi ~ V28/(V28+V65)) %>% 
+  append_vpredict(., var_table)
+var_table <- vpredict(asr_8, h2_sd ~ V36/(V36+V73)) %>% 
+  append_vpredict(., var_table)
 
-vpredict(asr_8, cov_netx1 ~ V16/((V1*V21)^0.5)) 
-vpredict(asr_8, cov_netx2 ~ V17/((V3*V21)^0.5)) 
-vpredict(asr_8, cov_netx3 ~ V18/((V6*V21)^0.5)) 
-vpredict(asr_8, cov_neok ~ V19/((V10*V21)^0.5)) 
-vpredict(asr_8, cov_nemo ~ V20/((V15*V21)^0.5))   # sig pos
+var_table <- vpredict(asr_8, cov_tx2tx1 ~ V2/((V1*V3)^0.5)) %>% 
+  append_vpredict(., var_table)  # sig pos
 
-vpredict(asr_8, cov_mitx1 ~ V22/((V1*V28)^0.5)) 
-vpredict(asr_8, cov_mitx2 ~ V23/((V3*V28)^0.5)) # ** sig neg even plus 2SE
-vpredict(asr_8, cov_mitx3 ~ V24/((V6*V28)^0.5)) 
-vpredict(asr_8, cov_miok ~ V25/((V10*V28)^0.5)) 
-vpredict(asr_8, cov_mimo ~ V26/((V15*V28)^0.5)) # sig pos
-vpredict(asr_8, cov_mine ~ V27/((V21*V28)^0.5)) 
+var_table <- vpredict(asr_8, cov_tx3tx1 ~ V4/((V1*V6)^0.5)) %>% 
+  append_vpredict(., var_table)   # sig pos
+var_table <- vpredict(asr_8, cov_tx3tx2 ~ V5/((V6*V3)^0.5)) %>% 
+  append_vpredict(., var_table)   # sig pos
 
-vpredict(asr_8, cov_sdtx1 ~ V29/((V1*V36)^0.5)) # ** sig neg even plus 2SE
-vpredict(asr_8, cov_sdtx2 ~ V30/((V3*V36)^0.5)) # ** sig neg even plus 2SE
-vpredict(asr_8, cov_sdtx3 ~ V31/((V6*V36)^0.5)) # ** sig neg even plus 2SE
-vpredict(asr_8, cov_sdok ~ V32/((V10*V36)^0.5)) 
-vpredict(asr_8, cov_sdmo ~ V33/((V15*V36)^0.5)) # sig pos
-vpredict(asr_8, cov_sdne ~ V34/((V21*V36)^0.5)) 
-vpredict(asr_8, cov_sdmi ~ V35/((V28*V36)^0.5)) 
+var_table <- vpredict(asr_8, cov_oktx1 ~ V7/((V1*V10)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_oktx2 ~ V8/((V3*V10)^0.5))  %>% 
+  append_vpredict(., var_table)
+var_table <- vpredict(asr_8, cov_oktx3 ~ V9/((V6*V10)^0.5))  %>% 
+  append_vpredict(., var_table)
 
+var_table <- vpredict(asr_8, cov_motx1 ~ V11/((V1*V15)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_motx2 ~ V12/((V3*V15)^0.5)) %>% 
+  append_vpredict(., var_table)  # ** sig neg even plus 2SE
+var_table <- vpredict(asr_8, cov_motx3 ~ V13/((V6*V15)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_mook ~ V14/((V10*V15)^0.5)) %>% 
+  append_vpredict(., var_table) 
+
+var_table <- vpredict(asr_8, cov_netx1 ~ V16/((V1*V21)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_netx2 ~ V17/((V3*V21)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_netx3 ~ V18/((V6*V21)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_neok ~ V19/((V10*V21)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_nemo ~ V20/((V15*V21)^0.5)) %>% 
+  append_vpredict(., var_table)   # sig pos
+
+var_table <- vpredict(asr_8, cov_mitx1 ~ V22/((V1*V28)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_mitx2 ~ V23/((V3*V28)^0.5)) %>% 
+  append_vpredict(., var_table) # ** sig neg even plus 2SE
+var_table <- vpredict(asr_8, cov_mitx3 ~ V24/((V6*V28)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_miok ~ V25/((V10*V28)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_mimo ~ V26/((V15*V28)^0.5)) %>% 
+  append_vpredict(., var_table) # sig pos
+var_table <- vpredict(asr_8, cov_mine ~ V27/((V21*V28)^0.5)) %>% 
+  append_vpredict(., var_table) 
+
+var_table <- vpredict(asr_8, cov_sdtx1 ~ V29/((V1*V36)^0.5)) %>% 
+  append_vpredict(., var_table) # ** sig neg even plus 2SE
+var_table <- vpredict(asr_8, cov_sdtx2 ~ V30/((V3*V36)^0.5)) %>% 
+  append_vpredict(., var_table) # ** sig neg even plus 2SE
+var_table <- vpredict(asr_8, cov_sdtx3 ~ V31/((V6*V36)^0.5)) %>% 
+  append_vpredict(., var_table) # ** sig neg even plus 2SE
+var_table <- vpredict(asr_8, cov_sdok ~ V32/((V10*V36)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_sdmo ~ V33/((V15*V36)^0.5)) %>% 
+  append_vpredict(., var_table) # sig pos
+var_table <- vpredict(asr_8, cov_sdne ~ V34/((V21*V36)^0.5)) %>% 
+  append_vpredict(., var_table) 
+var_table <- vpredict(asr_8, cov_sdmi ~ V35/((V28*V36)^0.5)) %>% 
+  append_vpredict(., var_table) 
+
+write_csv(var_table, file.path(inputdir, "Var_Table_8_garden_Gulf_models_20_iter.csv"))
 #36.80566-(16.49249*2)
 ```
 36.80566-(16.49249*2)
