@@ -453,8 +453,8 @@ mash_plot_covar <- function(m, saveoutput = FALSE, suffix = ""){
 
 # Greenup mash results
 
-#' @param posterior_weights Vector containing the posterior
-#'     probability of each mixture component in Ulist for the data.
+@param posterior_weights Vector containing the posterior
+     probability of each mixture component in Ulist for the data.
 ```{r}
 length(get_significant_results(m))
 get_significant_results(m)[1:10]
@@ -462,7 +462,7 @@ get_significant_results(m)[1:10]
 
 str(m$posterior_weights)
 
-n=7500
+n=1
 i = get_significant_results(m)[n]
 
 # largest probability that this SNP loads on this covariance matrix
@@ -484,12 +484,96 @@ names(Ulist)
 df <- mashr:::get_estimated_pi(m, dimension = "all")
 ```
 
-Gulf
+## Load m for Gulf
 ```{r}
 inputdir <- file.path("../analysis/gwas/BLUPs/single_sites", "Gulf")
 mash_out <- pvdiv_results_in_folder(inputdir, "Strong")
 mash_out
 m <- read_rds(file.path(inputdir, mash_out[11]))
+```
+
+Mashhattan where points are colored by which covariance matrix they load most strongly on to. Do different regions of the genome have distinct patterns, or are they all jumbled up?
+```{r}
+
+  log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+    as.data.frame() %>%
+    rownames_to_column(var = "value") %>%
+    mutate(value = as.integer(.data$value)) %>%
+    as_tibble() %>%
+    left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+    dplyr::rename(log10BayesFactor = .data$V1) %>%
+    dplyr::select(-.data$value)
+
+#' Return the Bayes Factor for each effect
+#'
+#' @param m the mash result (from joint or 1by1 analysis); must have been
+#'     computed using usepointmass=TRUE
+#'
+#' @return if m was fitted using usepointmass=TRUE then returns a vector of
+#'     the log10(bf) values for each effect. That is, the jth element
+#'     lbf_j is log10(Pr(Bj | g=ghat-nonnull)/Pr(Bj | g = 0)) where gha
+#'     t-nonnull is the non-null part of ghat.  Otherwise returns NULL.
+#'
+get_log10bf = function(m) {
+  if(is.null(m$null_loglik)){
+    return(NULL)
+  } else {
+    return((m$alt_loglik - m$null_loglik)/log(10))
+  }
+}
+
+#' Return the name of the covariance matrix with the highest posterior weight
+#'     for each effect
+#'
+#' @param m the mash result (from joint or 1by1 analysis)
+#'
+#' @return returns a df with Marker, Covariance_Matrix, and Grid_Value. I'm assuming that the grid value is an indication of like a svd decomp
+#'
+get_topcov = function(m) {
+  df <- switchgrassGWAS:::get_marker_df(m = m)
+  covdf <- purrr::map_chr(df$value, ~ names(which(m$posterior_weights[.x,] ==
+                                           max(m$posterior_weights[.x,])))) %>%
+    enframe(name = "value", value = "Covariance_Grid") %>%
+    separate("Covariance_Grid", into = c("Covariance_Matrix", "Grid_Value"),
+             sep = "\\.", remove = FALSE) 
+  df <- df %>% full_join(covdf, by = "value")
+  return(df)
+  }
+
+
+names(which(m$posterior_weights[i,] == max(m$posterior_weights[i,])))
+
+  ggman_df <- df %>%
+    separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+             extra = "merge", convert = TRUE) %>%
+    left_join(log10bf_df, by = "Marker") %>%
+    arrange(.data$Chr, .data$Pos) %>%
+    group_by(Covariance_Grid) %>% add_tally() %>%
+    arrange(desc(n))
+
+  log10BF <- expression(paste("log"[10], plain("(Bayes Factor)")))
+
+  ggmanobject <- ggplot(data = ggman_df, aes(x = .data$Pos, y = .data$log10BayesFactor)) +
+    switchgrassGWAS::theme_oeco +
+    geom_point(aes(color = .data$Covariance_Grid, fill = .data$Covariance_Grid,
+                   shape = as.factor(.data$Chr))) +
+    facet_wrap(~ .data$Chr, nrow = 1, scales = "free_x", strip.position = "bottom") +
+    scale_color_viridis_d(option = "D", end = 0.95) + scale_fill_viridis_d(option = "D", end = 0.95) +
+    theme(strip.text = element_text(size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_blank(),
+          legend.text = element_text(size = 8),
+          axis.ticks.x = element_blank(),
+          panel.background = element_rect(fill=NA)) +
+    labs(x = "Chromosome", y = log10BF) +
+    scale_x_continuous(expand = c(0.32, 0.32)) +
+    scale_shape_manual(values = rep(c(21,22),9), guide = FALSE) +
+    geom_hline(yintercept = 2, linetype = 2)
+```
+
+
+```{r}
+
 mash_plot_covar(m, saveoutput = TRUE)
 get_U_by_mass(m)
 mash_plot_Ulist(m, range = get_U_by_mass(m))

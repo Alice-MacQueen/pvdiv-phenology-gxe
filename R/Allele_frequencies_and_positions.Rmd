@@ -1,0 +1,177 @@
+---
+title: "Allele frequencies and positions"
+author: "Alice MacQueen"
+date: "11/18/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(bigsnpr)
+library(cowplot)
+library(maps)
+library(ggmap)
+library(ggrepel)
+library(lubridate)
+usa <- map_data("usa")
+metadata <- read_rds("../data/metadata.rds")
+```
+
+#
+```{r}
+metadata %>%
+  group_by(GENETIC_SUBPOP_KINSHIP) %>%
+  tally()
+Atlantic <- metadata %>%
+  filter(GENETIC_SUBPOP_KINSHIP == "Atlantic")
+Gulf <- metadata %>%
+  filter(GENETIC_SUBPOP_KINSHIP == "Gulf")
+Midwest <- metadata %>%
+  filter(GENETIC_SUBPOP_KINSHIP == "Midwest")
+
+metadata %>%
+  group_by(ECOTYPE_NNET) %>%
+  tally()
+Coastal <- metadata %>%
+  filter(ECOTYPE_NNET == "Coastal")
+Lowland <- metadata %>%
+  filter(ECOTYPE_NNET == "Lowland")
+Upland <- metadata %>%
+  filter(ECOTYPE_NNET == "Upland")
+metadata %>%
+  filter(GENETIC_SUBPOP_KINSHIP %in% c("Atlantic", "Gulf", "Midwest")) %>%
+  group_by(COLLECTION_TYPE) %>%
+  tally()
+
+# vcf.gz in SharedUser has PLANT_ID as the library names now.
+writeLines(Atlantic$PLANT_ID, con = paste0("~/Github/pvdiv-genome/PLANT_ID/", 
+                                           "Atlantic", "_subpop"))
+writeLines(Gulf$PLANT_ID, con = paste0("~/Github/pvdiv-genome/PLANT_ID/", 
+                                           "Gulf", "_subpop"))
+writeLines(Midwest$PLANT_ID, con = paste0("~/Github/pvdiv-genome/PLANT_ID/", 
+                                           "Midwest", "_subpop"))
+writeLines(Coastal$PLANT_ID, con = paste0("~/Github/pvdiv-genome/PLANT_ID/", 
+                                           "Coastal", "_ecotype"))
+writeLines(Lowland$PLANT_ID, con = paste0("~/Github/pvdiv-genome/PLANT_ID/", 
+                                           "Lowland", "_ecotype"))
+writeLines(Upland$PLANT_ID, con = paste0("~/Github/pvdiv-genome/PLANT_ID/", 
+                                           "Upland", "_ecotype"))
+```
+
+
+What are things I could color Manhattans by? For mash results?
+
+Ideally, always for alternate alleles (aka not AP13's allele, in reality):
+
+The covariance matrix that the SNP has the highest posterior probability for. Or second highest. Or whatever.
+
+Their allele frequency in each subpopulation.
+
+The average latitudinal and/or longitudinal position in our diversity panel. Or, as a factor, which state or region is this position in?
+
+Which ecotype the allele is predominantly found in? Or is it common everywhere?
+
+```{r}
+allele_freq <- readRDS("~/Github/pvdiv-phenology-gxe/large-files/Site-by-year-allele-frequencies/Allele_frequencies_site_by_year_100000SNPs.rds")
+allele_freq
+```
+
+Maybe big_count in bigsnpr could take care of this for me.
+```{r}
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+
+inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
+                                   "inputkinship.txt"),  delim = " ", 
+                                   col_names = "SNPfiles")
+
+metadata <- read_rds("~/Github/pvdiv-phenology-gxe/data/metadata.rds")
+```
+
+```{r}
+#snp <- snp_attach("~/Github/pvdiv-genome/genetic_subpops/Pvirgatum_V5_GWAS_229g_Gulf_K_subset_maf0.05.rds")
+snp <- snp_attach(inputfiles$SNPfiles[1])
+
+metadata1 <- metadata %>%
+  filter(PLANT_ID %in% snp$fam$sample.ID) %>%
+  mutate(Atlantic = ifelse(GENETIC_SUBPOP_KINSHIP == "Atlantic", 1, 0),
+         Gulf = ifelse(GENETIC_SUBPOP_KINSHIP == "Gulf", 1, 0),
+         Midwest = ifelse(GENETIC_SUBPOP_KINSHIP == "Midwest", 1, 0),
+         Coastal = ifelse(ECOTYPE_NNET == "Coastal", 1, 0),
+         Upland = ifelse(ECOTYPE_NNET == "Upland", 1, 0),
+         Lowland = ifelse(ECOTYPE_NNET == "Lowland", 1, 0),
+         COLL_YEAR = year(COLL_DATE))
+i=1
+m1 <- metadata1 %>%
+  mutate(SNP = snp$genotypes[,i]) %>%
+  summarise(Alt_freq = mean(SNP/2, na.rm = TRUE),
+            Alt_Latitude = weighted.mean(LATITUDE, SNP, na.rm = TRUE),
+            Alt_Longitude = weighted.mean(-LONGITUDE, SNP, na.rm = TRUE),
+            Alt_Elevation = weighted.mean(ELEVATION, SNP, na.rm = TRUE),
+            Alt_Year = weighted.mean(COLL_YEAR, SNP, na.rm = TRUE),
+            Alt_Coastal_d = weighted.mean(Coastal, SNP, na.rm = TRUE),
+            Alt_Coastal_c = weighted.mean(COASTAL_ASSIGNMENT, SNP, 
+                                          na.rm = TRUE),
+            Alt_Lowland_d = weighted.mean(Lowland, SNP, na.rm = TRUE),
+            Alt_Lowland_c = weighted.mean(LOWLAND_ASSIGNMENT, SNP, 
+                                          na.rm = TRUE),
+            Alt_Upland_d = weighted.mean(Upland, SNP, na.rm = TRUE),
+            Alt_Upland_c = weighted.mean(UPLAND_ASSIGNMENT, SNP, na.rm = TRUE),
+            Alt_Atlantic_d = weighted.mean(Atlantic, SNP, na.rm = TRUE),
+            Alt_Atlantic_c = weighted.mean(ATLANTIC_Q, SNP, na.rm = TRUE),
+            Alt_Gulf_d = weighted.mean(Gulf, SNP, na.rm = TRUE),
+            Alt_Gulf_c = weighted.mean(GULF_Q, SNP, na.rm = TRUE),
+            Alt_Midwest_d = weighted.mean(Midwest, SNP, na.rm = TRUE),
+            Alt_Midwest_c = weighted.mean(MIDWEST_DA, SNP, na.rm = TRUE)
+            ) %>%
+  mutate(Marker = snp$map$marker.ID[i]) %>%
+  select(Marker, everything())
+
+for(i in 2:snp$genotypes$ncol){
+  m_i <- metadata1 %>%
+  mutate(SNP = snp$genotypes[,i]) %>%
+  summarise(Alt_freq = mean(SNP/2, na.rm = TRUE),
+            Alt_Latitude = weighted.mean(LATITUDE, SNP, na.rm = TRUE),
+            Alt_Longitude = weighted.mean(-LONGITUDE, SNP, na.rm = TRUE),
+            Alt_Elevation = weighted.mean(ELEVATION, SNP, na.rm = TRUE),
+            Alt_Year = weighted.mean(COLL_YEAR, SNP, na.rm = TRUE),
+            Alt_Coastal_d = weighted.mean(Coastal, SNP, na.rm = TRUE),
+            Alt_Coastal_c = weighted.mean(COASTAL_ASSIGNMENT, SNP, 
+                                          na.rm = TRUE),
+            Alt_Lowland_d = weighted.mean(Lowland, SNP, na.rm = TRUE),
+            Alt_Lowland_c = weighted.mean(LOWLAND_ASSIGNMENT, SNP, 
+                                          na.rm = TRUE),
+            Alt_Upland_d = weighted.mean(Upland, SNP, na.rm = TRUE),
+            Alt_Upland_c = weighted.mean(UPLAND_ASSIGNMENT, SNP, na.rm = TRUE),
+            Alt_Atlantic_d = weighted.mean(Atlantic, SNP, na.rm = TRUE),
+            Alt_Atlantic_c = weighted.mean(ATLANTIC_Q, SNP, na.rm = TRUE),
+            Alt_Gulf_d = weighted.mean(Gulf, SNP, na.rm = TRUE),
+            Alt_Gulf_c = weighted.mean(GULF_Q, SNP, na.rm = TRUE),
+            Alt_Midwest_d = weighted.mean(Midwest, SNP, na.rm = TRUE),
+            Alt_Midwest_c = weighted.mean(MIDWEST_DA, SNP, na.rm = TRUE)
+            ) %>%
+  mutate(Marker = snp$map$marker.ID[i]) %>%
+  select(Marker, everything())
+  m1 <- m1 %>% add_row(m_i)
+}
+            
+write_rds(m1, "~/Github/pvdiv-phenology-gxe/large-files/Metadata_associated_with_Alternate_alleles_363g_Midwest_and_Gulf.rds", compress = "gz")
+```
+Of the 363 Gulf & Midwest plants:
+83.7 have ecotype assignment without the neural network.
+67.7% have collection date
+93.9% have lat & long; 89% have elevation
+
+
+# Map this test Lat/Long
+```{r}
+ggplot() + 
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group), 
+               fill = "white", color = "black") +
+  coord_quickmap(xlim = c(-105, -66), ylim = c(25, 50)) + 
+  geom_point(data = m1, aes(x = SNP_Long, y = SNP_Lat), shape = 13, 
+             size = 4, stroke = 1.5) + 
+  labs(x = "Longitude", y = "Latitude")
+```
+
+
