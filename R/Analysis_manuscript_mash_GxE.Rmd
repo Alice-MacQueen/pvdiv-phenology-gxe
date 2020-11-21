@@ -405,7 +405,7 @@ length(get_significant_results(m3))
 ```
 
 ```{r}
-m <- readRDS(paste0("../analysis/gwas/BLUPs/single_sites/Strong_Effects5000SNPs_greenup_2_phe_Gulf_and_Midwest_subpop_Gulf_Uhyp.rds"))
+m <- readRDS(paste0("~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Strong_Effects5000SNPs_greenup_2_phe_Gulf_and_Midwest_subpop_Gulf_Uhyp.rds"))
 
 mash_plot_covar(m)
 mash_plot_sig_by_condition(m)
@@ -486,16 +486,17 @@ df <- mashr:::get_estimated_pi(m, dimension = "all")
 
 ## Load m for Gulf
 ```{r}
-inputdir <- file.path("../analysis/gwas/BLUPs/single_sites", "Gulf")
+inputdir <- file.path("../analysis/gwas/BLUPs/single_sites", "Gulf_and_Midwest")
 mash_out <- pvdiv_results_in_folder(inputdir, "Strong")
 mash_out
-m <- read_rds(file.path(inputdir, mash_out[11]))
+m <- read_rds(file.path(inputdir, mash_out[13]))
+m_meta <- read_rds("../analysis/Metadata_associated_with_alternate_alleles_snp_630g_PKLE_m_greenup_2_phe_Gulf_subpop_full.rds")
+m_meta <- read_rds("../analysis/Metadata_associated_with_alternate_alleles_snp_363g_m_greenup_2_phe_Gulf_and_Midwest_subpop.rds")
 ```
 
 Mashhattan where points are colored by which covariance matrix they load most strongly on to. Do different regions of the genome have distinct patterns, or are they all jumbled up?
 ```{r}
-
-  log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
     as.data.frame() %>%
     rownames_to_column(var = "value") %>%
     mutate(value = as.integer(.data$value)) %>%
@@ -504,23 +505,6 @@ Mashhattan where points are colored by which covariance matrix they load most st
     dplyr::rename(log10BayesFactor = .data$V1) %>%
     dplyr::select(-.data$value)
 
-#' Return the Bayes Factor for each effect
-#'
-#' @param m the mash result (from joint or 1by1 analysis); must have been
-#'     computed using usepointmass=TRUE
-#'
-#' @return if m was fitted using usepointmass=TRUE then returns a vector of
-#'     the log10(bf) values for each effect. That is, the jth element
-#'     lbf_j is log10(Pr(Bj | g=ghat-nonnull)/Pr(Bj | g = 0)) where gha
-#'     t-nonnull is the non-null part of ghat.  Otherwise returns NULL.
-#'
-get_log10bf = function(m) {
-  if(is.null(m$null_loglik)){
-    return(NULL)
-  } else {
-    return((m$alt_loglik - m$null_loglik)/log(10))
-  }
-}
 
 #' Return the name of the covariance matrix with the highest posterior weight
 #'     for each effect
@@ -529,7 +513,7 @@ get_log10bf = function(m) {
 #'
 #' @return returns a df with Marker, Covariance_Matrix, and Grid_Value. I'm assuming that the grid value is an indication of like a svd decomp
 #'
-get_topcov = function(m) {
+get_topcov = function(m){
   df <- switchgrassGWAS:::get_marker_df(m = m)
   covdf <- purrr::map_chr(df$value, ~ names(which(m$posterior_weights[.x,] ==
                                            max(m$posterior_weights[.x,])))) %>%
@@ -540,20 +524,22 @@ get_topcov = function(m) {
   return(df)
   }
 
+df <- get_topcov(m)
 
-names(which(m$posterior_weights[i,] == max(m$posterior_weights[i,])))
 
   ggman_df <- df %>%
+    left_join(m_meta) %>%
     separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
              extra = "merge", convert = TRUE) %>%
     left_join(log10bf_df, by = "Marker") %>%
-    arrange(.data$Chr, .data$Pos) %>%
-    group_by(Covariance_Grid) %>% add_tally() %>%
-    arrange(desc(n))
+    arrange(.data$Chr, .data$Pos) 
 
   log10BF <- expression(paste("log"[10], plain("(Bayes Factor)")))
 
-  ggmanobject <- ggplot(data = ggman_df, aes(x = .data$Pos, y = .data$log10BayesFactor)) +
+  ggmanobject <- ggman_df %>%
+    group_by(Covariance_Grid) %>% add_tally() %>%
+    arrange(desc(n)) %>%
+    ggplot(aes(x = .data$Pos, y = .data$log10BayesFactor)) +
     switchgrassGWAS::theme_oeco +
     geom_point(aes(color = .data$Covariance_Grid, fill = .data$Covariance_Grid,
                    shape = as.factor(.data$Chr))) +
@@ -569,6 +555,155 @@ names(which(m$posterior_weights[i,] == max(m$posterior_weights[i,])))
     scale_x_continuous(expand = c(0.32, 0.32)) +
     scale_shape_manual(values = rep(c(21,22),9), guide = FALSE) +
     geom_hline(yintercept = 2, linetype = 2)
+  
+  
+ggman_df %>%
+    group_by(Covariance_Grid) %>% add_tally() %>%
+    arrange(desc(n)) %>%
+    ggplot(aes(x = .data$Pos, y = .data$log10BayesFactor)) +
+    switchgrassGWAS::theme_oeco +
+    geom_point(aes(color = .data$Covariance_Grid, fill = .data$Covariance_Grid,
+                   alpha = Alt_freq,
+                   shape = as.factor(.data$Chr))) +
+    facet_wrap(~ .data$Chr, nrow = 1, scales = "free_x", strip.position = "bottom") +
+    scale_color_viridis_d(option = "D", end = 0.95) + scale_fill_viridis_d(option = "D", end = 0.95) +
+    theme(strip.text = element_text(size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_blank(),
+          legend.text = element_text(size = 8),
+          axis.ticks.x = element_blank(),
+          panel.background = element_rect(fill=NA)) +
+    labs(x = "Chromosome", y = log10BF) +
+    scale_x_continuous(expand = c(0.32, 0.32)) +
+    scale_shape_manual(values = rep(c(21,22),9), guide = FALSE) +
+    geom_hline(yintercept = 2, linetype = 2)
+
+ggman_df %>%
+  #arrange((Alt_Latitude)) %>%
+    ggplot(aes(x = .data$Pos, y = .data$log10BayesFactor)) +
+    switchgrassGWAS::theme_oeco +
+    geom_point(aes(color = .data$Alt_Midwest_c,
+                   #alpha = Alt_freq,
+                   shape = as.factor(.data$Chr))) +
+    facet_wrap(~ .data$Chr, nrow = 1, scales = "free_x", 
+               strip.position = "bottom") +
+    scale_color_viridis_c(option = "B", end = 0.95) +
+    #scale_fill_viridis_d(option = "D", end = 0.95) +
+    theme(strip.text = element_text(size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.text.x = element_blank(),
+          legend.text = element_text(size = 8),
+          axis.ticks.x = element_blank(),
+          panel.background = element_rect(fill=NA)) +
+    labs(x = "Chromosome", y = log10BF) +
+    scale_x_continuous(expand = c(0.32, 0.32)) +
+    scale_shape_manual(values = rep(c(15, 16),9), guide = FALSE) +
+    geom_hline(yintercept = 2, linetype = 2)
+
+ggman_df
+```
+
+enrichment of sig SNPs for these different Alt_features.
+Enrichment of covariance matrices for these different Alt_features
+```{r}
+library(lubridate)
+metadata1 <- pvdiv_metadata %>%
+  filter(SUBPOP %in% c("Atlantic", "Midwest", "Gulf")) %>%
+    mutate(Atlantic = ifelse(GENETIC_SUBPOP_KINSHIP == "Atlantic", 1, 0),
+           Gulf = ifelse(GENETIC_SUBPOP_KINSHIP == "Gulf", 1, 0),
+           Midwest = ifelse(GENETIC_SUBPOP_KINSHIP == "Midwest", 1, 0),
+           Coastal = ifelse(ECOTYPE_NNET == "Coastal", 1, 0),
+           Upland = ifelse(ECOTYPE_NNET == "Upland", 1, 0),
+           Lowland = ifelse(ECOTYPE_NNET == "Lowland", 1, 0),
+           COLL_YEAR = year(COLL_DATE))
+
+ave630 <- metadata1 %>%
+  summarise(All_Latitude = mean(LATITUDE, na.rm = TRUE),
+            All_Longitude = mean(-LONGITUDE, na.rm = TRUE),
+            All_Elevation = mean(ELEVATION, na.rm = TRUE),
+            All_Year = mean(COLL_YEAR, na.rm = TRUE),
+            All_Coastal_d = mean(Coastal, na.rm = TRUE),
+            All_Coastal_c = mean(COASTAL_ASSIGNMENT, na.rm = TRUE),
+            All_Lowland_d = mean(Lowland, na.rm = TRUE),
+            All_Lowland_c = mean(LOWLAND_ASSIGNMENT, na.rm = TRUE),
+            All_Upland_d = mean(Upland, na.rm = TRUE),
+            All_Upland_c = mean(UPLAND_ASSIGNMENT, na.rm = TRUE),
+            All_Atlantic_d = mean(Atlantic),
+            All_Atlantic_c = mean(ATLANTIC_Q, na.rm = TRUE),
+            All_Gulf_d = mean(Gulf, na.rm = TRUE),
+            All_Gulf_c = mean(GULF_Q, na.rm = TRUE),
+            All_Midwest_d = mean(Midwest, na.rm = TRUE),
+            All_Midwest_c = mean(MIDWEST_DA, na.rm = TRUE))
+
+ave363 <- metadata1 %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf")) %>%
+  summarise(All_Latitude = mean(LATITUDE, na.rm = TRUE),
+            All_Longitude = mean(-LONGITUDE, na.rm = TRUE),
+            All_Elevation = mean(ELEVATION, na.rm = TRUE),
+            All_Year = mean(COLL_YEAR, na.rm = TRUE),
+            All_Coastal_d = mean(Coastal, na.rm = TRUE),
+            All_Coastal_c = mean(COASTAL_ASSIGNMENT, na.rm = TRUE),
+            All_Lowland_d = mean(Lowland, na.rm = TRUE),
+            All_Lowland_c = mean(LOWLAND_ASSIGNMENT, na.rm = TRUE),
+            All_Upland_d = mean(Upland, na.rm = TRUE),
+            All_Upland_c = mean(UPLAND_ASSIGNMENT, na.rm = TRUE),
+            All_Atlantic_d = mean(Atlantic),
+            All_Atlantic_c = mean(ATLANTIC_Q, na.rm = TRUE),
+            All_Gulf_d = mean(Gulf, na.rm = TRUE),
+            All_Gulf_c = mean(GULF_Q, na.rm = TRUE),
+            All_Midwest_d = mean(Midwest, na.rm = TRUE),
+            All_Midwest_c = mean(MIDWEST_DA, na.rm = TRUE))
+```
+
+```{r}
+# --------
+
+P1 <- ggman_df %>%
+  mutate(Dev_Latitude = Alt_Latitude - ave363$All_Latitude,
+         Dev_Longitude = Alt_Longitude - ave363$All_Longitude,
+         Dev_Elevation = Alt_Elevation - ave363$All_Elevation,
+         Dev_Year = Alt_Year - ave363$All_Year,
+         Dev_Coastal = Alt_Coastal_d - ave363$All_Coastal_d,
+         Dev_Lowland = Alt_Lowland_d - ave363$All_Lowland_d,
+         Dev_Upland = Alt_Upland_d - ave363$All_Upland_d,
+         Dev_Atlantic = Alt_Atlantic_d - ave363$All_Atlantic_d,
+         Dev_Gulf = Alt_Gulf_d - ave363$All_Gulf_d,
+         Dev_Midwest = Alt_Midwest_d - ave363$All_Midwest_d,) 
+testvar <- "Dev_Midwest"
+P1 <- P1 %>% rename(testvar = testvar)
+
+lim_lower <- min(P1$testvar)
+lim_upper <- max(P1$testvar) + max(P1$testvar) * 0.01
+
+P1 %>%
+  filter(log10BayesFactor>2) %>%
+  ggplot(aes(x = testvar)) + 
+  geom_histogram() + 
+  geom_vline(xintercept = 0) +
+  facet_wrap(~Covariance_Grid)
+
+P1 %>%
+  ggplot(aes(x = .data$Pos, y = .data$log10BayesFactor)) +
+  switchgrassGWAS::theme_oeco +
+  geom_point(aes(color = .data$testvar,
+                 #alpha = Alt_freq,
+                 shape = as.factor(.data$Chr))) +
+  facet_grid(.data$Covariance_Grid ~ .data$Chr, switch = "x", 
+             scales = "free_x") +
+  scale_color_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                    "white", "#27AD81FF", "#5DC863FF",
+                                    "#FDE725FF"),
+                      limits = c(lim_lower, lim_upper)) +
+  theme(strip.text = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        axis.text.x = element_blank(),
+        legend.text = element_text(size = 8),
+        axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+  labs(x = "Chromosome", y = log10BF) +
+  scale_x_continuous(expand = c(0.32, 0.32)) +
+  scale_shape_manual(values = rep(c(15, 16),10), guide = FALSE) +
+  geom_hline(yintercept = 2, linetype = 2)
 ```
 
 
