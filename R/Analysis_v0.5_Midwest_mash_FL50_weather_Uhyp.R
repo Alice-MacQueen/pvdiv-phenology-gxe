@@ -39,6 +39,12 @@ U_hyp <- list()
 ggcov <- list()
 phe_hyp <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d", "crain_7d")
 
+k=2
+phe_suffix <- paste("FL50", subpop_v[k],
+                    sep = "*.*")
+gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir),
+                                    pattern = paste0("GWAS_datatable*.*",
+                                                     phe_suffix))
 gwas_rds <- gwas_rds[c(1:2,5:8)]
 
 phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
@@ -85,18 +91,8 @@ for(i in seq_along(phe_hyp)){
   }
 }
 
-for(k in c(2)){
-  phe_suffix <- paste("FL50", subpop_v[k],
-                      sep = "*.*")
-  gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir),
-                                      pattern = paste0("GWAS_datatable*.*",
-                                                       phe_suffix))
-  phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
-    str_replace(., "_$", "")
-  phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
-  numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+k=2
   m_out <- mash_standard_run(path = outputdir, numSNPs = numSNPs,
                              U_hyp = U_hyp,
                              suffix = paste0("FL50_", names(subpop_v)[k]),
                              saveoutput = TRUE)
-}
