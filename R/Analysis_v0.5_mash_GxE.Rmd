@@ -17,6 +17,10 @@ library(switchgrassGWAS)
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 ```
 
+# TRIAL script
+# -------------------------
+NB: Trial of generating covariance matrices for combinations of environmental phenotypes from the U_ed from single environmental phenotypes.
+
 THEN, for the next section, do GWAS on the BLUPs from the eight single site models. For these traits:
 all single sites...
 FL50 (actually, maybe not)
@@ -256,9 +260,10 @@ workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
 site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
                NE = "NE", MI = "MI", SD = "SD")#, eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"), tx_sites = c("TX1", "TX2", "TX3"), north_sites = c("MO", "NE", "MI", "SD"))
-subpop_v <- list(Gulf_and_Midwest = "363g_12.1M", Midwest = "134g_8.8M", Gulf = "229g_10.3M")
-phe_mult <- list(flowering_5 = c("FL50", "dyln_fl50", "cgdd_12c_gr2fl", "crain_gr2fl",
-               "crain_1d"), greenup_2 = c("GR50", "cgdd_12c_10d"))
+subpop_v <- list(Gulf_and_Midwest = "363g_12.1M", Midwest = "134g_8.8M", 
+                 Gulf = "229g_10.3M")
+phe_mult <- list(flowering_5 = c("FL50", "dyln_fl50", "cgdd_12c_gr2fl",
+                                 "crain_gr2fl", "crain_1d"), greenup_2 = c("GR50", "cgdd_12c_10d"))
 ```
 
 
@@ -494,6 +499,7 @@ m_meta <- read_rds("../analysis/Metadata_associated_with_alternate_alleles_snp_6
 m_meta <- read_rds("../analysis/Metadata_associated_with_alternate_alleles_snp_363g_m_greenup_2_phe_Gulf_and_Midwest_subpop.rds")
 ```
 
+# --- New Mashhattan --
 Mashhattan where points are colored by which covariance matrix they load most strongly on to. Do different regions of the genome have distinct patterns, or are they all jumbled up?
 ```{r}
 log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
