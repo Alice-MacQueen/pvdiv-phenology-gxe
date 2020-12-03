@@ -129,8 +129,8 @@ for(i in seq_along(phe_hyp)){
               TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE)) %>%
     as_vector()
 
-  ggcov1 <- pvdiv_plot_cov(cor_phe) + ggtitle(label = paste0(phe_hyp[i], "_", names(subpop_v2)[k]))
-  ggcov <- list.prepend(ggcov, ggcov1)
+  #ggcov1 <- pvdiv_plot_cov(cor_phe) + ggtitle(label = paste0(phe_hyp[i], "_", names(subpop_v2)[k]))
+  #ggcov <- list.prepend(ggcov, ggcov1)
   U_hyp <- list.prepend(U_hyp, cor_phe)
   names(U_hyp)[1] <- paste0(phe_hyp[i], "_", names(subpop_v2)[k])
   }
@@ -145,15 +145,15 @@ ggcov
 
 FL50 for GWAS with 90 or more individuals. 8 gardens for Gulf & G&M. 3 gardens (TX2, MO, MI) for Midwest.
 
-## Midwest NB
-Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50. Otherwise they look ok for FL50 and GR50.
 
 ## Set up mash inputs
+
+### mash G&M
 ```{r}
 i=1 # site
 j=1 # phe
 k=3 # subpop: G&M, M, Gulf
-for(k in c(1:3)){
+for(k in c(3)){
 phe_suffix <- paste("FL50", subpop_v[k], 
                     sep = "*.*")
 snp <- snp_attach(inputfiles$SNPfiles[k])
@@ -171,18 +171,122 @@ out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir),
                            suffix = paste0("FL50_", names(subpop_v)[k]))
 }
 ```
+Getting a lot of this: "error: chol(): decomposition failed"
 
-## Run mash
+
+## Run mash Gulf
 ```{r}
-for(k in c(1:3)){
-m_out <- mash_standard_run(path = outputdir, numSNPs = numSNPs, 
-                           U_hyp = U_hyp,
-                           suffix = paste0("FL50_", names(subpop_v)[k]),
-                           saveoutput = TRUE)
+for(k in c(1)){
+  phe_suffix <- paste("FL50", subpop_v[k], 
+                      sep = "*.*")
+  gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                        pattern = paste0("GWAS_datatable*.*",
+                                                         phe_suffix))
+  phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+      str_replace(., "_$", "")
+  phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+  numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+  m_out <- mash_standard_run(path = outputdir, numSNPs = numSNPs, 
+                             U_hyp = U_hyp,
+                             suffix = paste0("FL50_", names(subpop_v)[k]),
+                             saveoutput = TRUE)
   }
 ```
 
+
+## 2b. Midwest NB
+Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50. Otherwise they look ok for FL50 and GR50.
+
+This is the error I get if I try and run mash on all eight sites with just the Midwest subpopulation as input:
+Error in mashr::mash_set_data(Bhat_random, Shat_random) :
+  Both Bhat and Shat are zero (or near zero) for some input data. Please check your input. If it is expected please set Shat to a positive number to avoid numerical issues; or lower the threshold to call zeros using zero_check_tol (currently set to 2.22044604925031e-16). To replace zero elements you can use `zero_Bhat_Shat_reset`.
+
+What's happening with Midwest input?  NE & OK inputs are all zeros.
+```{r}
+mwdf <- readRDS(file.path(outputdir,
+                          "B_hat_strong_df_19000topSNPs_FL50_Midwest.rds"))
+
+summary(mwdf) # NE, OK random Bhats are all 0's. Shat random are all vv small.
+
+k=2
+phe_suffix <- paste("FL50", subpop_v[k], 
+                    sep = "*.*")
+snp <- snp_attach(inputfiles$SNPfiles[k])
+gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix))
+gwas_rds <- gwas_rds[c(1:2,5:8)]
+
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir), 
+                           snp = snp, gwas_rds = gwas_rds, 
+                           phenotypes = phenotypes, numSNPs = numSNPs, 
+                           clump = TRUE, scaled = TRUE, saveoutput = TRUE,
+                           suffix = paste0("FL50_", names(subpop_v)[k]))
+
+U_hyp <- list()
+ggcov <- list()
+phe_hyp <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d", "crain_7d")
+
+for(i in seq_along(phe_hyp)){
+  for(k in seq_along(subpop_v2)){
+    
+  cov_df <- phe_fl_df %>%
+    ungroup() %>%
+    left_join(select(sites, SITE, manu_site), by = "SITE") %>%
+    filter(SUBPOP %in% subpop_v2[[k]]) %>%
+    select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+    group_by(PLANT_ID, SUBPOP, manu_site) %>%
+    mutate(IND = row_number()) %>%
+    pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+    mutate(PLANT_ID = as.factor(PLANT_ID),
+           IND = as.factor(IND)) %>%
+    select(-IL) %>%
+    select(PLANT_ID, SUBPOP, IND, MI, MO, SD, TX1, TX2, TX3)
+
+  cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+  diag(cor_phe) <- cov_df %>%
+    ungroup() %>%
+    summarise(MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),
+              MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
+              SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
+              TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
+              TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
+              TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE)) %>%
+    as_vector()
+
+  #ggcov1 <- pvdiv_plot_cov(cor_phe) + ggtitle(label = paste0(phe_hyp[i], "_", names(subpop_v2)[k]))
+  #ggcov <- list.prepend(ggcov, ggcov1)
+  U_hyp <- list.prepend(U_hyp, cor_phe)
+  names(U_hyp)[1] <- paste0(phe_hyp[i], "_", names(subpop_v2)[k])
+  }
+}
+
+for(k in c(2)){
+  phe_suffix <- paste("FL50", subpop_v[k], 
+                      sep = "*.*")
+  gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                        pattern = paste0("GWAS_datatable*.*",
+                                                         phe_suffix))
+  phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+      str_replace(., "_$", "")
+  phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+  numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+  m_out <- mash_standard_run(path = outputdir, numSNPs = numSNPs, 
+                             U_hyp = U_hyp,
+                             suffix = paste0("FL50_", names(subpop_v)[k]),
+                             saveoutput = TRUE)
+  }
+```
+
+# -----------------------------
+
 # 3. Analyse mash output
+
+
 
 
 
