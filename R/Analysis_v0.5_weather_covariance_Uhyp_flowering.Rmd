@@ -12,6 +12,7 @@ library(bigsnpr)
 library(mashr)
 library(switchgrassGWAS)
 library(rlist)
+library(rlang)
 ```
 # TRIAL script
 # -----------------------------
@@ -55,11 +56,12 @@ Make weather corr/covar matrices
 2. Compute correlations with pairwise complete observations
   2a. Compare correlation matrices - how dissimilar are they?
   2b. Compute correlations for Gulf, Midwest, & G&M subsets & compare
-3. Experiment with changing within-site covariance to coefficient of variation for each site. Wouldn't expect these to be 1, really.
+3. Experiment with changing within-site covariance to coefficient of variation for each site. Wouldn't expect these to be 1, really. Although mash does set the maximum of the diagonal to 1... hmm. I wonder why.
 
 Four phenotypes to do this for, and three pop subsets.
 
-### plot covariance matrices to look at their differences
+## 1a. Covar plot function
+Function to plot covariance matrices to look at their differences
 ```{r}
 pvdiv_plot_cov <- function(covdf){
   U1 <- cor_phe
@@ -94,7 +96,7 @@ pvdiv_plot_cov <- function(covdf){
 }
 ```
 
-
+## 1b. Make U_hyp
 ```{r}
 U_hyp <- list()
 ggcov <- list()
@@ -146,9 +148,9 @@ ggcov
 FL50 for GWAS with 90 or more individuals. 8 gardens for Gulf & G&M. 3 gardens (TX2, MO, MI) for Midwest.
 
 
-## Set up mash inputs
+## 2a. Set up mash inputs
 
-### mash G&M
+### i. mash G&M
 ```{r}
 i=1 # site
 j=1 # phe
@@ -174,7 +176,7 @@ out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir),
 Getting a lot of this: "error: chol(): decomposition failed"
 
 
-## Run mash Gulf
+### ii. Run mash Gulf
 ```{r}
 for(k in c(1)){
   phe_suffix <- paste("FL50", subpop_v[k], 
@@ -285,8 +287,242 @@ for(k in c(2)){
 # -----------------------------
 
 # 3. Analyse mash output
+## -- analysis outline --
+•	How many SNP effects load onto each covariance matrix?
+•	Mashhattans colored by covariance matrices.
+•	What patterns do the data-driven matrices capture that our weather matrices don’t capture?
+•	We characterized patterns of differential sensitivity and antagonistic pleiotropy between all SNPs and all pairs of gardens.
+•	We looked for enrichments of genes that could potentially affect flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering.
+•	Rerun greenup mash and rewrite greenup mash section.
+
+## 3a. Covar Loadings
+How many SNP effects load onto each covariance matrix?
+```{r}
+gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Strong_Effects19000SNPs_FL50_Gulf.rds")
+midwm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Strong_Effects33000SNPs_FL50_Midwest.rds")
+gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Strong_Effects19000SNPs_FL50_Gulf_and_Midwest.rds")
+```
+
+### i. Midwest
+```{r}
+m <- midwm
+length(get_significant_results(m))  # 9907/63367
+get_significant_results(m)[1:10]
+
+
+covarm <- mash_plot_covar(m, saveoutput = TRUE)
+get_U_by_mass(m)
+mash_plot_Ulist(m, range = get_U_by_mass(m))
+mash_plot_effects(m, n = 1, saveoutput = TRUE)
+mash_plot_sig_by_condition(m, saveoutput = TRUE)
+mash_plot_manhattan_by_condition(m, saveoutput = TRUE)
+
+mash_out <- pvdiv_results_in_folder(outputdir, "Strong")
+mash_plot_pairwise_sharing(effectRDS = file.path(outputdir, mash_out[3])) # sign
+mash_plot_pairwise_sharing(effectRDS = file.path(outputdir, mash_out[6])) # sign & size
+Midw_greenup_gxe <- get_GxE(m)
+
+mash_plot_pairwise_sharing(corrmatrix = Midw_greenup_gxe$S_AP/Midw_greenup_gxe$S_all_pairwise, saveoutput = TRUE)
+mash_plot_pairwise_sharing(corrmatrix = Midw_greenup_gxe$S_DS/Midw_greenup_gxe$S_all_pairwise, reorder = TRUE, saveoutput = TRUE)
+mash_plot_pairwise_sharing(corrmatrix = Midw_greenup_gxe$S_2_no, reorder = FALSE)
+mash_plot_pairwise_sharing(corrmatrix = Midw_greenup_gxe$S_all_pairwise, reorder = FALSE)
+
+```
+
+### ii. G&M
+```{r}
+length(get_significant_results(gandm))  # 24518/35735
+get_significant_results(gandm)[1:10]
+
+
+covargam <- mash_plot_covar(gandm, saveoutput = TRUE)
+get_U_by_mass(gandm)
+mash_plot_Ulist(gandm, range = get_U_by_mass(gandm), limits = FALSE)
+```
+
+### iii. Gulf
+```{r}
+length(get_significant_results(gulfm))  # 24518/35735
+get_significant_results(gulfm)[1:10]
+
+
+covarG <- mash_plot_covar(gulfm, saveoutput = TRUE)
+get_U_by_mass(gulfm)
+mash_plot_Ulist(gulfm, range = get_U_by_mass(gulfm))
+```
+```{r}
+covargam$covar_df %>% 
+  mutate(Type = case_when(grepl("ED_", `Covariance Matrix`) ~ "data-driven",
+                          grepl("single_effect", `Covariance Matrix`) ~ "canonical",
+                          grepl("simple_het", `Covariance Matrix`) ~ "canonical",
+                          grepl("no_effects", `Covariance Matrix`) ~ "canonical",
+                          grepl("identity", `Covariance Matrix`) ~ "canonical",
+                          grepl("equal_effects", `Covariance Matrix`) ~ "canonical",
+                          grepl("_and_Midwest$", `Covariance Matrix`) ~ "GAM_hyp",
+                          grepl("Midwest$", `Covariance Matrix`) ~ "Midw_hyp",
+                          grepl("Gulf$", `Covariance Matrix`) ~ "Gulf_hyp",
+                          TRUE ~ "other"
+                          )) %>%
+  group_by(Type) %>%
+  summarise(Mass = sum(Mass))
+
+21.65+10.9795
+covarG$ggobject
+covarG$covar_df
+8.38457+18.782188+18.38669
+```
+
+## 3b.	Mashhattans 
+Mashhattans colored by covariance matrices.
+
+### i. Function
+
+I'm not sure that this function is really the way to go... I don't understand how SNPs really load onto these different covariance matrices.
+
+Seems that the posterior weights for each SNP sum to one across this whole covariance grid. Sometimes there is a pw near 1, but more often they're a mix. So I think this is still useful for exploratory purposes - which covar have the max posterior weights? But I probably want to plot the posterior weights for each cov matrix one by one, which is much simpler to accomplish anyway.
+```{r}
+#' Return the name of the covariance matrix with the highest posterior weight
+#'     for each effect
+#'
+#' @param m the mash result (from joint or 1by1 analysis)
+#'
+#' @return returns a df with Marker, Covariance_Matrix, and Grid_Value. I'm assuming that the grid value is an indication of like a svd decomp
+#'
+get_topcov = function(m){
+  df <- switchgrassGWAS:::get_marker_df(m = m)
+  covdf <- purrr::map_chr(df$value, ~ names(which(m$posterior_weights[.x,] ==
+                                           max(m$posterior_weights[.x,])))) %>%
+    enframe(name = "value", value = "Covariance_Grid") %>%
+    separate("Covariance_Grid", into = c("Covariance_Matrix", "Grid_Value"),
+             sep = "\\.", remove = FALSE) 
+  df <- df %>% full_join(covdf, by = "value") %>% 
+  mutate(Type = case_when(grepl("ED_", Covariance_Matrix) ~ "data-driven",
+                          grepl("single_effect", Covariance_Matrix) ~ "canonical",
+                          grepl("simple_het", Covariance_Matrix) ~ "canonical",
+                          grepl("no_effects", Covariance_Matrix) ~ "none",
+                          grepl("identity", Covariance_Matrix) ~ "canonical",
+                          grepl("equal_effects", Covariance_Matrix) ~ "equal",
+                          grepl("_and_Midwest$", Covariance_Matrix) ~ "GAM_hyp",
+                          grepl("Midwest$", Covariance_Matrix) ~ "Midw_hyp",
+                          grepl("Gulf$", Covariance_Matrix) ~ "Gulf_hyp",
+                          grepl("_TX2$", Covariance_Matrix) ~ "canonical",
+                          grepl("_TX1$", Covariance_Matrix) ~ "canonical",
+                          grepl("_TX3$", Covariance_Matrix) ~ "canonical",
+                          grepl("_M$", Covariance_Matrix) ~ "canonical",
+                          grepl("_MO$", Covariance_Matrix) ~ "canonical",
+                          grepl("_SD$", Covariance_Matrix) ~ "canonical",
+                          grepl("_OK$", Covariance_Matrix) ~ "canonical",
+                          grepl("_NE$", Covariance_Matrix) ~ "canonical",
+                          grepl("_MI$", Covariance_Matrix) ~ "canonical",
+                          TRUE ~ "other"
+                          ))
+  return(df)
+}
+```
+
+### ii. Plot
+```{r}
+m <- midwm
+log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+    as.data.frame() %>%
+    rownames_to_column(var = "value") %>%
+    mutate(value = as.integer(.data$value)) %>%
+    as_tibble() %>%
+    left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+    dplyr::rename(log10BayesFactor = .data$V1) %>%
+    dplyr::select(-.data$value)
+
+#df <- get_topcov(m)
+
+pw_df <- as_tibble(m$posterior_weights)
+pw_df <- switchgrassGWAS:::get_marker_df(m = m) %>%
+  bind_cols(pw_df)
+
+ggman_df <- pw_df %>%
+  #left_join(m_meta) %>%
+  separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+           extra = "merge", convert = TRUE) %>%
+  left_join(log10bf_df, by = "Marker") %>%
+  arrange(.data$Chr, .data$Pos) 
+
+log10BF <- expression(paste("log"[10], plain("(Bayes Factor)")))
+
+mash_plot_covar(m)
+```
+
+```{r}
+gglist <- list()
+for(i in seq_along(names(pw_df)[-(1:2)])){
+var <- names(pw_df)[i+2]   # 20 or "Stand_BhatMidwest_FL50_M.21" is GIGO
+gglist[[i]] <- ggman_df %>%
+  #filter(Type != "canonical") %>%
+  #group_by(crain_gr2fl_Gulf.8 > 0.01) %>% add_tally() %>%
+  arrange(!! sym(var)) %>%
+  ggplot(aes(x = .data$Pos, y = .data$log10BayesFactor)) +
+  switchgrassGWAS::theme_oeco +
+  geom_point(aes(color = !! sym(var), fill = !! sym(var),
+                 shape = as.factor(.data$Chr))) +
+  facet_wrap(~ .data$Chr, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  scale_color_viridis_c(option = "D", end = 0.95) + 
+  scale_fill_viridis_c(option = "D", end = 0.95) +
+  theme(strip.text = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        axis.text.x = element_blank(),
+        legend.text = element_text(size = 8),
+        axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+  labs(x = "Chromosome", y = log10BF) +
+  scale_x_continuous(expand = c(0.32, 0.32)) +
+  scale_shape_manual(values = rep(c(21,22),9), guide = FALSE) +
+  geom_hline(yintercept = 2, linetype = 2) +
+  ggtitle(var)
+}
+gglist
+```
+Midwest 4 cgdd gr2fl G&M background, everywhere, v low pw
+
+
+
+G&M Mashhattans plotting SNP cov matrix posterior weights vs log10BF
+4 "dyln_fl50_Gulf.3" lots of background
+5 same lots of background
+6 same background. Some above 2: Chr07N, Chr05K. 
+7 same background. Some above 2 but all v low posterior weights.
+8 background. Some above 2 Chr04N Chr09K.
+9 PCA1 everywhere 
+13 FL50 TX1 some very high log10BF and high posterior weights on many Chr.
+
+Gulf Mashhattans by posterior weights for single covar mat/grids:
+Gulf subpop covar matrix 11 (equal effects) has really interesting results - high posterior weights and high log10BF for several regions of the genome, esp end of Chr05N, end of Chr04K, Chr06N. Cool!
+ED tPCA and ED PCA1 are of course everywhere. 19 & 17 especially.
+NE one specific effect on Chr02N. (14, 15), maybe on Chr01N also.
+SD (18) some specific high log10BF hits also: Chr03K, Chr09N, Chr09K, others.
+TX1 (20) some specific high log10BF hits also: Chr07K, Chr05N, Chr09N, others.
+TX2 (21) similar: Chr09N, Chr09N, Chr03N.
+
+## 3c. Data-driven mat
+
+What patterns do the data-driven matrices capture that our weather matrices don’t capture?
+
+SVD and plots of effects for the ED_PCA matrices.
+
+## 3d. DS & AP
+
+We characterized patterns of differential sensitivity and antagonistic pleiotropy between all SNPs and all pairs of gardens.
+
+
+## 3e. Enrichments
+We looked for enrichments of genes that could potentially affect flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering.
+
+## 3f. Loglikelihood
+
+log likelihood of models with and without U_hyp. 
 
 
 
 
+# -----------------------------
+## In another script:
+•	Rerun greenup mash and rewrite greenup mash section.
 
+•	Rerun FL50 mash for Midwest without MI (or with reduced #'s for MI, OK, NE?). MI showing pop structure effects in mash results.
