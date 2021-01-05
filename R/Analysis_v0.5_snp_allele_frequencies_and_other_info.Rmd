@@ -4,7 +4,9 @@ author: "Alice MacQueen"
 date: "11/18/2020"
 output: html_document
 ---
-
+# TRIAL script
+# -----------------------------
+NB: Trial to get other metadata for mash SNPs and to plot that data as colors in the mashhattan to add information to these plots.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
