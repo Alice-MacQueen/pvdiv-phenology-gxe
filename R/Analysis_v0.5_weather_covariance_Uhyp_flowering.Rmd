@@ -298,9 +298,9 @@ for(k in c(2)){
 ## 3a. Covar Loadings
 How many SNP effects load onto each covariance matrix?
 ```{r}
-gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Strong_Effects19000SNPs_FL50_Gulf.rds")
-midwm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Strong_Effects33000SNPs_FL50_Midwest.rds")
-gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Strong_Effects19000SNPs_FL50_Gulf_and_Midwest.rds")
+gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects19000SNPs_FL50_Gulf.rds")
+midwm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects33000SNPs_FL50_Midwest.rds")
+gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects19000SNPs_FL50_Gulf_and_Midwest.rds")
 ```
 
 ### i. Midwest

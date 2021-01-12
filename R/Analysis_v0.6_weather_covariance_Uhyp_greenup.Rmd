@@ -17,6 +17,7 @@ library(tidyverse)
 library(bigsnpr)
 library(switchgrassGWAS)
 library(mashr)
+library(rlist)
 ```
 
 # Load project data
@@ -192,10 +193,10 @@ e.g.
 
 ### run mash 
 ```{r}
-for(k in c(1, 3)){
+for(k in c(1,3,2)){
 
   numSNPs <- 19000
-  m_out <- mash_standard_run(path = file.path(outputdir, names(subpop_v)[k]),
+  m_out <- mash_standard_run(path = file.path(outputdir), #, names(subpop_v)[k]), # use to run on genegenie within mash dirs
                              numSNPs = numSNPs, 
                              U_hyp = U_hyp,
                              suffix = paste0("GR50_", names(subpop_v)[k]),
@@ -220,6 +221,181 @@ inputfiles
 •	We looked for enrichments of genes that could potentially affect flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering.
 •	Rerun greenup mash and rewrite greenup mash section.
 
+## 3a. Covar Loadings
+How many SNP effects load onto each covariance matrix?
+```{r}
+gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects19000SNPs_GR50_Gulf.rds")
+
+gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects19000SNPs_GR50_Gulf_and_Midwest.rds")
+```
+44765 SNPs tested for G&M, 45931 SNPs tested for Gulf.
+
+Midwest I haven't run successfully yet as of 2021-01-12 - I will need to remove some locations with all-zero effects, probably.
+
+### ii. Gulf
+```{r}
+length(get_significant_results(gulfm))  # 9142/45931  # 19.9%
+get_significant_results(gulfm)[1:10]
+
+
+covargulf <- mash_plot_covar(gulfm, suffix = "19000SNPs_GR50_Gulf", saveoutput = TRUE)
+covargulf
+get_U_by_mass(gulfm)
+mash_plot_Ulist(gulfm, range = get_U_by_mass(gulfm), limits = FALSE)
+mash_plot_manhattan_by_condition(gulfm, saveoutput = FALSE)
+mash_plot_sig_by_condition(gulfm, saveoutput = FALSE)
+```
+
+### ii. G&M
+```{r}
+length(get_significant_results(gandm))  # 15104/44765  # 33.7%
+get_significant_results(gandm)[1:10]
+
+
+covargam <- mash_plot_covar(gandm, suffix = "19000SNPs_GR50_Gulf_and_Midwest", saveoutput = TRUE)
+covargam
+get_U_by_mass(gandm)
+mash_plot_Ulist(gandm, range = get_U_by_mass(gandm), limits = FALSE)
+mash_plot_manhattan_by_condition(gandm, saveoutput = FALSE)
+mash_plot_sig_by_condition(gandm, saveoutput = FALSE)
+```
+
+```{r}
+covargam$covar_df %>% 
+  mutate(Type = case_when(grepl("ED_", `Covariance Matrix`) ~ "data-driven",
+                          grepl("single_effect", `Covariance Matrix`) ~ "canonical",
+                          grepl("simple_het", `Covariance Matrix`) ~ "canonical",
+                          grepl("no_effects", `Covariance Matrix`) ~ "canonical",
+                          grepl("identity", `Covariance Matrix`) ~ "canonical",
+                          grepl("equal_effects", `Covariance Matrix`) ~ "canonical",
+                          grepl("_and_Midwest$", `Covariance Matrix`) ~ "GAM_hyp",
+                          grepl("Midwest$", `Covariance Matrix`) ~ "Midw_hyp",
+                          grepl("Gulf$", `Covariance Matrix`) ~ "Gulf_hyp",
+                          TRUE ~ "other"
+                          )) %>%
+  group_by(Type) %>%
+  summarise(Mass = sum(Mass))
+```
+Gulf: 20% canonical, 68.5% data-driven, 9.5% Gulf hyp, 1.6% Midwest hyp
+Gulf & Midwest: 28% canonical, 62% data-driven, 5.5% Gulf, 1.2% Midwest, 2.8% G&M
+
+Not stunning, especially compared to how the flowering hyp do.
+
+## 3b.	Mashhattans 
+Mashhattans colored by covariance matrices.
+
+### ii. Plot setup
+
+Get posterior weight dataframe for the covariance matrix grid. Per SNP/row, entries in this grid sum to 1.
+
+Get log10BayesFactor for mash SNPs also and combine these into a dataframe for ggplot.
+```{r}
+m <- gandm
+log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+    as.data.frame() %>%
+    rownames_to_column(var = "value") %>%
+    mutate(value = as.integer(.data$value)) %>%
+    as_tibble() %>%
+    left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+    dplyr::rename(log10BayesFactor = .data$V1) %>%
+    dplyr::select(-.data$value)
+
+#df <- get_topcov(m)
+
+pw_df <- as_tibble(m$posterior_weights)
+pw_df <- switchgrassGWAS:::get_marker_df(m = m) %>%
+  bind_cols(pw_df)
+
+ggman_df <- pw_df %>%
+  #left_join(m_meta) %>%
+  separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+           extra = "merge", convert = TRUE) %>%
+  left_join(log10bf_df, by = "Marker") %>%
+  arrange(.data$Chr, .data$Pos) 
+
+log10BF <- expression(paste("log"[10], plain("(Bayes Factor)")))
+
+mash_plot_covar(m)
+```
+
+Make a list containing all of the ggplots for all entries in the covariance grid represented by `pw_df`.
+Then view all the ggplots in gglist.
+```{r}
+gglist <- list()
+for(i in seq_along(names(pw_df)[-(1:2)])){
+var <- names(pw_df)[i+2]   
+gglist[[i]] <- ggman_df %>%
+  arrange(!! sym(var)) %>%
+  ggplot(aes(x = .data$Pos, y = .data$log10BayesFactor)) +
+  switchgrassGWAS::theme_oeco +
+  geom_point(aes(color = !! sym(var), fill = !! sym(var),
+                 shape = as.factor(.data$Chr))) +
+  facet_wrap(~ .data$Chr, nrow = 1, scales = "free_x", strip.position = "bottom") +
+  scale_color_viridis_c(option = "D", end = 0.95) + 
+  scale_fill_viridis_c(option = "D", end = 0.95) +
+  theme(strip.text = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
+        axis.text.x = element_blank(),
+        legend.text = element_text(size = 8),
+        axis.ticks.x = element_blank(),
+        panel.background = element_rect(fill=NA)) +
+  labs(x = "Chromosome", y = log10BF) +
+  scale_x_continuous(expand = c(0.32, 0.32)) +
+  scale_shape_manual(values = rep(c(21,22),9), guide = FALSE) +
+  geom_hline(yintercept = 2, linetype = 2) +
+  ggtitle(var)
+}
+gglist
+```
+
+Which covariance grids have SNPs with log10BF > 2 that load strongly onto them?
+For Gulf mash:
+GR50_Gulf.6: many, almost all < 2
+GR50_Midwest.6: many, almost all < 2
+equal_effects.7: many, almost all < 2
+GR50_Gulf.6.7: many, almost all < 2
+equal_effects.8: some, all <2
+ED_PCA_1.9 many, many > 2
+ED_PCA_2.9 many, few > 2
+ED_PCA_4.9 some, few > 2
+ED_tPCA.9: many, many > 2
+ED_PCA_3.10: many, few > 2
+ED_PCA_5.10: some, few > 2
+OK.10 many, some > 2, many >0.8 loading & > 2
+SD.10 many, some > 2
+cgdd_12c_G&M.10: few, few > 2, some with 80%+ loading here
+
+
+ED_tPCA.12: many, many > 2, many >0.8 loading esp at high log10BF
+SD.12: many, many > 2, many > 0.8 loading esp at high log10BF
+
+TX1.15: few bg, few >2
+
+```{r}
+var <- names(ggman_df)[ncol(ggman_df)-1]  
+ggman_df %>%
+  pivot_longer(cols = null:var, names_to = "covar_grid", values_to = "loading") %>%
+  filter(loading > 0.5) %>%
+  group_by(log10BayesFactor > 2, covar_grid, loading > 0.8) %>%
+  tally()
+```
+## 3c. Data-driven mat
+
+What patterns do the data-driven matrices capture that our weather matrices don’t capture?
+
+SVD and plots of effects for the ED_PCA matrices.
+
+## 3d. DS & AP
+
+We characterized patterns of differential sensitivity and antagonistic pleiotropy between all SNPs and all pairs of gardens.
+
+
+## 3e. Enrichments
+We looked for enrichments of genes that could potentially affect flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering.
+
+## 3f. Loglikelihood
+
+log likelihood of models with and without U_hyp. 
 
 
 
