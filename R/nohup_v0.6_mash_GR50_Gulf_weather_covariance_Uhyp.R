@@ -100,7 +100,7 @@ i = 4  # change this for different scripts
 k = 3
 numSNPs <- numSNPs_v[i]
 suffix <- suffix_v[i]
-U_ed <- file.path(mashdir, paste0("Model_of_random_tests_", numSNPs, "SNPs_", 
+U_ed <- file.path(mashdir, paste0("Mash_data_driven_covariances_", numSNPs, "_", 
                                   suffix, ".rds"))
 
 m_out <- mash_standard_run(path = file.path(outputdir), 
