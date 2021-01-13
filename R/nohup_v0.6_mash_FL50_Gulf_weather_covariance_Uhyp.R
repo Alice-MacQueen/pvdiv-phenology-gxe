@@ -43,7 +43,8 @@ inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
 
 
 
-## Define U_hyp: needs to change for Midwest, which drops gardens. -------------
+# Define U_hyp
+# needs to change in two (Untitled) places for Midwest to drop gardens. --------
 
 U_hyp <- list()
 # change based on phenotype ---------------
@@ -56,7 +57,7 @@ phe_hyp <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl",
 for(i in seq_along(phe_hyp)){
   for(k in seq_along(subpop_v2)){
     
-    cov_df <- phe_gr_df %>%
+    cov_df <- phe_fl_df %>%
       ungroup() %>%
       left_join(select(sites, SITE, manu_site), by = "SITE") %>%
       filter(SUBPOP %in% subpop_v2[[k]]) %>%
@@ -92,14 +93,14 @@ for(i in seq_along(phe_hyp)){
 numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
 suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
               "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
-i = 1  # change this for different scripts -------------------------------------
+i = 2  # change this for different scripts -------------------------------------
 # B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds
 # B_hat_strong_df_19000topSNPs_FL50_Gulf.rds
 # B_hat_strong_df_19000topSNPs_GR50_Gulf_and_Midwest.rds
 # B_hat_strong_df_19000topSNPs_GR50_Gulf.rds
 # B_hat_strong_df_24000topSNPs_GR50_Midwest.rds
 # B_hat_strong_df_33000topSNPs_FL50_Midwest.rds
-k = 1  # 1 G&M 2 M 3 G change based on subpop -------
+k = 3  # 1 G&M 2 M 3 G change based on subpop -------
 
 
 numSNPs <- numSNPs_v[i]
