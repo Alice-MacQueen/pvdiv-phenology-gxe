@@ -298,8 +298,8 @@ for(k in c(2)){
 ## 3a. Covar Loadings
 How many SNP effects load onto each covariance matrix?
 ```{r}
-gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects19000SNPs_FL50_Gulf.rds")
-midwm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects33000SNPs_FL50_Midwest.rds")
+gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects19000SNPs_FL50_Gulf.rds")
+midwm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects33000SNPs_FL50_Midwest.rds")
 gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects19000SNPs_FL50_Gulf_and_Midwest.rds")
 ```
 
@@ -350,6 +350,7 @@ covarG <- mash_plot_covar(gulfm, saveoutput = TRUE)
 get_U_by_mass(gulfm)
 mash_plot_Ulist(gulfm, range = get_U_by_mass(gulfm))
 ```
+
 ```{r}
 covargam$covar_df %>% 
   mutate(Type = case_when(grepl("ED_", `Covariance Matrix`) ~ "data-driven",

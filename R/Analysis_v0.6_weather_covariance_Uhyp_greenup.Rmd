@@ -22,7 +22,7 @@ library(rlist)
 
 # Load project data
 
-```{r}
+```{r load data}
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
@@ -71,7 +71,7 @@ Make weather corr/covar matrices
 Do this for three pop subsets for 'cgdd_12c_10d' and maybe for 'cgdd_12c_18d' and 'cgdd_12c_5d'.
 
 Function to plot covariance matrices to look at their differences
-```{r}
+```{r pvdiv_plot_cov function}
 pvdiv_plot_cov <- function(covdf){
   U1 <- cor_phe
   if(isSymmetric(U1)){
@@ -109,7 +109,7 @@ pvdiv_plot_cov <- function(covdf){
 ## 1a. Make U_hyp
 
 Specify in the phe_hyp vector which functions of weather I want to make U_hyp for mash.
-```{r}
+```{r make u_hyp}
 U_hyp <- list()
 ggcov <- list()
 phe_hyp <- c("GR50", "cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", "tave_10d")
@@ -161,7 +161,7 @@ Some univariate GWAS for the Midwest had population structure issues. Mostly for
 
 ### mash inputs 
 NB: Do this on server, where the large GWAS_datatable objects were created.
-```{r}
+```{r mash inputs with gulf}
 library
 k = 3 # subpop: G&M, M, Gulf
 for(k in c(1, 3)){
@@ -191,8 +191,17 @@ e.g.
 `scp -i ~/Github/jls_alice alice@popgen.biosci.utexas.edu:~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Part-One-Output*  /home/alice/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/
 `
 
+Files with the six suffixes I have/want mash results for:
+B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds
+B_hat_strong_df_19000topSNPs_FL50_Gulf.rds
+B_hat_strong_df_19000topSNPs_GR50_Gulf_and_Midwest.rds
+B_hat_strong_df_19000topSNPs_GR50_Gulf.rds
+B_hat_strong_df_24000topSNPs_GR50_Midwest.rds
+B_hat_strong_df_33000topSNPs_FL50_Midwest.rds
+
+
 ### run mash 
-```{r}
+```{r run mash with gulf}
 for(k in c(1,3,2)){
 
   numSNPs <- 19000
@@ -207,33 +216,82 @@ inputfiles
 ```
 
 
-## 2b. Midwest, dropping some gardens.
+## 2b. Midwest, dropping gardens with zero values.
+Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.
+```{r check midwest}
+mwdf <- readRDS(file.path(outputdir,
+                          "B_hat_strong_df_19000topSNPs_GR50_Midwest.rds"))
+
+summary(mwdf)
+```
+
+
+```{r mash midwest}
+k=2
+phe_suffix <- paste("GR50", subpop_v[k], 
+                    sep = "*.*")
+snp <- snp_attach(inputfiles$SNPfiles[k])
+gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix))
+gwas_rds <- gwas_rds[c(1:4,6:8)]
+
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -41) %>%
+    str_replace(., "_$", "")
+phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir), 
+                           snp = snp, gwas_rds = gwas_rds, 
+                           phenotypes = phenotypes, numSNPs = numSNPs, 
+                           clump = TRUE, scaled = TRUE, saveoutput = TRUE,
+                           suffix = paste0("GR50_", names(subpop_v)[k]))
+m_out <- mash_standard_run(path = file.path(outputdir), #, names(subpop_v)[k]), # use to run on genegenie within mash dirs
+                             numSNPs = numSNPs, 
+                             suffix = paste0("GR50_", names(subpop_v)[k]),
+                             saveoutput = TRUE)
+saveRDS(m_out, file = file.path(mashdir, paste0("Strong_Effects_", numSNPs,
+                                                "GR50_", names(subpop_v)[k],
+                                                "_no_Uhyp.rds")))
+m_out1 <- mash_standard_run(path = file.path(outputdir), numSNPs = numSNPs, 
+                           U_ed = file.path(outputdir, paste0("Model_of_",
+                           "random_tests_24000SNPs_GR50_Midwest.rds")),
+                           U_hyp = U_hyp,
+                           suffix = paste0("GR50_", names(subpop_v)[k]),
+                           saveoutput = FALSE)
+saveRDS(m_out1, file = file.path(mashdir, paste0("Strong_Effects_", numSNPs,
+                                                "GR50_", names(subpop_v)[k],
+                                                "_no_Uhyp.rds")))
+```
 
 
 # -----------------------------
 
 # 3. Analyse mash output
-## -- analysis outline --
-•	How many SNP effects load onto each covariance matrix?
-•	Mashhattans colored by covariance matrices.
-•	What patterns do the data-driven matrices capture that our weather matrices don’t capture?
-•	We characterized patterns of differential sensitivity and antagonistic pleiotropy between all SNPs and all pairs of gardens.
-•	We looked for enrichments of genes that could potentially affect flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering.
-•	Rerun greenup mash and rewrite greenup mash section.
+## -- analysis outline 2020-01-12 --
+•	3a What is the log likelihood of the mash models (x3) with and without U_hyp?
+•	3b. How many SNP effects load onto each covariance matrix? What about SNP effects with log10BF > 2?
+•	3c. Mashhattans colored by covariance matrices. Report (and plot/table) SNPs with log10BF > 2 and high loading (>0.5? 0.8?) onto one covar matrix.
+  • Stress any Uhyp where the above is true and talk about candidate genes here. We have both an environmental driver and a small genomic interval here, these are of particular interest.
+•	3d. We looked for enrichments of genes that could potentially affect greenup/flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering. 
+  •	Also, we looked at other metadata enrichments for these top SNPs.
+•	3e. What patterns do the data-driven matrices capture that our weather matrices don’t capture?
+•	3f. Finally, talk about overall SNP patterns seen in the phenotype: patterns of DS & AP.
 
-## 3a. Covar Loadings
+
+
+## 3b. Covar Loadings
 How many SNP effects load onto each covariance matrix?
-```{r}
-gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects19000SNPs_GR50_Gulf.rds")
+```{r load mash objects}
+gulfm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects19000SNPs_GR50_Gulf_Uhyp.rds")
 
-gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects19000SNPs_GR50_Gulf_and_Midwest.rds")
+gandm <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects19000SNPs_GR50_Gulf_and_Midwest_Uhyp.rds")
 ```
 44765 SNPs tested for G&M, 45931 SNPs tested for Gulf.
 
 Midwest I haven't run successfully yet as of 2021-01-12 - I will need to remove some locations with all-zero effects, probably.
 
 ### ii. Gulf
-```{r}
+```{r gulf mash results}
 length(get_significant_results(gulfm))  # 9142/45931  # 19.9%
 get_significant_results(gulfm)[1:10]
 
@@ -247,7 +305,7 @@ mash_plot_sig_by_condition(gulfm, saveoutput = FALSE)
 ```
 
 ### ii. G&M
-```{r}
+```{r gulf and midwest mash results}
 length(get_significant_results(gandm))  # 15104/44765  # 33.7%
 get_significant_results(gandm)[1:10]
 
@@ -281,7 +339,7 @@ Gulf & Midwest: 28% canonical, 62% data-driven, 5.5% Gulf, 1.2% Midwest, 2.8% G&
 
 Not stunning, especially compared to how the flowering hyp do.
 
-## 3b.	Mashhattans 
+## 3c.	Mashhattans 
 Mashhattans colored by covariance matrices.
 
 ### ii. Plot setup
@@ -289,7 +347,7 @@ Mashhattans colored by covariance matrices.
 Get posterior weight dataframe for the covariance matrix grid. Per SNP/row, entries in this grid sum to 1.
 
 Get log10BayesFactor for mash SNPs also and combine these into a dataframe for ggplot.
-```{r}
+```{r mashhattan plot setup}
 m <- gandm
 log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
     as.data.frame() %>%
@@ -320,7 +378,7 @@ mash_plot_covar(m)
 
 Make a list containing all of the ggplots for all entries in the covariance grid represented by `pw_df`.
 Then view all the ggplots in gglist.
-```{r}
+```{r mashhattan plots loop}
 gglist <- list()
 for(i in seq_along(names(pw_df)[-(1:2)])){
 var <- names(pw_df)[i+2]   
@@ -371,7 +429,7 @@ SD.12: many, many > 2, many > 0.8 loading esp at high log10BF
 
 TX1.15: few bg, few >2
 
-```{r}
+```{r snps with high sig and high covar loadings}
 var <- names(ggman_df)[ncol(ggman_df)-1]  
 ggman_df %>%
   pivot_longer(cols = null:var, names_to = "covar_grid", values_to = "loading") %>%
@@ -379,23 +437,36 @@ ggman_df %>%
   group_by(log10BayesFactor > 2, covar_grid, loading > 0.8) %>%
   tally()
 ```
-## 3c. Data-driven mat
+# -----------
+## 3d. Enrichments
+•	3d. We looked for enrichments of genes that could potentially affect greenup/flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering. 
+  •	Also, we looked at other metadata enrichments for these top SNPs.
+
+mashdir is "~/Github/pvdiv-phenology-gxe/analysis/mash/", then there are three subpop-specific directories within that.
+
+```{r}
+mash_obj <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects33000SNPs_FL50_Midwest_Uhyp.rds")
+snp <- snp_attach("~/Github/pvdiv-genome/genetic_subpops/kinship/Pvirgatum_V5_GWAS_363g_Midwest_and_Gulf_subset_maf0.05.rds")
+
+meta_mash_obj <- get_mash_metadata(m = mash_obj, snp = snp, saveoutput = FALSE)
+saveRDS(meta_mash_obj, file = file.path(mashdir, names(subpop_v)[1], 
+                                        paste0("Metadata_associated_with_",
+                                               "alternate_alleles_",
+                                              "33000SNPs_FL50_Midwest",
+                                               "_m_", "363g_snp", ".rds")))
+rm(meta_mash_obj)
+```
+
+
+
+
+## 3e. Data-driven mat
 
 What patterns do the data-driven matrices capture that our weather matrices don’t capture?
 
 SVD and plots of effects for the ED_PCA matrices.
 
-## 3d. DS & AP
+## 3f. DS & AP
 
 We characterized patterns of differential sensitivity and antagonistic pleiotropy between all SNPs and all pairs of gardens.
-
-
-## 3e. Enrichments
-We looked for enrichments of genes that could potentially affect flowering in the 20kb genomic windows surrounding the SNPs with significant effects on flowering.
-
-## 3f. Loglikelihood
-
-log likelihood of models with and without U_hyp. 
-
-
 
