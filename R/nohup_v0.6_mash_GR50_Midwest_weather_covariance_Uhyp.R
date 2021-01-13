@@ -48,10 +48,10 @@ inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
 
 U_hyp <- list()
 # change based on phenotype ---------------
-phe_hyp <- c("GR50", "cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", "tave_10d")
-#phe_hyp <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
-#             "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d", 
-#             "crain_7d")
+phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", 
+             "tave_5d", "tave_10d", "tave_18d")
+#phe_hyp <- c("dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
+#             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
 
 
 for(i in seq_along(phe_hyp)){
@@ -104,8 +104,11 @@ k = 2  # 1 G&M 2 M 3 G change based on subpop -------
 
 numSNPs <- numSNPs_v[i]
 suffix <- suffix_v[i]
+U_ed <- file.path(mashdir, paste0("Model_of_random_tests_", numSNPs, "SNPs_", 
+                                  suffix, ".rds"))
 
 m_out <- mash_standard_run(path = file.path(outputdir), 
+                           U_ed = U_ed,
                            numSNPs = numSNPs, 
                            suffix = suffix,
                            saveoutput = FALSE)
@@ -113,10 +116,11 @@ saveRDS(m_out, file = file.path(mashdir, names(subpop_v)[k],
                                 paste0("Strong_Effects_", numSNPs, "_SNPs_",
                                        suffix, "_no_Uhyp.rds")))
 m_out1 <- mash_standard_run(path = file.path(outputdir), 
-                           numSNPs = numSNPs, 
-                           U_hyp = U_hyp,
-                           suffix = suffix,
-                           saveoutput = FALSE)
+                            U_ed = U_ed,
+                            numSNPs = numSNPs, 
+                            U_hyp = U_hyp,
+                            suffix = suffix,
+                            saveoutput = FALSE)
 saveRDS(m_out1, file = file.path(mashdir, names(subpop_v)[k], 
-                                paste0("Strong_Effects_", numSNPs, "_SNPs_",
-                                       suffix, "_Uhyp.rds")))
+                                 paste0("Strong_Effects_", numSNPs, "_SNPs_",
+                                        suffix, "_Uhyp.rds")))
