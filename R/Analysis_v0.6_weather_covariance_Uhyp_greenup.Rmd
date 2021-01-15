@@ -589,7 +589,7 @@ return(pw_summary)
 }
 
 
-get_pw_filtered(m_gulf_gr_hyp, pw_thresh = 0.1, BF_thresh = 2) %>% 
+get_pw_filtered(m_midw_fl_hyp, pw_thresh = 0.1, BF_thresh = 2) %>% 
   mutate(Type = case_when(grepl("ED_", covar_grid) ~ "data-driven",
                           grepl("Stand", covar_grid) ~ "canonical",
                           grepl("simple_het", covar_grid) ~ "canonical",
@@ -607,13 +607,13 @@ get_significant_results(m_gulf_gr_hyp)[1:10]
 ```
 Not many SNPs with U_hyp loading > 10% and SNP with log10BF > 2:
 Both GR: 10 & 9 SNPs   cgdd_12c_18d_Gulf_and_Midwest x2 (0.9 and 0.10)
-Both FL: 2 SNPs        dyln_change_sec_Midwest
+Both FL: 2 SNPs        dyln_change_sec_Midwest.7
 
 Gulf FL: 0 SNPs
 Gulf GR: 11 & 2 SNPs   cgdd_12c_18d_Gulf_and_Midwest.10 & tave_18d_Gulf_and_Midwest.6
 
 Midw GR: 0 SNPs
-Midw FL: 11 SNPs       cgdd_12c_gr2fl_Gulf_and_Midwest
+Midw FL: 11 SNPs       cgdd_12c_gr2fl_Gulf_and_Midwest.8
 
 ### iii. Plot setup
 Make a list containing all of the ggplots for all entries in the covariance grid represented by `pw_df`.
@@ -700,37 +700,6 @@ os_annos <- ftanno %>%
 ```
 
 # Annotations with rice/thaliana functional annotation papers for specific SNPs
-```{r}
-library(AnnotationDbi)
-txdb <- loadDb("~/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite")
-not_all_na <- function(x) any(!is.na(x))
-not_any_na <- function(x) all(!is.na(x))
-region_size <- 20000
-
-gg_annos <- pw_gg %>% 
-  filter((cgdd_12c_18d_Gulf_and_Midwest.10 > .1 | tave_18d_Gulf_and_Midwest.6 > 0.1) & log10BayesFactor > 2) %>%
-  mutate(CHR = Chr,
-         start = Pos - (region_size/2),
-         end = Pos + (region_size/2)) %>%
-  pvdiv_table_topsnps(., type = "table", txdb = txdb)
-
-gg_annos %>%
-  inner_join(os_annos, by = c("Gene ID")) %>%
-  left_join(osgene_key, by = c("OsGene" = "Symbol")) %>%
-  dplyr::select(where(not_all_na))
-
-top_annos <- pw_gg %>%
-  filter(log10BayesFactor > 2) %>%
-  mutate(CHR = Chr,
-         start = Pos - (region_size/2),
-         end = Pos + (region_size/2)) %>%
-  pvdiv_table_topsnps(., type = "table", txdb = txdb) %>%
-  inner_join(os_annos, by = c("Gene ID")) %>%
-  left_join(osgene_key, by = c("OsGene" = "Symbol")) %>%
-  dplyr::select(where(not_all_na)) %>%
-  group_by(Chr, POS, `Gene ID`) %>%
-  dplyr::slice(1)
-```
 
 ```{r function}
 library(AnnotationDbi)
@@ -788,9 +757,34 @@ annos_gamf <- get_post_annos(m_gam_fl_hyp)
 ```
 
 ```{r}
-annos_gg
-```
+annos_gg %>%
+  filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.05 |
+           tave_18d_Gulf_and_Midwest.6 > 0.05) %>%
+  dplyr::select(where(not_all_na))
 
+annos_gamg %>%
+  filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.05 |
+           cgdd_12c_18d_Gulf_and_Midwest.9 > 0.05) %>%
+  dplyr::select(where(not_all_na))
+
+annos_gamf %>%
+  # dplyr::select(starts_with("dyln_change_sec"))
+  filter(dyln_change_sec_Midwest.7 > 0.05) %>%
+  dplyr::select(where(not_all_na))
+annos_mf %>%
+  # dplyr::select(starts_with("cgdd_12c_gr2fl_Gulf_and"))
+  filter(cgdd_12c_gr2fl_Gulf_and_Midwest.8 > 0.05) %>%
+  dplyr::select(where(not_all_na))
+```
+Not many SNPs with U_hyp loading > 10% and SNP with log10BF > 2:
+Both GR: 10 & 9 SNPs   cgdd_12c_18d_Gulf_and_Midwest x2 (0.9 and 0.10)
+Both FL: 2 SNPs        dyln_change_sec_Midwest.7
+
+Gulf FL: 0 SNPs
+Gulf GR: 11 & 2 SNPs   cgdd_12c_18d_Gulf_and_Midwest.10 & tave_18d_Gulf_and_Midwest.6
+
+Midw GR: 0 SNPs
+Midw FL: 11 SNPs       cgdd_12c_gr2fl_Gulf_and_Midwest.8
 
 
 ### Get mash SNP metadata
