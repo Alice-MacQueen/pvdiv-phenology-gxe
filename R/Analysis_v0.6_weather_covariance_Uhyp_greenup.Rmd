@@ -151,6 +151,7 @@ for(i in seq_along(phe_hyp)){
   }
 }
 
+# ggcov
 ggcov
 ```
 
@@ -286,18 +287,19 @@ m_gulf_fl_no$loglik
 
 -2*(m_midw_gr_no$loglik - m_midw_gr_hyp$loglik) # positive
 -2*(m_midw_fl_no$loglik - m_midw_fl_hyp$loglik) # v. negative 
-1 - pchisq(-2*(m_midw_fl_no$loglik - m_midw_fl_hyp$loglik), 30*32)
-1 - pchisq(-2*(m_midw_gr_no$loglik - m_midw_gr_hyp$loglik), 15*32) # sig
+1 - pchisq(-2*(m_midw_fl_no$loglik - m_midw_fl_hyp$loglik), 30*36)
+1 - pchisq(-2*(m_midw_gr_no$loglik - m_midw_gr_hyp$loglik), 15*36) # sig
 
 
 -2*(m_gam_gr_no$loglik - m_gam_gr_hyp$loglik)  # positive
 -2*(m_gam_fl_no$loglik - m_gam_fl_hyp$loglik) # v. positive
-1 - pchisq(-2*(m_gam_fl_no$loglik - m_gam_fl_hyp$loglik), 30*32) # sig
-1 - pchisq(-2*(m_gam_gr_no$loglik - m_gam_gr_hyp$loglik), 15*32) # sig
+1 - pchisq(-2*(m_gam_fl_no$loglik - m_gam_fl_hyp$loglik), 30*36) # sig
+1 - pchisq(-2*(m_gam_gr_no$loglik - m_gam_gr_hyp$loglik), 15*36) # sig
 
 
 1-pchisq(0.0279,1) # LR -2(L0 - L1) gives LR of 0.0279 which gives p of 0.87
 1-pchisq((6.89), 1) # LR of 6.89 gives p of ~0.01
+8+7+6+5+4+3+2+1
 ```
 
 A test using the log-likelihood
@@ -410,6 +412,188 @@ get_cov_type(m_gam_gr_hyp, summarise = TRUE, subpop = TRUE)
 get_cov_type(m_gam_fl_hyp, summarise = TRUE, subpop = TRUE)
 ```
 
+
+```{r}
+get_U_by_mass(m_gulf_gr_hyp,thresh = 0.01)
+cov_gr1 <- mash_plot_Ulist(m_gulf_gr_hyp, range = 18, limits = TRUE)
+cov_gr2 <- mash_plot_Ulist(m_gam_gr_hyp, 13, limits = TRUE)
+
+fig_eqeff <- cov_gr1$equal_effects_df %>%
+  ggplot(aes(x = .data$rowU, y = .data$colU)) +
+  switchgrassGWAS::theme_oeco +
+  geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                "white", "#27AD81FF", "#5DC863FF",
+                                "#FDE725FF"),
+                       limits = c(-1, 1)) +
+  theme(legend.position = "none",
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank(),
+        axis.title.y.right = element_text()) +
+  labs(x = "", y = "", subtitle = "equal_effects")
+
+fig_ok_eff <- cov_gr2$Stand_BhatGulf_and_Midwest_GR50_OK_df %>%
+  ggplot(aes(x = .data$rowU, y = .data$colU)) +
+  switchgrassGWAS::theme_oeco +
+  geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                "white", "#27AD81FF", "#5DC863FF",
+                                "#FDE725FF"),
+                       limits = c(-1, 1)) +
+  theme(legend.position = "none",
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank()) +
+  xlab("") + ylab("") + ggtitle("single_effect_OK")
+```
+
+
+```{r second try making covar examples}
+phe_hyp <- c("tave_10d", "tave_18d", "dyln_fl50", "cgdd_12c_gr2fl")
+
+for(i in seq_along(phe_hyp)){
+  for(k in seq_along(subpop_v2)){
+    
+    if (i %in% c(1,2)) {
+      cov_df <- phe_gr_df %>%
+        ungroup() %>%
+        left_join(select(sites, SITE, manu_site), by = "SITE") %>%
+        filter(SUBPOP %in% subpop_v2[[k]]) %>%
+        select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+        group_by(PLANT_ID, SUBPOP, manu_site) %>%
+        mutate(IND = row_number()) %>%
+        pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+        mutate(PLANT_ID = as.factor(PLANT_ID),
+               IND = as.factor(IND)) %>%
+        select(-IL) %>%
+        select(PLANT_ID, SUBPOP, IND, TX1, TX2, TX3, OK, MO, NE, MI, SD)
+    } else {
+      cov_df <- phe_fl_df %>%
+        ungroup() %>%
+        left_join(select(sites, SITE, manu_site), by = "SITE") %>%
+        filter(SUBPOP %in% subpop_v2[[k]]) %>%
+        select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+        group_by(PLANT_ID, SUBPOP, manu_site) %>%
+        mutate(IND = row_number()) %>%
+        pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+        mutate(PLANT_ID = as.factor(PLANT_ID),
+               IND = as.factor(IND)) %>%
+        select(-IL) %>%
+        select(PLANT_ID, SUBPOP, IND, TX1, TX2, TX3, OK, MO, NE, MI, SD)
+    }
+
+  cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+  diag(cor_phe) <- cov_df %>%
+    ungroup() %>%
+    summarise(TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
+              TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
+              TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE),
+              OK = sqrt(var(OK, na.rm = TRUE))/mean(OK, na.rm = TRUE),
+              MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
+              NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
+              MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),
+              SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE)) %>%
+    as_vector()
+
+  if(isSymmetric(cor_phe)){
+        for(m in 1:nrow(cor_phe)){
+          for(j in 1:ncol(cor_phe)){
+            if(m < j){
+              cor_phe[m, j] <- NA
+            }
+          }
+        }
+    }
+  U1 <- as_tibble(cor_phe, rownames = "rowU", .name_repair = "unique") %>%
+          pivot_longer(cols = -.data$rowU, names_to = "colU",
+                       values_to = "covar") %>%
+          filter(!is.na(.data$covar))
+  U1$colU <- factor(U1$colU, levels = colnames(cor_phe))
+  U1$rowU <- factor(U1$rowU, levels = colnames(cor_phe))
+  U1 <- U1 %>%
+    mutate(phe = phe_hyp[i],
+           subpop = names(subpop_v2)[k],
+           subpop = case_when(subpop == "Gulf_and_Midwest" ~ "Both",
+                              TRUE ~ subpop))
+  
+  if(i == 1 & k == 1){
+    cov_flex <- U1
+  } else {
+    cov_flex <- cov_flex %>%
+      full_join(U1)
+  }
+    }
+}
+
+cov_flex$phe <- factor(cov_flex$phe, levels = c("tave_18d", "tave_10d", "dyln_fl50", "cgdd_12c_gr2fl"))
+
+
+figure2_a <- cov_flex %>%
+  filter(phe %in% c("tave_10d", "tave_18d")) %>%
+  ggplot(aes(x = .data$rowU, y = .data$colU)) +
+  switchgrassGWAS::theme_oeco +
+  geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                "white", "#27AD81FF", "#5DC863FF",
+                                "#FDE725FF"),
+                       limits = c(-1, 1)) +
+  #geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+  facet_grid(rows = vars(phe), cols = vars(subpop)) + 
+  theme(legend.position = "right",
+        #axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank(),
+        panel.spacing.x = unit(-0, 'cm')) +
+  xlab("") + ylab("")
+
+legend <- get_legend(figure2_a)  
+figure2_a <- cov_flex %>%
+  filter(phe %in% c("tave_10d", "tave_18d")) %>%
+  ggplot(aes(x = .data$rowU, y = .data$colU)) +
+  switchgrassGWAS::theme_oeco +
+  geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                "white", "#27AD81FF", "#5DC863FF",
+                                "#FDE725FF"),
+                       limits = c(-1, 1)) +
+  #geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+  facet_grid(rows = vars(phe), cols = vars(subpop)) + 
+  theme(legend.position = "none",
+        #axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank(),
+        panel.spacing.x = unit(-0, 'cm')) +
+  xlab("") + ylab("")
+
+figure2_d <- cov_flex %>%
+  filter(phe %in% c("cgdd_12c_gr2fl", "dyln_fl50")) %>%
+  ggplot(aes(x = .data$rowU, y = .data$colU)) +
+  switchgrassGWAS::theme_oeco +
+  geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                "white", "#27AD81FF", "#5DC863FF",
+                                "#FDE725FF"),
+                       limits = c(-1, 1)) +
+  #geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+  facet_grid(rows = vars(phe), cols = vars(subpop)) + 
+  theme(legend.position = "none",
+        #axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank(),
+        panel.spacing.x = unit(-0, 'cm')) +
+  xlab("") + ylab("")
+```
+
+
 ```{r make rough draft figure 2}
 df_2a <- get_cov_type(m_gulf_gr_hyp, summarise = TRUE) %>%
   mutate(subpop = "Gulf",
@@ -483,9 +667,9 @@ f2a <- df_2gr_a %>%
   geom_bar(aes(fill = Type), stat = "identity") +
   facet_wrap(~subpop) +
   coord_flip() + scale_fill_viridis_d(end = 0.9) +
-  theme(legend.position = c(-0.30, 0.3),
+  theme(legend.position = c(-0.4, 0.3),
         axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
-        panel.spacing.x = unit(-0, 'cm'))
+        panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
 f2c <- df_2fl_a %>%
   filter(Mass > 1e-06) %>%
   ggplot(aes(x = `Covariance Matrix`, y = Mass)) + 
@@ -494,7 +678,7 @@ f2c <- df_2fl_a %>%
   coord_flip() + scale_fill_viridis_d(end = 0.9) +
   theme(legend.position = "none",
         axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
-        panel.spacing.x = unit(-0, 'cm'))
+        panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
 
 
 fig2 <- plot_grid(f2a, f2b, f2c, f2d, nrow = 2, rel_widths = c(0.75, 0.25), rel_heights = c(0.53, 0.47))
@@ -503,6 +687,20 @@ save_plot("../manuscript/plots/Figure_2_mash_covariance_masses.png", base_height
 47.3% of effect mass for both subpop flowering was on hyp matrices, while only 8.5% of greenup was.
 Gulf greenup: 8.4%  flowering: 31.8%
 Midwest greenup: 28.6% flowering 45.1%
+
+```{r}
+ggdraw() +
+  draw_plot(figure2_a, x = -.02, y = 0.51, width = 0.32, height = 0.35) +
+  draw_plot(fig_eqeff, x = 0.02, y = 0.35, width = 0.125, height = 0.2) +
+  draw_plot(figure2_d, x = -.02, y = 0.03, width = 0.32, height = 0.35) +
+  draw_plot(f2a, x = 0.3, y = 0.47, width = 0.55, height = 0.53) +
+  draw_plot(legend, x = 0.15, y = 0.34, width = 0.1, height = 0.2) +
+  draw_plot(f2b, x = 0.85, y = 0.47, width = 0.15, height = 0.53) +
+  draw_plot(f2c, x = 0.3, y = 0, width = 0.55, height = 0.47) +
+  draw_plot(f2d, x = 0.85, y = 0, width = 0.15, height = 0.47)
+
+save_plot(filename = "Figure_2_Covariance_matrices_and_posterior_weights.png", plot = last_plot(), base_height = 8, base_width = 9)
+```
 
 
 44765 SNPs tested for G&M, 45931 SNPs tested for Gulf.
