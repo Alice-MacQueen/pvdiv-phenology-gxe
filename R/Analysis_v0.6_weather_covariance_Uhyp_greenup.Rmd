@@ -956,23 +956,24 @@ annos_gamf <- get_post_annos(m_gam_fl_hyp)
 
 ```{r}
 annos_gg %>%
-  filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.05 |
-           tave_18d_Gulf_and_Midwest.6 > 0.05) %>%
+  filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.1 |
+           tave_18d_Gulf_and_Midwest.6 > 0.1) %>%
   dplyr::select(where(not_all_na))
 
 annos_gamg %>%
-  filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.05 |
-           cgdd_12c_18d_Gulf_and_Midwest.9 > 0.05) %>%
+  filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.1 |
+           cgdd_12c_18d_Gulf_and_Midwest.9 > 0.1) %>%
   dplyr::select(where(not_all_na))
 
-annos_gamf %>%
-  # dplyr::select(starts_with("dyln_change_sec"))
-  filter(dyln_change_sec_Midwest.7 > 0.05) %>%
-  dplyr::select(where(not_all_na))
 annos_mf %>%
   # dplyr::select(starts_with("cgdd_12c_gr2fl_Gulf_and"))
-  filter(cgdd_12c_gr2fl_Gulf_and_Midwest.8 > 0.05) %>%
+  filter(cgdd_12c_gr2fl_Gulf_and_Midwest.8 > 0.1) %>%
   dplyr::select(where(not_all_na))
+annos_gamf %>%
+  # dplyr::select(starts_with("dyln_change_sec"))
+  filter(dyln_change_sec_Midwest.7 > 0.1) %>%
+  dplyr::select(where(not_all_na))
+
 ```
 Not many SNPs with U_hyp loading > 10% and SNP with log10BF > 2:
 Both GR: 10 & 9 SNPs   cgdd_12c_18d_Gulf_and_Midwest x2 (0.9 and 0.10)
