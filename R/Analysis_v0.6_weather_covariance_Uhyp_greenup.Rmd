@@ -1037,6 +1037,7 @@ ED_tPCA is made up of the 5 ED_PCA_#, each of which explains a different PVE of 
 ### i. Function
 
 ```{r functions to plot svd of data driven covar matrices}
+m <- m_midw_fl_hyp
 get_svd_df <- function(m, i = NULL, eigen_v = 1){
   Ulist <- switchgrassGWAS:::get_Ulist(m)
   stopifnot(eigen_v %in% c(1,2,3,4,5))
@@ -1058,7 +1059,9 @@ get_svd_df <- function(m, i = NULL, eigen_v = 1){
   separate(Phenotype, into = c("Phenotype", "Garden"), sep = -3) %>%
   mutate(Phenotype = str_remove(Phenotype, "_$"),
          Garden = str_remove(Garden, "^_"),
-         PVE_EV = PVE_EV)
+         PVE_EV = PVE_EV,
+         Garden = case_when(grepl("^0_M$", Garden) ~ "MI",
+                            TRUE ~ Garden))
   ggb1$Garden <- factor(ggb1$Garden, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
   return(ggb1)
 }
@@ -1066,15 +1069,15 @@ get_svd_df <- function(m, i = NULL, eigen_v = 1){
 mash_plot_svd <- function(m, i = NULL, eigen_v = 1){
   b1_df <- get_svd_df(m = m, i = i, eigen_v = eigen_v)
   if(eigen_v == 1){
-    ylab <- paste0("First eigenvector (PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
+    ylab <- paste0("First eigenvector\n(PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
   } else if(eigen_v == 2){
-    ylab <- paste0("Second eigenvector (PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
+    ylab <- paste0("Second eigenvector\n(PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
   } else if(eigen_v == 3){
-    ylab <- paste0("Third eigenvector (PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
+    ylab <- paste0("Third eigenvector\n(PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
   } else if(eigen_v == 4){
-    ylab <- paste0("Fourth eigenvector (PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
+    ylab <- paste0("Fourth eigenvector\n(PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
   } else if(eigen_v == 5){
-    ylab <- paste0("Fifth eigenvector (PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
+    ylab <- paste0("Fifth eigenvector\n(PVE = ", eval(round(b1_df$PVE_EV[1]*100,1)), "%)")
   }
   ggb1 <- b1_df %>%
     ggplot(aes(x = Garden, y = `Eigenvector`)) +
@@ -1101,6 +1104,69 @@ gxe_mf <- get_GxE(m_midw_fl_hyp)
 gxe_gamf <- get_GxE(m_gam_fl_hyp)
 ```
 
+```{r}
+corrmatrix <-  gxe_mf$S_AP
+pvdiv_plot_cor <- function(corrmatrix, upper = NULL, legend = FALSE){
+  U1 <- corrmatrix
+
+  U1 <- as_tibble(U1, rownames = "rowU", .name_repair = "unique") %>%
+          pivot_longer(cols = -.data$rowU, names_to = "colU",
+                       values_to = "covar") %>%
+          filter(!is.na(.data$covar)) %>%
+    mutate(rowU = str_remove(rowU, 
+                             "Stand_BhatGulf_and_Midwest_")) %>%
+    mutate(rowU = str_remove(rowU, "Stand_BhatGulf_")) %>%
+    mutate(rowU = str_remove(rowU, "Stand_BhatMidwest_")) %>%
+    mutate(rowU = str_remove(rowU, "GR50_")) %>%
+    mutate(rowU = str_remove(rowU, "FL50_")) %>%
+    mutate(colU = str_remove(colU, 
+                             "Stand_BhatGulf_and_Midwest_")) %>%
+    mutate(colU = str_remove(colU, "Stand_BhatGulf_")) %>%
+    mutate(colU = str_remove(colU, "Stand_BhatMidwest_")) %>%
+    mutate(colU = str_remove(colU, "GR50_")) %>%
+    mutate(colU = str_remove(colU, "FL50_")) %>%
+    mutate(rowU = case_when(grepl("^M$", rowU) ~ "MI",
+                            TRUE ~ rowU),
+           colU = case_when(grepl("^M$", colU) ~ "MI",
+                            TRUE ~ colU),)
+  U1$colU <- factor(U1$colU, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+  U1$rowU <- factor(U1$rowU, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+  U1 <- arrange(U1, rowU, colU) %>%
+    pivot_wider(names_from = colU, values_from = covar) 
+  for(i in 1:nrow(U1)){
+    for(j in 2:ncol(U1)){
+      if(i <= j-1){
+        U1[i, j] <- NA
+      }
+    }
+  }
+  U1 <- U1 %>%
+    pivot_longer(cols = -.data$rowU, names_to = "colU",
+                       values_to = "covar")
+  U1$colU <- factor(U1$colU, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD")) 
+  if(is.null(upper)){
+  upper <- max(U1$covar, na.rm = TRUE)+5
+  }
+  U1_covar <- U1 %>%
+    filter(!is.na(.data$covar)) %>%
+    ggplot(aes(x = .data$rowU, y = .data$colU)) +
+    switchgrassGWAS::theme_oeco +
+    geom_tile(aes(fill = .data$covar)) +
+    scale_fill_viridis_c(option = "B", limits = c(0, upper)) +
+    #geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    xlab("") + ylab("") 
+  if(legend == TRUE){
+    U1_covar <- U1_covar +
+      theme(legend.position = c(0.2, 0.9)) +
+      geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey")
+  }
+  return(U1_covar)
+}
+
+```
+
 
 ```{r}
 f3a <- mash_plot_svd(m_gulf_gr_hyp, i = "ED_tPCA") 
@@ -1117,50 +1183,73 @@ f3u <- mash_plot_svd(m_gam_fl_hyp, i = "ED_tPCA")
 f3v <- mash_plot_svd(m_gam_fl_hyp, i = "ED_tPCA", eigen_v = 2) 
 
 
-f3c <- mash_plot_pairwise_sharing(corrmatrix = gxe_gg$S_AP, reorder = FALSE)
-f3d <- mash_plot_pairwise_sharing(corrmatrix = gxe_gg$S_DS, reorder = FALSE)
-f3g <- mash_plot_pairwise_sharing(corrmatrix = gxe_mg$S_AP, reorder = FALSE)
-f3h <- mash_plot_pairwise_sharing(corrmatrix = gxe_mg$S_DS, reorder = FALSE)
-f3k <- mash_plot_pairwise_sharing(corrmatrix = gxe_gamg$S_AP, reorder = FALSE)
-f3l <- mash_plot_pairwise_sharing(corrmatrix = gxe_gamg$S_DS, reorder = FALSE)
-f3o <- mash_plot_pairwise_sharing(corrmatrix = gxe_gf$S_AP, reorder = FALSE)
-f3p <- mash_plot_pairwise_sharing(corrmatrix = gxe_gf$S_DS, reorder = FALSE)
-f3s <- mash_plot_pairwise_sharing(corrmatrix = gxe_mf$S_AP, reorder = FALSE)
-f3t <- mash_plot_pairwise_sharing(corrmatrix = gxe_mf$S_DS, reorder = FALSE)
-f3w <- mash_plot_pairwise_sharing(corrmatrix = gxe_gamf$S_AP, reorder = FALSE)
-f3x <- mash_plot_pairwise_sharing(corrmatrix = gxe_gamf$S_DS, reorder = FALSE)
+f3c <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, upper = 5500, legend = TRUE)
+f3c_leg <- get_legend(f3c)
+f3c <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, upper = 5500, legend = FALSE)
+f3d <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_DS, upper = 5500, legend = FALSE)
+
+f3g <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_AP, upper = 7777, legend = TRUE)
+f3g_leg <- get_legend(f3g)
+f3g <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_AP, upper = 7777, legend = FALSE)
+f3h <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_DS, upper = 7777, legend = FALSE)
+
+f3k <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_AP, upper = 7580, legend = TRUE)
+f3k_leg <- get_legend(f3k)
+f3k <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_AP, upper = 7580, legend = FALSE)
+f3l <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_DS, upper = 7580,  legend = FALSE)
+
+f3o <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_AP, upper = 1850, legend = TRUE)
+f3o_leg <- get_legend(f3o)
+f3o <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_AP, upper = 1850, legend = FALSE)
+f3p <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_DS, upper = 1850, legend = FALSE)
+
+f3s <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_AP, upper = 3636, legend = TRUE)
+f3s_leg <- get_legend(f3s)
+f3s <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_AP, upper = 3636, legend = FALSE)
+f3t <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_DS, upper = 3636, legend = FALSE)
+
+f3w <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_AP, upper = 13438, legend = TRUE)
+f3w_leg <- get_legend(f3w)
+f3w <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_AP, upper = 13438, legend = FALSE)
+f3x <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_DS, upper = 13438, legend = FALSE)
 ```
 put labels in latitudinal order
 get rid of all the STand_Bhat_pop_GR50_ garbage
 
 ```{r}
 ggdraw() +
-  draw_plot(f3a, x = 0, y = 0.825, width = 0.33, height = 0.175) +
-  draw_plot(f3b, x = 0, y = 0.65, width = 0.33, height = 0.175) +
-  draw_plot(f3d$gg_corr, x = 0.165, y = 0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3c$gg_corr, x = 0, y = 0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3e, x = 0.33, y = 0.825, width = 0.33, height = 0.175) +
-  draw_plot(f3f, x = 0.33, y = 0.65, width = 0.33, height = 0.175) +
-  draw_plot(f3h$gg_corr, x = 0.165+.33, y = 0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3g$gg_corr, x = 0+.33, y = 0.5, width = 0.165, height = 0.15, scale = 2)  +
-  draw_plot(f3i, x = 0.66, y = 0.825, width = 0.33, height = 0.175) +
-  draw_plot(f3j, x = 0.66, y = 0.65, width = 0.33, height = 0.175) +
-  draw_plot(f3l$gg_corr, x = 0.165+.66, y = 0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3k$gg_corr, x = 0+.66, y = 0.5, width = 0.165, height = 0.15, scale = 2) +  ## greenup above here, flowering below
-  draw_plot(f3m, x = 0, y = 0.825-0.5, width = 0.33, height = 0.175) +
-  draw_plot(f3n, x = 0, y = 0.65-0.5, width = 0.33, height = 0.175) +
-  draw_plot(f3p$gg_corr, x = 0.165, y = 0.5-0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3o$gg_corr, x = 0, y = 0.5-0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3q, x = 0.33, y = 0.825-0.5, width = 0.33, height = 0.175) +
-  draw_plot(f3r, x = 0.33, y = 0.65-0.5, width = 0.33, height = 0.175) +
-  draw_plot(f3t$gg_corr, x = 0.165+.33, y = 0.5-0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3s$gg_corr, x = 0+.33, y = 0.5-0.5, width = 0.165, height = 0.15, scale = 2)  +
-  draw_plot(f3u, x = 0.66, y = 0.825-0.5, width = 0.33, height = 0.175) +
-  draw_plot(f3v, x = 0.66, y = 0.65-0.5, width = 0.33, height = 0.175) +
-  draw_plot(f3x$gg_corr, x = 0.165+.66, y = 0.5-0.5, width = 0.165, height = 0.15, scale = 2) +
-  draw_plot(f3w$gg_corr, x = 0+.66, y = 0.5-0.5, width = 0.165, height = 0.15, scale = 2)
+  draw_plot(f3a, x = 0, y = 0.84, width = 0.33, height = 0.16) +
+  draw_plot(f3b, x = 0, y = 0.68, width = 0.33, height = 0.16) +
+  draw_plot(f3d, x = 0.165, y = 0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3c, x = 0, y = 0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3c_leg, x = 0.095, y = 0.595, width = 0.1, height = 0.1) +
+  draw_plot(f3e, x = 0.33, y = 0.84, width = 0.33, height = 0.16) +
+  draw_plot(f3f, x = 0.33, y = 0.68, width = 0.33, height = 0.16) +
+  draw_plot(f3h, x = 0.165+.33, y = 0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3g, x = 0+.33, y = 0.5, width = 0.165, height = 0.18)  +
+  draw_plot(f3g_leg, x = 0.095+.33, y = 0.595, width = 0.1, height = 0.1) +
+  draw_plot(f3i, x = 0.66, y = 0.84, width = 0.33, height = 0.16) +
+  draw_plot(f3j, x = 0.66, y = 0.68, width = 0.33, height = 0.16) +
+  draw_plot(f3l, x = 0.165+.66, y = 0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3k, x = 0+.66, y = 0.5, width = 0.165, height = 0.18) +  
+  draw_plot(f3k_leg, x = 0.095+.66, y = 0.595, width = 0.1, height = 0.1) +## greenup above here, flowering below
+  draw_plot(f3m, x = 0, y = 0.84-0.5, width = 0.33, height = 0.16) +
+  draw_plot(f3n, x = 0, y = 0.68-0.5, width = 0.33, height = 0.16) +
+  draw_plot(f3p, x = 0.165, y = 0.5-0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3o, x = 0, y = 0.5-0.5, width = 0.165, height = 0.18) +  
+  draw_plot(f3o_leg, x = 0.095, y = 0.595-0.5, width = 0.1, height = 0.1) +
+  draw_plot(f3q, x = 0.33, y = 0.84-0.5, width = 0.33, height = 0.16) +
+  draw_plot(f3r, x = 0.33, y = 0.68-0.5, width = 0.33, height = 0.16) +
+  draw_plot(f3t, x = 0.165+.33, y = 0.5-0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3s, x = 0+.33, y = 0.5-0.5, width = 0.165, height = 0.18)  +
+  draw_plot(f3s_leg, x = 0.095+.33, y = 0.595-0.5, width = 0.1, height = 0.1) +
+  draw_plot(f3u, x = 0.66, y = 0.84-0.5, width = 0.33, height = 0.16) +
+  draw_plot(f3v, x = 0.66, y = 0.68-0.5, width = 0.33, height = 0.16) +
+  draw_plot(f3x, x = 0.165+.66, y = 0.5-0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3w, x = 0+.66, y = 0.5-0.5, width = 0.165, height = 0.18) +
+  draw_plot(f3w_leg, x = 0.095+.66, y = 0.595-0.5, width = 0.1, height = 0.1)
 
-save_plot(filename = "Figure_3_Data_driven_Covariance_matrices.png", plot = last_plot(), base_height = 8, base_width = 9)
+save_plot(filename = "../manuscript/plots/Figure_3_Data_driven_Covariance_matrices.png", plot = last_plot(), base_height = 10, base_width = 11)
 ```
 
 

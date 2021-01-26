@@ -1,0 +1,126 @@
+---
+title: "Analysis_v0.7_QTL_GxE"
+author: "Alice MacQueen"
+date: "1/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# TRIAL script
+# -------------------------
+NB: Trial script to compare the QTL to the mash results using env covar matrices.
+
+## 3a. Log-likelihoods
+```{r}
+m_gulf_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_Uhyp.rds")
+m_gulf_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_Uhyp.rds")
+
+m_midw_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_Uhyp.rds")
+m_midw_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_Uhyp.rds")
+
+m_gam_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_Uhyp.rds")
+m_gam_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_Uhyp.rds")
+
+```
+
+## QTL
+```{r}
+qtldf <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv")
+
+qtldf <- qtldf %>%
+  separate(flank_lo, into = c("CHR", "Pos_Mb_lo"), sep = "_", convert = TRUE) %>%
+  separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
+  mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
+         Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
+  select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  arrange(CHR, Pos_Mb_lo)
+
+qtlplot <- qtldf %>%
+  mutate(phe = case_when(lodcolumn == "FL50" ~ "50% flowering",
+                              lodcolumn == "dyln_fl50" ~ "Daylength",
+                              lodcolumn == "dyln_change_sec" ~ "daylength change (s)",
+                              lodcolumn == "CGDD_12C" ~ "GDD, GR to FL",
+                              lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
+  filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
+  mutate(POS_lo = Pos_Mb_lo * 1000000,
+         POS_hi = Pos_Mb_hi * 1000000)
+
+qtlplot$phe <- factor(qtlplot$phe, 
+                      levels = c("50% flowering", "Rainfall, GR to FL",
+                                 "GDD, GR to FL", "Daylength",
+                                          "daylength change (s)",
+                                          "Rainfall, 1 day",
+                                                  #"Rainfall, 2d sum",
+                                                  "Rainfall, 3d sum",
+                                                  "Rainfall, 5d sum"#,
+                                                  #"Rainfall, 7d sum"
+                                                  ))
+```
+
+
+
+```{r}
+get_post_weights <- function(m){
+  log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+      as.data.frame() %>%
+      rownames_to_column(var = "value") %>%
+      mutate(value = as.integer(.data$value)) %>%
+      as_tibble() %>%
+      left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+      dplyr::rename(log10BayesFactor = .data$V1) %>%
+      dplyr::select(-.data$value)
+  
+  pw_df <- as_tibble(m$posterior_weights)
+  pw_df <- switchgrassGWAS:::get_marker_df(m = m) %>%
+    bind_cols(pw_df)
+  
+  ggman_df <- pw_df %>%
+    #left_join(m_meta) %>%
+    separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+             extra = "merge", convert = TRUE) %>%
+    left_join(log10bf_df, by = "Marker") %>%
+    arrange(.data$Chr, .data$Pos) 
+  return(ggman_df)
+}
+
+pw_gg <- get_post_weights(m_gulf_gr_hyp) %>%
+  mutate(subpop = "Gulf",
+         phenotype = "greenup")
+pw_gf <- get_post_weights(m_gulf_fl_hyp) %>%
+  mutate(subpop = "Gulf",
+         phenotype = "flowering")
+
+pw_mg <- get_post_weights(m_midw_gr_hyp) %>%
+  mutate(subpop = "Midwest",
+         phenotype = "greenup")
+pw_mf <- get_post_weights(m_midw_fl_hyp) %>%
+  mutate(subpop = "Midwest",
+         phenotype = "flowering")
+
+pw_gamg <- get_post_weights(m_gam_gr_hyp) %>%
+  mutate(subpop = "Both",
+         phenotype = "greenup")
+pw_gamf <- get_post_weights(m_gam_fl_hyp) %>%
+  mutate(subpop = "Both",
+         phenotype = "flowering")
+```
+
+```{r}
+pw_3f <- pw_gf %>%
+  full_join(pw_mf) %>%
+  full_join(pw_gamf) %>%
+  arrange(Chr, Pos) %>%
+  filter(log10BayesFactor > 2) %>%
+  select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
+
+qtlplot
+
+pw_3f %>%
+  filter(Chr %in% qtlplot$CHR[1] & between(Pos, qtlplot$POS_lo[1], qtlplot$POS_hi[1])) %>%
+  group_by(subpop) %>% tally()
+```
+
+
