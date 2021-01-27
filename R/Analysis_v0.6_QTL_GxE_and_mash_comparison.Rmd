@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cowplot)
 ```
 
 # TRIAL script
@@ -44,7 +46,7 @@ qtlplot <- qtldf %>%
                               lodcolumn == "dyln_change_sec" ~ "daylength change (s)",
                               lodcolumn == "CGDD_12C" ~ "GDD, GR to FL",
                               lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
-  filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
+  #filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
   mutate(POS_lo = Pos_Mb_lo * 1000000,
          POS_hi = Pos_Mb_hi * 1000000)
 
@@ -108,19 +110,281 @@ pw_gamf <- get_post_weights(m_gam_fl_hyp) %>%
          phenotype = "flowering")
 ```
 
+# Get any mash overlaps for QTL intervals
 ```{r}
 pw_3f <- pw_gf %>%
   full_join(pw_mf) %>%
   full_join(pw_gamf) %>%
   arrange(Chr, Pos) %>%
-  filter(log10BayesFactor > 2) %>%
+  filter(log10BayesFactor > 3) %>%
+  select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
+
+pw_3f_all <- pw_gf %>%
+  full_join(pw_mf) %>%
+  full_join(pw_gamf) %>%
+  arrange(Chr, Pos) %>%
   select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
 
 qtlplot
-
-pw_3f %>%
-  filter(Chr %in% qtlplot$CHR[1] & between(Pos, qtlplot$POS_lo[1], qtlplot$POS_hi[1])) %>%
-  group_by(subpop) %>% tally()
+summary(pw_3f$log10BayesFactor)
+quantile(pw_gf$log10BayesFactor, 0.96196895)
+quantile(pw_gf$log10BayesFactor, 0.96196895)
+quantile(pw_gamf$log10BayesFactor, 0.8006157)
+1-0.96196895
+1-0.8006157
+2/464  # GT 0.5%? No 0.0043%
+22/418 # GT 3.8031? Yes 5.26%
+42/255 # GT 19.93843%? No 16.47%
 ```
 
+```{r}
+i=16  # from 1 to 16
+## In block & > 2
+QTLandBF <- pw_3f %>%
+  filter(Chr %in% qtlplot$CHR[i] & between(Pos, qtlplot$POS_lo[i], qtlplot$POS_hi[i])) %>%
+  group_by(subpop) %>% tally()
+## BF>2
+inBF <- pw_3f %>%
+  group_by(subpop) %>% tally()
+## BF not > 2 (all minus BF > 2, all is below)
+allwrtBF <- pw_3f_all %>%
+  group_by(subpop) %>% tally()
+## All in block
+inQTL <- pw_3f_all %>%
+  filter(Chr %in% qtlplot$CHR[i] & between(Pos, qtlplot$POS_lo[i], qtlplot$POS_hi[i])) %>%
+  group_by(subpop) %>% tally()
+
+QTLandBF
+inQTL
+
+phyper(QTLandBF$n[1], inBF$n[1], allwrtBF$n[1]-inBF$n[1], inQTL$n[1], 
+       lower.tail = FALSE) # Both
+phyper(QTLandBF$n[2], inBF$n[2], allwrtBF$n[2]-inBF$n[2], inQTL$n[2], 
+       lower.tail = FALSE) # Gulf
+phyper(QTLandBF$n[3], inBF$n[3], allwrtBF$n[3]-inBF$n[3], inQTL$n[3], 
+       lower.tail = FALSE) # Midwest
+```
+BF > 2 results: 5 QTL intervals
+1 ~ G
+2: M
+6: G, M
+10: G&M, M
+11: G, M
+12: G&M, G
+14 ~ G&M
+16 ~ G&M
+
+BF > 3 results: 7 QTL intervals. Different intervals, too. So I think having the same BF cutoff for these different mash results will give misleading conclusions. Do a % cutoff instead.
+4 ~ G&M
+6: G
+8: G, M
+11: M
+12: G&M, G
+13: M
+14: G&M
+15: M
+
+1137 SNPs in 2K region. 66 sig > 2 in mash. 2/464 Midwest, 22/418 Gulf, 42/255 Both.
+
+Summary statistics for log 10 Bayes Factor for pw_3f df
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  2.000   2.234   2.568   2.848   3.140  10.385 
+90% 3.936367
+95% 4.622242
+99% 6.257548
+
+Gulf
+90% 1.410253
+95% 1.828653
+99% 2.911984
+Top 3.8% of Gulf is above 2.
+
+Midwest 
+90% 0.72685
+95% 0.949753
+99% 1.616983
+Top 0.5% of Midwest is above 2.
+
+G&M
+90% 2.595963
+95% 3.196745
+99% 4.65753
+top 20% of G&M is above 2.
+
+
+## Hypergeometric test for significance of overlaps
+phyper(10, 50, 200 - 50, 25, lower.tail = FALSE)
+phyper(A&B, inB, notinB, inA, lower.tail = FALSE)
+```{r}
+phyper(22, 336, 50490-336, 418, lower.tail = FALSE)
+phyper(AandB$n[2], inB$n[2], allwrtB$n[2]-inB$n[2], inA$n[2], 
+       lower.tail = FALSE)
+```
+
+In block & > 2, >2, not > 2, in block
+22, 336, 50490-336, 418
+
+
+BF > 2
+Both	7125			
+Gulf	1921			
+Midwest	336	
+
+All SNPs
+Both	35735			
+Gulf	50490			
+Midwest	63367	
+
+
+Is there an enrichment of SNPs in the top 1% (5%? 10%?) of the distribution for each mash result in the QTL regions?
+1% is probably best out of these three arbitrary cutoffs.
+```{r}
+m <- m_gulf_fl_hyp
+qtl_df <- qtlplot
+
+get_QTL_enrichment <- function(m, qtl_df, quantile = 0.95){
+  pw_df_all <- get_post_weights(m)
+  
+  BFthresh <- quantile(pw_df_all$log10BayesFactor, quantile)
+  pw_df <- pw_df_all %>%
+  filter(log10BayesFactor > BFthresh) %>%
+  select(Chr:Pos, log10BayesFactor, everything())
+  
+  for(i in 1:nrow(qtl_df)){  # from 1 to 16
+  ## In block & > 2
+  QTLandBF <- pw_df %>%
+    filter(Chr %in% qtl_df$CHR[i] & between(Pos, qtl_df$POS_lo[i],
+                                             qtl_df$POS_hi[i])) %>% 
+    tally()
+  ## BF>2
+  inBF <- pw_df %>%
+    tally()
+  ## BF not > 2 (all minus BF > 2, all is below)
+  allwrtBF <- pw_df_all %>%
+    tally()
+  ## All in block
+  inQTL <- pw_df_all %>%
+    filter(Chr %in% qtl_df$CHR[i] & between(Pos, qtl_df$POS_lo[i],
+                                             qtl_df$POS_hi[i])) %>%
+    tally()
+  notinBF <- (allwrtBF$n[1]-inBF$n[1])
+  pval <- phyper(QTLandBF$n[1], inBF$n[1], allwrtBF$n[1]-inBF$n[1], 
+                 inQTL$n[1], lower.tail = FALSE)
+  
+  if(i == 1){
+  outputdf <- tibble(Chr = qtl_df$CHR[i], Pos_lo = qtl_df$POS_lo[i], Pos_hi = qtl_df$POS_hi[i], inQTLandBF = QTLandBF$n[1], inBF = inBF$n[1], notinBF = notinBF, inQTL = inQTL$n[1], pvalue = pval)
+  } else {
+    outputdf <- outputdf %>%
+      add_row(Chr = qtl_df$CHR[i], Pos_lo = qtl_df$POS_lo[i], Pos_hi = qtl_df$POS_hi[i],inQTLandBF = QTLandBF$n[1], inBF = inBF$n[1], notinBF = notinBF, inQTL = inQTL$n[1], pvalue = pval)
+    }
+  }
+  return(outputdf)
+}
+
+enrich_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = qtlplot, 0.99) %>%
+  mutate(subpop = "Gulf", phenotype = "flowering")
+enrich_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = qtlplot, 0.99) %>%
+  mutate(subpop = "Midwest", phenotype = "flowering")
+enrich_gamf <- get_QTL_enrichment(m_gam_fl_hyp, qtl_df = qtlplot, 0.99) %>%
+  mutate(subpop = "Both", phenotype = "flowering")
+
+enrich_df <- enrich_gf %>%
+  full_join(enrich_mf) %>%
+  full_join(enrich_gamf) %>%
+  arrange(Chr, Pos_lo)
+enrich_df <- enrich_df %>%
+  left_join(qtlplot, by = c("Chr" = "CHR", "Pos_lo" = "POS_lo", "Pos_hi" = "POS_hi")) %>%
+  select(Chr, Pos_lo, Pos_hi, inQTLandBF:subpop, lod, lodcolumn, pos) %>%
+  unique() %>%
+  arrange(Chr, Pos_lo, lodcolumn)
+
+enrich_df %>%
+  filter(pvalue < 0.05)
+  
+t.test(enrich_df[enrich_df$pvalue < 0.05,]$lod, enrich_df[enrich_df$pvalue >= 0.05,]$lod) 
+qtlplot %>% group_by(CHR, POS_lo) %>% tally() # 21-24 unique QTL by Pos lo/hi. 23 by QTL maximum. 12 of 24 have enriched mash hits.
+
+```
+
+16 QTL. In all cases there was at least one SNP in the QTL interval that was in the 1% tail of SNPs in one of the three flowering mash runs.
+We also looked for enrichment of SNPs in the 1% tail of significance in the mash distribution within each QTL interval. (in random genomic intervals of the same size do we see a similar level of enrichment?)
+Half of these QTL had a significant enrichment of significant results for mash compared to expectations given the number of SNPs in the QTL interval.
+
+2K: 2 QTL (lod 14 & 17), 1 enriched (in Midwest) (lod 17: CGDD_12C)
+2N: 4 QTL (3 non-overlapping) (lod 19, 39, 17, 15), 2 enriched (lod 39 dylnfl50 in Midwest, in Both & 15 CGDD_12C in all three)
+4K: 2 QTL, 2 enriched (lod 40 dyln in Midwest & 33 dyln in Gulf)
+5N: 4 QTL (3 non-overlapping) (lod 55, 25, 17, 33), 3 enriched (2 non-overlapping) (lod 25 dyln in Midwest, 17 CGDD in Gulf, in Midwest, 33 dyln in Gulf, in Both)
+7K: 2 QTL, 0 en (lod 14, 13)
+8N: 1 QTL, 0 en (lod 15)
+9N: 1 QTL, 0 en (lod 18)
+
+
+in Midwest & for CGDD: 3
+in Midwest & for dyln:
+in Gulf & for CGDD: 
+```{r}
+qtlplot %>%
+  group_by(lodcolumn) %>%
+  tally()
+qtlplot %>%
+  group_by(CHR, Pos_Mb_lo, Pos_Mb_hi) %>%
+  tally()
+qtlplot %>%
+  filter(lodcolumn %in% c("dyln_change_sec", "FL50"))
+```
+
+# Make random QTL dataframe
+
+This random df just needs a CHR, POS_lo, and POS_hi column to work in the get_QTL_enrichment function I made. 
+```{r}
+sig_random <- c()
+
+for(j in 1:100){
+  qtl_size <- qtlplot %>%
+    select(CHR, POS_lo, POS_hi) %>%
+    unique() %>%   # don't doublecount completely overlapping QTL
+    #(does doublecount partially overlapping QTL, however.)
+    group_by(CHR, POS_lo) %>%
+    mutate(Size = POS_hi - POS_lo) %>%
+    select(CHR, POS_lo, Size)
+  
+  chr_size_mash <- pw_3f_all %>%
+    group_by(Chr) %>%
+    summarise(Pos_lo = min(Pos),
+              Pos_hi = max(Pos))
+  
+  rchr <- chr_size_mash$Chr[sample(1:18, nrow(qtl_size), replace = TRUE)]
+  rposlo <- c()
+  for(i in 1:length(rchr)){
+    rposlo[i] <- sample(chr_size_mash$Pos_lo[which(chr_size_mash$Chr == rchr[i])]:chr_size_mash$Pos_hi[which(chr_size_mash$Chr == rchr[i])], 1)
+  }
+  
+  random_qtl <- tibble(CHR = rchr, POS_lo = rposlo, Size = qtl_size$Size) %>%
+    mutate(POS_hi = POS_lo + Size) %>%
+    arrange(CHR, POS_lo)
+  
+  
+  random_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = random_qtl, 0.99) %>%
+    mutate(subpop = "Gulf", phenotype = "flowering")
+  random_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = random_qtl, 0.99) %>%
+    mutate(subpop = "Midwest", phenotype = "flowering")
+  random_gamf <- get_QTL_enrichment(m_gam_fl_hyp, qtl_df = random_qtl, 0.99) %>%
+    mutate(subpop = "Both", phenotype = "flowering")
+  
+  random_df <- random_gf %>%
+    full_join(random_mf) %>%
+    full_join(random_gamf) %>%
+    arrange(Chr, Pos_lo)
+
+  sig_random[j] <- nrow(filter(random_df, pvalue < 0.05))
+}
+saveRDS(sig_random, file = "../data/Random_QTL_df_significant_enrichments_of_mash_1per_tail_SNPs_100runs.rds")
+tibble(`Significant Enrichments` = sig_random) %>%
+  ggplot(aes(x = `Significant Enrichments`)) +
+  switchgrassGWAS::theme_oeco +
+  geom_histogram(binwidth = 1) + 
+  xlim(c(1, 24)) + ylab("") +
+  geom_vline(xintercept = 23, linetype = 2, color = "red")
+save_plot(filename = "../manuscript/plots/Figure_4_QTL_overlaps_random_QTL_enrichments_with_mash.png", plot = last_plot(), base_height = 2)
+```
 
