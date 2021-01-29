@@ -143,10 +143,73 @@ QTLdf %>%
         axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1))
 # shared QTL for more than one trait differ in LOD score, but not meaningfully in effect patterns across gardens. Useful to know.
 
-QTLdf %>% 
+QTLplot <- QTLdf %>%
+  arrange(desc(lod)) %>%
+  group_by(Chr, Pos, Garden, Cross) %>%
+  slice(1) %>% 
+  filter(Cross != "Dominance") # trait == 'FL50' &
+
+QTLplot$Pos_plot <- factor(QTLplot$Pos_plot, levels = c("Chr02K\n8.6 Mb",
+                                                        "Chr02K\n64.4 Mb",
+                                                        "Chr02N\n19.5 Mb",
+                                                        "Chr02N\n58 Mb",
+                                                        "Chr02N\n60.3 Mb",
+                                                        "Chr02N\n60.9 Mb",
+                                                        "Chr02N\n69.4 Mb",
+                                                        "Chr03K\n18.6 Mb",
+                                                        "Chr04K\n4.7 Mb",
+                                                        "Chr04K\n11.8 Mb",
+                                                        "Chr05N\n2.3 Mb",
+                                                        "Chr05N\n3.2 Mb",
+                                                        "Chr05N\n3.4 Mb",
+                                                        "Chr05N\n45.9 Mb",
+                                                        "Chr05N\n59.9 Mb",
+                                                        "Chr05N\n64.9 Mb",
+                                                        "Chr05N\n65.3 Mb",
+                                                        "Chr07K\n37 Mb",
+                                                        "Chr07N\n45.2 Mb",
+                                                        "Chr08N\n6.8 Mb",
+                                                        "Chr08N\n16.5 Mb",
+                                                        "Chr09K\n16.3 Mb",
+                                                        "Chr09N\n15.7 Mb"))
+#levels(as.factor(QTLplot$Pos_plot))  
+
+QTLplot %>%
+  ggplot(aes(x = Garden, y = EFF, group = Cross)) +
+  geom_col(size = 1, aes(fill = trait)) + 
+  facet_grid(Cross ~ Pos_plot) +
+  geom_hline(yintercept = 0, linetype=2) + 
+  geom_errorbar(aes(ymin=EFF-SE, ymax=EFF+SE, color = trait), size=0.6, width=0.5) +
+  xlab("") + scale_y_continuous(limits = c(-4.25, 6.5), breaks = c(-3, 0, 3)) +
+  ylab('QTL Effect') + 
+  coord_flip() + 
+  switchgrassGWAS::theme_oeco + 
+  scale_color_manual(values = c("#CC0066", "#FFCC00", "#006600", "#6600FF")) +
+  scale_fill_manual(values = c("#CC0066", "#FFCC00", "#006600", "#6600FF")) +
+  theme(legend.position = "top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 10, face="bold"),
+        strip.text = element_text(size = 10, face="bold"),
+        axis.title = element_text(size = 10,face="bold"),
+        axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
+        )# +
+    #scale_y_continuous(expand = c(0.2, 0.2)) 
+save_plot(filename = "../manuscript/plots/Figure_4_QTL_effects_by_trait.png", base_height = 4.5, base_width = 13.5, plot = last_plot())
+
+QTLdf %>%
   filter(trait == 'CGDD_12C') 
 QTLdf %>% 
   filter(trait == 'dyln_fl50')
 QTLdf %>% 
   filter(trait == 'dyln_change_sec') 
+
+
 ```
+
+I could combine this with some plots pulled from the mash object using `mash_plot_effects` to do a side-by-side comparison for the paper. That would go well maybe with the Figure 4 I started today, although of course I can't think of a good way to validate this statistically any more than I did in the other script. 
+```{r}
+library(switchgrassGWAS)
+mash_plot_effects()
+```
+
