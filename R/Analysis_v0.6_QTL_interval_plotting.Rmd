@@ -210,6 +210,156 @@ QTLdf %>%
 I could combine this with some plots pulled from the mash object using `mash_plot_effects` to do a side-by-side comparison for the paper. That would go well maybe with the Figure 4 I started today, although of course I can't think of a good way to validate this statistically any more than I did in the other script. 
 ```{r}
 library(switchgrassGWAS)
-mash_plot_effects()
+m_gulf_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_Uhyp.rds")
+m_midw_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_Uhyp.rds")
+m_gam_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_Uhyp.rds")
+
+get_post_weights <- function(m){
+  log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+      as.data.frame() %>%
+      rownames_to_column(var = "value") %>%
+      dplyr::mutate(value = as.integer(.data$value)) %>%
+      as_tibble() %>%
+      left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+      dplyr::rename(log10BayesFactor = .data$V1) %>%
+      dplyr::select(-.data$value)
+  
+  pw_df <- as_tibble(m$posterior_weights)
+  pw_df <- switchgrassGWAS:::get_marker_df(m = m) %>%
+    bind_cols(pw_df)
+  
+  ggman_df <- pw_df %>%
+    #left_join(m_meta) %>%
+    tidyr::separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+             extra = "merge", convert = TRUE) %>%
+    dplyr::left_join(log10bf_df, by = "Marker") %>%
+    dplyr::arrange(.data$Chr, .data$Pos) 
+  return(ggman_df)
+}
+
+pw_gf <- get_post_weights(m = m_gulf_fl_hyp) %>%
+  mutate(subpop = "Gulf",
+         phenotype = "flowering")
+pw_mf <- get_post_weights(m_midw_fl_hyp) %>%
+  mutate(subpop = "Midwest",
+         phenotype = "flowering")
+pw_gamf <- get_post_weights(m_gam_fl_hyp) %>%
+  mutate(subpop = "Both",
+         phenotype = "flowering")
+```
+
+```{r}
+qtldf <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv")
+
+qtldf <- qtldf %>%
+  separate(flank_lo, into = c("CHR", "Pos_Mb_lo"), sep = "_", convert = TRUE) %>%
+  separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
+  mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
+         Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
+  select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  arrange(CHR, Pos_Mb_lo)
+
+qtlplot <- qtldf %>%
+  mutate(phe = case_when(lodcolumn == "FL50" ~ "50% flowering",
+                              lodcolumn == "dyln_fl50" ~ "Daylength",
+                              lodcolumn == "dyln_change_sec" ~ "daylength change (s)",
+                              lodcolumn == "CGDD_12C" ~ "GDD, GR to FL",
+                              lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
+  #filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
+  mutate(POS_lo = Pos_Mb_lo * 1000000,
+         POS_hi = Pos_Mb_hi * 1000000)
+
+qtlplot$phe <- factor(qtlplot$phe, 
+                      levels = c("50% flowering", "Rainfall, GR to FL",
+                                 "GDD, GR to FL", "Daylength",
+                                          "daylength change (s)",
+                                          "Rainfall, 1 day",
+                                                  #"Rainfall, 2d sum",
+                                                  "Rainfall, 3d sum",
+                                                  "Rainfall, 5d sum"#,
+                                                  #"Rainfall, 7d sum"
+                                                  ))
+```
+
+
+```{r}
+pw_3f <- pw_gf %>%
+  full_join(pw_mf) %>%
+  full_join(pw_gamf) %>%
+  arrange(Chr, Pos) %>%
+  select(Chr:Pos, log10BayesFactor, subpop, value, phenotype, everything()) %>%
+  filter(log10BayesFactor > 2)
+pw_list <- list(Gulf = pw_gf, Midwest = pw_mf, Both = pw_gamf)
+m_list <- list(Gulf = m_gulf_fl_hyp, Midwest = m_midw_fl_hyp, Both = m_gam_fl_hyp)
+names(m_list)
+qtlplot <- qtlplot %>%
+  arrange(desc(lod)) %>%
+  mutate(pos = as.integer(pos)) %>%
+  group_by(CHR, pos) %>%
+  slice(1) %>%
+  arrange(CHR, pos)
+mash_plot_manhattan_by_condition(m_gulf_fl_hyp)
+mash_plot_effects(m_midw_fl_hyp, n = 5)
+```
+
+Make 4 plots for Figure 4: 
+i = 4, j = 1 Both BF 7
+10, 3 BF 4.37 Gulf
+
+15, 5: 5.1 BF Midwest
+16, 1 7.6 BF Both
+17, 1 7.6 BF Both (same SNP as 16)
+```{r}
+i <- c(4, 10, 15, 16)
+j <- c(1, 3, 5, 1)
+f4df <- tibble(i = i, j = j)
+
+ggdf_list <- list()
+
+k=3
+for(k in 1:nrow(f4df)){
+  pw_int <- pw_3f %>%
+    filter(.data$Chr %in% qtlplot$CHR[f4df$i[k]] & between(.data$Pos, 
+                                                   qtlplot$POS_lo[f4df$i[k]], 
+                                                   qtlplot$POS_hi[f4df$i[k]])) %>%
+    arrange(desc(log10BayesFactor))
+  
+  plot_df <- 
+    mash_plot_effects(m = m_list[[which(names(m_list) == pw_int$subpop[f4df$j[k]])]], 
+                    i = pw_int$value[f4df$j[k]])
+  ggb1 <- plot_df$effect_df %>%
+    mutate(Pos_plot = plot_df$marker,
+           subpop = pw_int$subpop[f4df$j[k]]) %>%
+    mutate(Conditions = str_remove(Conditions, "Gulf_and_Midwest_")) %>%
+  mutate(Conditions = str_remove(Conditions, "Gulf_")) %>%
+  mutate(Conditions = str_remove(Conditions, "Midwest_")) %>%
+  separate(Conditions, into = c("Phenotype", "Garden"), sep = -3) %>%
+  mutate(Phenotype = str_remove(Phenotype, "_$"),
+         Garden = str_remove(Garden, "^_")) %>%
+  mutate(Garden = str_replace(Garden, "0_M", "MI"),
+         Phenotype = str_replace(Phenotype, "FL5$", "FL50"))
+  ggb1$Garden <- factor(ggb1$Garden, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+  ggdf_list[[k]] <- ggb1
+}
+
+ggdf <- ggdf_list[[1]] %>%
+  full_join(ggdf_list[[2]]) %>%
+  full_join(ggdf_list[[3]]) %>%
+  full_join(ggdf_list[[4]]) 
+
+ggdf %>%
+  ggplot() + 
+  geom_point(mapping = aes(x = Garden, y = .data$mn)) +
+  switchgrassGWAS::theme_oeco +
+  geom_errorbar(mapping = aes(ymin = .data$mn - .data$se,
+                              ymax = .data$mn + .data$se,
+                              x = Garden), width = 0.3) +
+  geom_hline(yintercept = 0, lty = 2) +
+  facet_wrap(~Pos_plot+subpop, nrow = 1) +
+  labs(x = "", y = "Effect Size (% total variation)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  coord_flip()
+
+save_plot(filename = "../manuscript/plots/Figure_4_mash_SNP_effects.png", plot = last_plot(), base_height = 2.4, base_width = 5.5)
 ```
 

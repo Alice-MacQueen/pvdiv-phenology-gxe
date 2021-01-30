@@ -69,7 +69,7 @@ get_post_weights <- function(m){
   log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
       as.data.frame() %>%
       rownames_to_column(var = "value") %>%
-      mutate(value = as.integer(.data$value)) %>%
+      dplyr::mutate(value = as.integer(.data$value)) %>%
       as_tibble() %>%
       left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
       dplyr::rename(log10BayesFactor = .data$V1) %>%
@@ -81,10 +81,10 @@ get_post_weights <- function(m){
   
   ggman_df <- pw_df %>%
     #left_join(m_meta) %>%
-    separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+    tidyr::separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
              extra = "merge", convert = TRUE) %>%
-    left_join(log10bf_df, by = "Marker") %>%
-    arrange(.data$Chr, .data$Pos) 
+    dplyr::left_join(log10bf_df, by = "Marker") %>%
+    dplyr::arrange(.data$Chr, .data$Pos) 
   return(ggman_df)
 }
 
@@ -281,6 +281,12 @@ get_QTL_enrichment <- function(m, qtl_df, quantile = 0.95){
   return(outputdf)
 }
 
+qtlplot <- qtlplot %>%
+  arrange(desc(lod)) %>%
+  mutate(pos = as.integer(pos)) %>%
+  group_by(CHR, pos) %>%
+  slice(1) %>%
+  arrange(CHR, pos)
 enrich_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = qtlplot, 0.99) %>%
   mutate(subpop = "Gulf", phenotype = "flowering")
 enrich_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = qtlplot, 0.99) %>%
@@ -338,21 +344,21 @@ qtlplot %>%
 This random df just needs a CHR, POS_lo, and POS_hi column to work in the get_QTL_enrichment function I made. 
 ```{r}
 sig_random <- c()
+chr_size_mash <- pw_3f_all %>%
+  ungroup() %>%
+  group_by(Chr) %>%
+  dplyr::summarise(Pos_lo = min(Pos),
+                   Pos_hi = max(Pos))
 
-for(j in 1:100){
+for(j in 1:1000){
   qtl_size <- qtlplot %>%
     select(CHR, POS_lo, POS_hi) %>%
     unique() %>%   # don't doublecount completely overlapping QTL
     #(does doublecount partially overlapping QTL, however.)
     group_by(CHR, POS_lo) %>%
-    mutate(Size = POS_hi - POS_lo) %>%
-    select(CHR, POS_lo, Size)
-  
-  chr_size_mash <- pw_3f_all %>%
-    group_by(Chr) %>%
-    summarise(Pos_lo = min(Pos),
-              Pos_hi = max(Pos))
-  
+    dplyr::mutate(Size = POS_hi - POS_lo) %>%
+    dplyr::select(CHR, POS_lo, Size)
+
   rchr <- chr_size_mash$Chr[sample(1:18, nrow(qtl_size), replace = TRUE)]
   rposlo <- c()
   for(i in 1:length(rchr)){
@@ -362,8 +368,7 @@ for(j in 1:100){
   random_qtl <- tibble(CHR = rchr, POS_lo = rposlo, Size = qtl_size$Size) %>%
     mutate(POS_hi = POS_lo + Size) %>%
     arrange(CHR, POS_lo)
-  
-  
+
   random_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = random_qtl, 0.99) %>%
     mutate(subpop = "Gulf", phenotype = "flowering")
   random_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = random_qtl, 0.99) %>%
@@ -378,13 +383,17 @@ for(j in 1:100){
 
   sig_random[j] <- nrow(filter(random_df, pvalue < 0.05))
 }
-saveRDS(sig_random, file = "../data/Random_QTL_df_significant_enrichments_of_mash_1per_tail_SNPs_100runs.rds")
-tibble(`Significant Enrichments` = sig_random) %>%
-  ggplot(aes(x = `Significant Enrichments`)) +
+saveRDS(sig_random, file = "../data/Random_QTL_df_significant_enrichments_of_mash_1per_tail_SNPs_1000runs.rds")
+tibble(`mash 1% tail significant enrichments` = sig_random) %>%
+  ggplot(aes(x = `mash 1% tail significant enrichments` )) +
   switchgrassGWAS::theme_oeco +
   geom_histogram(binwidth = 1) + 
   xlim(c(1, 24)) + ylab("") +
-  geom_vline(xintercept = 23, linetype = 2, color = "red")
-save_plot(filename = "../manuscript/plots/Figure_4_QTL_overlaps_random_QTL_enrichments_with_mash.png", plot = last_plot(), base_height = 2)
+  geom_vline(xintercept = 16, linetype = 2, color = "red")
+save_plot(filename = "../manuscript/plots/Figure_4_QTL_overlaps_random_QTL_enrichments_with_mash_1000runs.png", plot = last_plot(), base_height = 1.8, base_asp = 1.8)
+
+tibble(sig_r = sig_random) %>%
+  arrange(desc(sig_r))
+3/1000
 ```
 

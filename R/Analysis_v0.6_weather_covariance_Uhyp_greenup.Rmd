@@ -351,6 +351,10 @@ cov_gamf$ggobject +
 47.3% of effect mass for both subpop flowering was on hyp matrices, while only 8.5% of greenup was.
 Gulf greenup: 8.4%  flowering: 31.8%
 Midwest greenup: 28.6% flowering 45.1%
+```{r}
+5.127744e-02/4.037520e-01
+```
+
 
 ```{r}
 get_cov_type <- function(m, summarise = FALSE, subpop = FALSE){
