@@ -1,0 +1,130 @@
+---
+title: "4-QTLinterval and plotting"
+author: "Alice MacQueen"
+date: "2/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(qtl)
+library(qtl2)
+library(plyr)
+library(tidyverse)
+library(qtl2convert)
+library(cowplot)
+```
+
+
+setwd("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/")
+
+```{r}
+workingdir <- "~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/"
+load(file.path(workingdir, 'cross_reduced_marker_FL50_phenotypes_Alice_7_SITES.RData'))
+load(file.path(workingdir, 'scan1Results_FL50_phenotypes_Alice_7_SITES.RData.RData'))
+
+map  =  lapply(pull.map(cross), function(x) x[1,])
+###get the threshold value for each model and output the QTL intervals
+threshold_full = summary(s1permfull,alpha = 0.05)
+threshold_reduced = summary(s1permreduced,alpha = 0.05)
+```
+
+```{r}
+###  g x e
+gxe = s1full - s1reduced
+gxe_perm = threshold_full - threshold_reduced ###or gxe_perm = summary(gxe, alpha=0.05)
+
+###get the peak for full model and gxe model
+peaks_full = find_peaks(s1full, map, threshold = threshold_full, drop = 1.5, peakdrop = 5)
+peaks_gxe = find_peaks(gxe, map, threshold = gxe_perm, drop = 1.5)
+
+flank_marker_full = peaks_full %>% mutate(flank_lo = find_marker(map, chr, ci_lo), flank_hi=find_marker(map, chr, ci_hi))
+# write.csv(flank_marker_full,'QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv') ###change the name you want
+
+flank_marker_gxe = peaks_gxe %>% mutate(flank_lo = find_marker(map, chr, ci_lo), flank_hi=find_marker(map, chr, ci_hi))
+# write.csv(flank_marker_gxe,'QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_gxe_model.csv')
+
+###########
+```
+
+```{r}
+threshold_df <- threshold_full %>% as_tibble(rownames = "Threshold") %>%
+  pivot_longer(GR50:dyln_change_sec, names_to = "Phenotype", values_to = "LOD")
+
+s1full %>%
+  as_tibble(rownames = "Marker") %>%
+  pivot_longer(GR50:dyln_change_sec, names_to = "Phenotype", values_to = "LOD") %>%
+  separate(Marker, into = c("Chr", "Pos"), sep = "_", remove = FALSE, convert = TRUE) %>%
+  filter(!grepl("loc", Chr)) %>%
+  ggplot(aes(x = Pos, y = LOD)) + 
+  geom_line(aes(color = Phenotype)) +
+  geom_hline(data = threshold_df, aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
+  facet_wrap(~Chr, nrow = 1, scales = "free_x") +
+  switchgrassGWAS::theme_oeco + 
+  scale_color_manual(values = c("#CC0066", "#FFCC00", "#006600", "#6600FF", "grey")) + 
+  scale_linetype_manual(values = c(4,5,4,4,4)) +
+  theme(legend.position = "top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 10, face="bold"),
+        strip.text = element_text(size = 10, face="bold"),
+        axis.title = element_text(size = 10,face="bold"),
+        axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
+        ) + 
+  xlab("Position (Mb)") + ylab("LOD score") +
+  scale_x_continuous(breaks = c(0, 20, 40, 60, 80))
+
+save_plot(filename = "../manuscript/plots/Figure_4_QTL_by_lod_score.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+```
+
+
+
+Li's additional code
+```{r}
+###########
+png('../2-figures/FL50_7_SITES_LOD_FL50_phenotypes_Alice_7_SITES.png', width = 800)
+plot(s1full, map, lodcolumn=2, col="slateblue", ylim=c(0,56))
+plot(s1full,map, lodcolumn=3, col="violetred", add=T)
+plot(s1full,map, lodcolumn=4, col="darkgreen", add=T)
+plot(s1full,map, lodcolumn=5, col="yellow", add=T)
+abline(h=threshold_full[2],lty=2,lwd=3,col=c("slateblue"))
+abline(h=threshold_full[3],lty=2,lwd=3,col=c("violetred"))
+abline(h=threshold_full[4],lty=2,lwd=3,col=c("darkgreen"))
+abline(h=threshold_full[5],lty=2,lwd=3,col=c("yellow"))
+
+legend("topleft", lwd=2, col=c("slateblue", "violetred","darkgreen","yellow"), colnames(s1full)[c(2,3,4,5)], bg="gray90")
+dev.off()
+
+
+flank_marker_full = flank_marker_full %>% mutate(GXE= ifelse(pos %in% flank_marker_gxe$pos, 'Y','N'))%>%
+  mutate(ChrNo = str_extract(chr, '[1-9]'))%>% mutate_at(vars(ChrNo),as.numeric) %>%
+  mutate(Dist = case_when(
+    str_detect(chr,'K') ~ (ChrNo*2-1),
+    str_detect(chr,'N') ~ ChrNo*2
+  ))
+# ###6. plot QTL on genetic map
+# load('sexAveraged.cross.rda')
+png('../2-figures/QTLs_FL50_phenotypes_Alice_7_SITES.png',width = 900)
+cols  =  c("violetred","yellow","darkgreen","slateblue") ###add your colors depending on how many traits you have
+library(qtlTools)
+with(flank_marker_full, segmentsOnMap(cross, phe = lodcolumn, chr = chr,
+                                      l = ci_lo, h = ci_hi,
+                                      peaklod = lod, peakcM = pos,
+                                      showPeaks = TRUE,
+                                      chrBuffer = c(0.15,0.1),
+                                      tick.width=0.05, lwd="byLod",
+                                      col = cols,
+                                      leg.inset=.57, legendCex=1,
+                                      legendPosition="topleft")
+)
+#mtext('QTL_7_SITES',side = 3)
+
+for (i in 1:nrow(flank_marker_full)){
+    if (flank_marker_full$GXE[i]=='Y')
+    text(x=(flank_marker_full$Dist[i]+0.4), y=(flank_marker_full$ci_lo[i]),'*',col = 'red',cex = 1.5)
+  }
+
+dev.off()
+
+```
+
