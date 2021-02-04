@@ -533,7 +533,7 @@ for(i in seq_along(phe_hyp)){
 }
 
 cov_flex$phe <- factor(cov_flex$phe, levels = c("tave_18d", "tave_10d", "dyln_fl50", "cgdd_12c_gr2fl"))
-
+cov_flex$subpop <- factor(cov_flex$subpop, levels = c("Gulf", "Midwest", "Both)"))
 
 figure2_a <- cov_flex %>%
   filter(phe %in% c("tave_10d", "tave_18d")) %>%
@@ -649,6 +649,11 @@ df_2fl_a <- df_2d %>% full_join(df_2e) %>% full_join(df_2f) %>%
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "single_effect_Gulf_", "single_effect_")
          )
 
+df_2gr_b$subpop <- factor(df_2gr_b$subpop, levels = c("Gulf", "Midwest", "Both"))
+df_2fl_b$subpop <- factor(df_2fl_b$subpop, levels = c("Gulf", "Midwest", "Both"))
+df_2gr_a$subpop <- factor(df_2gr_a$subpop, levels = c("Gulf", "Midwest", "Both"))
+df_2fl_a$subpop <- factor(df_2fl_a$subpop, levels = c("Gulf", "Midwest", "Both"))
+
 f2b <- df_2gr_b %>%
   filter(Mass > 1e-05) %>%
   ggplot(aes(x = subpop, y = Mass)) + 
@@ -703,7 +708,7 @@ ggdraw() +
   draw_plot(f2c, x = 0.3, y = 0, width = 0.55, height = 0.47) +
   draw_plot(f2d, x = 0.85, y = 0, width = 0.15, height = 0.47)
 
-save_plot(filename = "Figure_2_Covariance_matrices_and_posterior_weights.png", plot = last_plot(), base_height = 8, base_width = 9)
+save_plot(filename = "../manuscript/plots/Figure_2_Covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 8, base_width = 9)
 ```
 
 

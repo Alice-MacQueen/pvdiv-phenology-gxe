@@ -16,7 +16,7 @@
    version="1.1"
    id="svg8"
    sodipodi:docname="Figure_4_mash_and_QTL_v2.svg"
-   inkscape:export-filename="/home/alice/Github/pvdiv-phenology-gxe/manuscript/plots/Figure_4_mash_and_QTL_v2.png"
+   inkscape:export-filename="/home/alice/Github/pvdiv-phenology-gxe/manuscript/plots/Figure_4_mash_and_QTL_v3.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)">
@@ -723,10 +723,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4142136"
-     inkscape:cx="280.19311"
+     inkscape:cx="81.142556"
      inkscape:cy="734.3819"
      inkscape:document-units="mm"
-     inkscape:current-layer="g4169"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="3840"
      inkscape:window-height="2030"
@@ -745,7 +745,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -1017,7 +1017,7 @@
        width="82.296005" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;-inkscape-font-specification:FreeSans;font-stretch:normal;font-variant:normal;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;-inkscape-font-specification:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="-73.554169"
        y="10.191663"
        id="text3839"><tspan
@@ -1025,21 +1025,21 @@
          id="tspan3837"
          x="-73.554169"
          y="10.191663"
-         style="font-size:7.05555534px;stroke-width:0.26458332;-inkscape-font-specification:FreeSans;font-family:FreeSans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;">A</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:FreeSans;-inkscape-font-specification:FreeSans;stroke-width:0.26458332">a</tspan></text>
     <text
        id="text3843"
        y="77.872078"
        x="-73.554192"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;-inkscape-font-specification:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05555534px;font-family:FreeSans;-inkscape-font-specification:FreeSans;stroke-width:0.26458332"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:FreeSans;-inkscape-font-specification:FreeSans;stroke-width:0.26458332"
          y="77.872078"
          x="-73.554192"
          id="tspan3841"
-         sodipodi:role="line">B</tspan></text>
+         sodipodi:role="line">b</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;-inkscape-font-specification:FreeSans;font-stretch:normal;font-variant:normal;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;-inkscape-font-specification:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="124.35426"
        y="77.395882"
        id="text3847"><tspan
@@ -1047,18 +1047,18 @@
          id="tspan3845"
          x="124.35426"
          y="77.395882"
-         style="font-size:7.05555534px;stroke-width:0.26458332;-inkscape-font-specification:FreeSans;font-family:FreeSans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;">D</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:FreeSans;-inkscape-font-specification:FreeSans;stroke-width:0.26458332">d</tspan></text>
     <text
        id="text3851"
        y="130.31252"
        x="-73.554169"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;-inkscape-font-specification:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05555534px;font-family:FreeSans;-inkscape-font-specification:FreeSans;stroke-width:0.26458332"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:FreeSans;-inkscape-font-specification:FreeSans;stroke-width:0.26458332"
          y="130.31252"
          x="-73.554169"
          id="tspan3849"
-         sodipodi:role="line">E</tspan></text>
+         sodipodi:role="line">e</tspan></text>
     <g
        id="g4169"
        transform="matrix(0.35141409,0,0,0.39500604,-59.955466,-44.194083)">
@@ -3958,7 +3958,7 @@
              x="-476.58997"
              y="1028.4745"
              style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;-inkscape-font-specification:FreeSans;font-family:FreeSans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;" /></flowRegion><flowPara
-           id="flowPara4273"></flowPara></flowRoot>      <path
+           id="flowPara4273" /></flowRoot>      <path
          style="fill:none;stroke:#000000;stroke-width:0.71015155px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1"
          d="m -6.786254,346.90429 h 22.58731"
          id="path4279"
@@ -4303,7 +4303,7 @@
          id="tspan4299" /></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332;-inkscape-font-specification:FreeSans;font-stretch:normal;font-variant:normal;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:0;font-family:FreeSans;-inkscape-font-specification:FreeSans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        x="45.621315"
        y="78.114777"
        id="text4373"><tspan
@@ -4311,7 +4311,7 @@
          id="tspan4371"
          x="45.621315"
          y="78.114777"
-         style="font-size:7.05555534px;stroke-width:0.26458332;-inkscape-font-specification:FreeSans;font-family:FreeSans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;">C</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7.05555534px;font-family:FreeSans;-inkscape-font-specification:FreeSans;stroke-width:0.26458332">c</tspan></text>
     <circle
        style="fill:#2b0000;fill-opacity:1;stroke:#2b0000;stroke-width:0.26458332;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1"
        id="path4375"
@@ -4342,5 +4342,5 @@
            x="-318.5"
            y="281.51968"
            style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;-inkscape-font-specification:FreeSans;font-family:FreeSans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;" /></flowRegion><flowPara
-         id="flowPara4391"></flowPara></flowRoot>  </g>
+         id="flowPara4391" /></flowRoot>  </g>
 </svg>
