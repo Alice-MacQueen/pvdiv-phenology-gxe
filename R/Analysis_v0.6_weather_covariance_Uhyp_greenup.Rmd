@@ -826,7 +826,7 @@ Midw FL: 11 SNPs       cgdd_12c_gr2fl_Gulf_and_Midwest.8
 Make a list containing all of the ggplots for all entries in the covariance grid represented by `pw_df`.
 Then view all the ggplots in gglist.
 ```{r mashhattan plots loop}
-pw_df <- pw_gg
+pw_df <- pw_mf
 
 gglist <- list()
 log10BF <- expression(paste("log"[10], plain("(Bayes Factor)")))
@@ -834,6 +834,7 @@ for(i in seq_along(names(pw_df)[-(1:5)])){
   var <- names(pw_df)[i+4]  
   gglist[[i]] <- pw_df %>%
     arrange(!! sym(var)) %>%
+    filter(!! sym(var) > 0.01) %>%
     ggplot(aes(x = .data$Pos, y = .data$log10BayesFactor)) +
     switchgrassGWAS::theme_oeco +
     geom_point(aes(color = !! sym(var), fill = !! sym(var),
@@ -854,7 +855,10 @@ for(i in seq_along(names(pw_df)[-(1:5)])){
     geom_hline(yintercept = 2, linetype = 2) +
     ggtitle(var)
 }
-gglist
+ggdoe1 <- gglist[[6]] + ggtitle("SNPs in the Midwest subpopulation that covary strongly with cumulative GDD")
+save_plot(filename = "../manuscript/plots/Mashhattan_covar_Midwest_flowering_cgdd.png", base_width = 9, plot = ggdoe1)
+ggdoe2 <- gglist[[9]] + ggtitle("SNPs in the Midwest subpopulation with equal effects at all gardens")
+save_plot(filename = "../manuscript/plots/Mashhattan_covar_Midwest_flowering_equal_effects.png", base_width = 9, plot = ggdoe2)
 ```
 
 # -----------
@@ -983,6 +987,8 @@ annos_gamf %>%
   filter(dyln_change_sec_Midwest.7 > 0.1) %>%
   dplyr::select(where(not_all_na))
 
+Chr06N_41610882
+mash_plot_effects(m_midw_fl_hyp, i = 41793)
 ```
 Not many SNPs with U_hyp loading > 10% and SNP with log10BF > 2:
 Both GR: 10 & 9 SNPs   cgdd_12c_18d_Gulf_and_Midwest x2 (0.9 and 0.10)

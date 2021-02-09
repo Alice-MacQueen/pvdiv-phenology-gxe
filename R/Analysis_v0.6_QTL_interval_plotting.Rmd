@@ -363,3 +363,36 @@ ggdf %>%
 save_plot(filename = "../manuscript/plots/Figure_4_mash_SNP_effects.png", plot = last_plot(), base_height = 2.4, base_width = 5.5)
 ```
 
+```{r}
+	Chr06N_41610882
+plot_df <- mash_plot_effects(m_midw_fl_hyp, i = 41793)
+
+ggb1 <- plot_df$effect_df %>%
+    mutate(Pos_plot = plot_df$marker,
+           subpop = "Midwest") %>%
+    mutate(Conditions = str_remove(Conditions, "Gulf_and_Midwest_")) %>%
+  mutate(Conditions = str_remove(Conditions, "Gulf_")) %>%
+  mutate(Conditions = str_remove(Conditions, "Midwest_")) %>%
+  separate(Conditions, into = c("Phenotype", "Garden"), sep = -3) %>%
+  mutate(Phenotype = str_remove(Phenotype, "_$"),
+         Garden = str_remove(Garden, "^_")) %>%
+  mutate(Garden = str_replace(Garden, "0_M", "MI"),
+         Phenotype = str_replace(Phenotype, "FL5$", "FL50"))
+ggb1$Garden <- factor(ggb1$Garden, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+  
+  ggb1 %>%
+  ggplot() + 
+  geom_point(mapping = aes(x = Garden, y = .data$mn)) +
+  switchgrassGWAS::theme_oeco +
+  geom_errorbar(mapping = aes(ymin = .data$mn - .data$se,
+                              ymax = .data$mn + .data$se,
+                              x = Garden), width = 0.3) +
+  geom_hline(yintercept = 0, lty = 2) +
+  facet_wrap(~Pos_plot+subpop, nrow = 1) +
+  labs(x = "", y = "Effect Size (% total variation)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  coord_flip()
+  
+  ave_plot(filename = "../manuscript/plots/Figure_DOE_mash_SNP_effects.png", plot = last_plot(), base_height = 2.4, base_width = 2)
+```
+
