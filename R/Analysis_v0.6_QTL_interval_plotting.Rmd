@@ -389,10 +389,10 @@ ggb1$Garden <- factor(ggb1$Garden, levels = c("TX1", "TX2", "TX3", "OK", "MO", "
                               x = Garden), width = 0.3) +
   geom_hline(yintercept = 0, lty = 2) +
   facet_wrap(~Pos_plot+subpop, nrow = 1) +
-  labs(x = "", y = "Effect Size (% total variation)") +
+  labs(x = "", y = "Effect Size (%)") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
   coord_flip()
   
-  ave_plot(filename = "../manuscript/plots/Figure_DOE_mash_SNP_effects.png", plot = last_plot(), base_height = 2.4, base_width = 2)
+  save_plot(filename = "../manuscript/plots/Figure_DOE_mash_SNP_effects.png", plot = last_plot(), base_height = 2.4, base_width = 2)
 ```
 

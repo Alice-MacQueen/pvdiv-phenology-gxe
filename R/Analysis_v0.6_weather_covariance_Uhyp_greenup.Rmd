@@ -987,8 +987,7 @@ annos_gamf %>%
   filter(dyln_change_sec_Midwest.7 > 0.1) %>%
   dplyr::select(where(not_all_na))
 
-Chr06N_41610882
-mash_plot_effects(m_midw_fl_hyp, i = 41793)
+
 ```
 Not many SNPs with U_hyp loading > 10% and SNP with log10BF > 2:
 Both GR: 10 & 9 SNPs   cgdd_12c_18d_Gulf_and_Midwest x2 (0.9 and 0.10)
@@ -1265,6 +1264,17 @@ ggdraw() +
   draw_plot(f3w_leg, x = 0.095+.66, y = 0.595-0.5, width = 0.1, height = 0.1)
 
 save_plot(filename = "../manuscript/plots/Figure_3_Data_driven_Covariance_matrices.png", plot = last_plot(), base_height = 10, base_width = 11)
+
+save_plot(filename = "../manuscript/plots/Partial/AP_Flowering_Both.png", plot = f3x, base_height = 2, base_width = 2)
+save_plot(filename = "../manuscript/plots/Partial/DS_Flowering_Both.png", plot = f3w, base_height = 2, base_width = 2)
+
+ggdraw() +
+  draw_plot(f3w, x = 0, y = 0, width = 0.5, height = 6/7) +
+  draw_plot(f3x, x = 0.5, y = 0, width = 0.5, height = 6/7) +
+  draw_plot(f3w_leg, x = 0.335, y = 0.725, width = 0.1, height = 0.1) +
+  draw_label(label = "Sign changes (AP)", x = 0.2, y = 0.92, size = 10) +
+  draw_label(label = "Magnitude changes (DS)", x = 0.73, y = 0.92, size = 10)
+save_plot(filename = "../manuscript/plots/Partial/AP_DS_Flowering_Both.png", plot = last_plot(), base_height = 2, base_width = 3.5)
 ```
 
 
