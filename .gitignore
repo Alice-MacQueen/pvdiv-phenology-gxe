@@ -23,7 +23,8 @@ analysis/heritability/nine_sites/
 analysis/gwas/BLUPs/single_sites/Lambda*
 analysis/gwas/BLUPs/single_sites/Manhattan*
 analysis/gwas/BLUPs/single_sites/QQplot*
-analysis/gwas/BLUPs/single_sites/*single_phe*
+analysis/gwas/BLUPs/single_sites/*
+
 
 # docx working files in manuscript
 manuscript/~$*
