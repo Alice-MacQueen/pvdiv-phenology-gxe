@@ -1,0 +1,12 @@
+---
+title: "Analysis_v0.9_mash_pw_all_SNPs"
+author: "Alice MacQueen"
+date: "3/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#

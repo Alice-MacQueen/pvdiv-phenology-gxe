@@ -968,26 +968,44 @@ annos_gamf <- get_post_annos(m_gam_fl_hyp)
 ```
 
 ```{r}
-annos_gg %>%
+annos_s1_1 <- annos_gg %>%
   filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.1 |
            tave_18d_Gulf_and_Midwest.6 > 0.1) %>%
-  dplyr::select(where(not_all_na))
+  dplyr::select(where(not_all_na)) %>%
+  mutate(Phenotype = "Greenup",
+         Subpop = "Gulf")
 
-annos_gamg %>%
+annos_s1_2 <- annos_gamg %>%
   filter(cgdd_12c_18d_Gulf_and_Midwest.10 > 0.1 |
            cgdd_12c_18d_Gulf_and_Midwest.9 > 0.1) %>%
-  dplyr::select(where(not_all_na))
+  dplyr::select(where(not_all_na)) %>%
+  mutate(Phenotype = "Greenup",
+         Subpop = "Both")
 
-annos_mf %>%
+annos_s1_3 <- annos_mf %>%
   # dplyr::select(starts_with("cgdd_12c_gr2fl_Gulf_and"))
   filter(cgdd_12c_gr2fl_Gulf_and_Midwest.8 > 0.1) %>%
-  dplyr::select(where(not_all_na))
-annos_gamf %>%
+  dplyr::select(where(not_all_na)) %>%
+  mutate(TXID = as.character(TXID)) %>%
+  mutate(Phenotype = "Flowering",
+         Subpop = "Midwest")
+annos_s1_4 <- annos_gamf %>%
   # dplyr::select(starts_with("dyln_change_sec"))
   filter(dyln_change_sec_Midwest.7 > 0.1) %>%
-  dplyr::select(where(not_all_na))
+  dplyr::select(where(not_all_na)) %>%
+  mutate(Phenotype = "Flowering",
+         Subpop = "Both")
 
-
+annos_s1_1 %>%
+  full_join(annos_s1_2) %>%
+  full_join(annos_s1_3) %>%
+  full_join(annos_s1_4) %>%
+  ungroup() %>%
+  dplyr::select(Marker, Phenotype, Subpop, Chr, Pos, log10BayesFactor, `distance from gene`, `Gene ID`, gene_start, gene_end, gene_width, Pfam:KOG, KO, `Arabidopsis thaliana homolog`:`Rice gene annotation`,
+         OsGene, AtGene, Best.hit.arabi.name:rice.defline, leaf:mitochondria, 	
+`transcription factor`:`blast disease`, `early leaf senescence`:dormancy, flower:`florigen transport`, everything()) %>%
+  dplyr::select(-(CHR:value), -(POS:POS_bin)) %>%
+  write_csv("~/Github/pvdiv-phenology-gxe/manuscript/tables/Table_S1_sig_hyp_matrix_SNPs.csv")
 ```
 Not many SNPs with U_hyp loading > 10% and SNP with log10BF > 2:
 Both GR: 10 & 9 SNPs   cgdd_12c_18d_Gulf_and_Midwest x2 (0.9 and 0.10)

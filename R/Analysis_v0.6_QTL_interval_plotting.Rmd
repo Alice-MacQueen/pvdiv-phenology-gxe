@@ -256,7 +256,7 @@ qtldf <- qtldf %>%
   separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
   mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
          Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
-  select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  dplyr::select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
   arrange(CHR, Pos_Mb_lo)
 
 qtlplot <- qtldf %>%
@@ -279,6 +279,65 @@ qtlplot$phe <- factor(qtlplot$phe,
                                                   "Rainfall, 5d sum"#,
                                                   #"Rainfall, 7d sum"
                                                   ))
+```
+# Functionally validated flowering time genes in QTL intervals (Table S2)
+```{r}
+qtl_anno_df <- qtlplot %>%
+  dplyr::rename(start = POS_lo, end = POS_hi)
+txdb <- loadDb("~/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite")
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+ftanno <- read_csv(file.path(workingdir, "data/Pvirgatum_v5.1.annotation_FTGeneHomologs.csv"))
+ftkey <- read_delim(file.path(workingdir, "data", "OsGene_keyword_table.txt"),
+                    delim = "\t")
+ftanno %>%
+  filter(!is.na(OsGene)) %>%
+  left_join(ftkey, by = c("OsGene" = "Symbol")) %>%
+  filter(Keyword %in% c("flowering time", "heading date")) %>% unique()
+
+osgene_keyword_df <- ftkey %>%
+  dplyr::select(-RAPdb, -MSU) %>%
+  group_by(Symbol, Keyword) %>%
+  dplyr::slice(1) %>%
+  pivot_wider(names_from = Keyword, values_from = Title)
+
+osgene_key <- osgene_keyword_df %>%
+  dplyr::select(Symbol, `flowering time`, `heading date`, anther, flower,
+                `floral meristem`, `floral meristem determinacy`, flowering,
+                `flower development`, `carpel differentiation`, stamen, 
+                `stamen number`) %>%
+  pivot_longer(cols = -Symbol, names_to = "Keyword", values_to = "Title") %>%
+  filter(!is.na(Title)) %>%
+  pivot_wider(names_from = Keyword, values_from = Title)
+
+os_annos <- ftanno %>%
+  filter(OsGene %in% osgene_key$Symbol | !is.na(AtGene)) %>%
+  mutate(Pos_Mb = round(start/10000)/100,
+         #Pos_Mb_e = floor(start/10000)/100,
+         POS_bin = round(Pos_Mb*100/2)) %>%# ,
+         #POS_bin_hi = round(Pos_Mb_e*100/2))
+  dplyr::select(OsGene, AtGene, locusName, everything()) %>%
+  dplyr::rename(`Gene ID` = locusName)
+
+
+qtl_annos <- switchgrassGWAS::pvdiv_table_topsnps(df = qtl_anno_df, type = "table", txdb = txdb) %>%
+    inner_join(os_annos, by = c("Gene ID")) %>%
+    left_join(osgene_key, by = c("OsGene" = "Symbol")) %>%
+    dplyr::select(where(not_all_na)) %>%
+    group_by(CHR, pos, `Gene ID`) %>%
+    dplyr::slice(1) 
+
+names(qtl_annos)
+all_na_ft <- rowSums(is.na(qtl_annos[,58:65]))
+add_column(qtl_annos, FT_Osgene_NA = all_na_ft, .before = TRUE) %>%
+  group_by(CHR, pos, FT_Osgene_NA < 8) %>%
+  tally()
+flowering_qtl_annos <- add_column(qtl_annos, FT_Osgene_NA = all_na_ft, .before = TRUE) %>%
+  filter(FT_Osgene_NA < 8) %>%
+  dplyr::select(CHR, pos, phe, lod, Pos_Mb_lo, Pos_Mb_hi, ci_lo, ci_hi, `Gene ID`,  gene_start:gene_width, `Arabidopsis thaliana homolog`:`Rice gene annotation`, OsGene, anther:`floral meristem determinacy`)
+  
+flowering_qtl_annos %>%
+  write_csv("~/Github/pvdiv-phenology-gxe/manuscript/tables/Final/Table_S2_QTL_intervals_with_functionally_validated_flowering_genes.csv")
 ```
 
 

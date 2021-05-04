@@ -34,11 +34,12 @@ phe_fl_df <- read_rds(file.path(workingdir, "data",
 phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
 h2gr <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "h2_df_GR50_related_functions_of_weather_v1.csv"))
 h2fl <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "h2_df_FL50_related_functions_of_weather_v1.csv"))
-h2gr_gxe <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_GR50_related_functions_of_weather_v1.csv"))
+h2gr_gxe <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_GR50_related_functions_of_weather_v2.csv"))
 h2fl_gxe <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_FL50_related_functions_of_weather_v1.csv"))
 
 h2gr <- h2gr %>%
   full_join(h2gr_gxe)
+h2gr <- h2gr_gxe
 h2fl <- h2fl %>%
   full_join(h2fl_gxe)
 ```
@@ -444,29 +445,29 @@ grh2 <- h2gr %>%
                               phe == "cgdd_8c_jan2gr" ~ "GDD 8C 01-01 to greenup",
                               phe == "tmax_18d" ~ "Max T, 18d mean",
                               phe == "tmin_18d" ~ "Min T, 18d mean",
-                              phe == "tave_18d" ~ "Mean T, 18d mean",
+                              phe == "tave_18d" ~ "Temp Ave, 18d",
                               phe == "tmax_10d" ~ "Max T, 10d mean",
                               phe == "tmin_10d" ~ "Min T, 10d mean",
-                              phe == "tave_10d" ~ "Mean T, 10d mean",
+                              phe == "tave_10d" ~ "Temp Ave, 10d",
                               phe == "tmax_5d" ~ "Max T, 5d mean",
                               phe == "tmin_5d" ~ "Min T, 5d mean",
-                              phe == "tave_5d" ~ "Mean T, 5d mean",
+                              phe == "tave_5d" ~ "Temp Ave, 5d",
                               phe == "cgdd_12c_10d" ~ "GDD, 10d",
                               phe == "cgdd_12c_18d" ~ "GDD, 18d",
                               phe == "cgdd_12c_5d" ~ "GDD, 5d",
                               TRUE ~ phe))
 grh2$site <- factor(grh2$site, levels = rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North", "nine_sites")))
 grh2$phe_name <- factor(grh2$phe_name, levels = c("50% greenup", "GDD, 5d",
-                                                  "Min T, 5d mean",
-                                                  #"Mean T, 5d mean",
+                                                  #"Min T, 5d mean",
+                                                  "Temp Ave, 5d",
                                                   #"Max T, 5d mean",
                                                   "GDD, 10d",
-                                                  "Min T, 10d mean",
-                                                  #"Mean T, 10d mean",
+                                                  #"Min T, 10d mean",
+                                                  "Temp Ave, 10d",
                                                   #"Max T, 10d mean",
                                                   "GDD, 18d",
-                                                  "Min T, 18d mean",
-                                                  #"Mean T, 18d mean",
+                                                  #"Min T, 18d mean",
+                                                  "Temp Ave, 18d",
                                                   #"Max T, 18d mean",
                                                   #"GDD 8C 01-01 to greenup",
                                                   "GDD 01-01 to GR"))
@@ -474,7 +475,9 @@ grh2$subpop_name <- factor(grh2$subpop_name, levels = c("Gulf", "Midwest", "Gulf
 
 
 subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"), Atlantic = "Atlantic", three_subpops = c("Atlantic", "Gulf", "Midwest"))
+```
 
+```{r}
 site_plot <- c("TX1", "TX2", "TX3", "OK", "MO", "NE", "IL", "MI", "SD", "All", "Texas", "North")
 
 grh2_p1 <- grh2 %>%
@@ -526,6 +529,7 @@ save_plot("../manuscript/plots/h2_GR_and_FL_site_weather_functions_All_Sites_k_s
 ```
 ## gxe greenup
 
+Use code starting ~on line 966 to generate this.
 ```{r}
 site_plot <- c("All", "Texas", "North")
 
@@ -559,7 +563,7 @@ gr_bar_gxe <- gr_barplot %>%
   theme(panel.spacing.x = unit(0.1, 'cm'), axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1), legend.position = "right") +
   geom_hline(data = filter(grh2, subpop_name %in% c("Gulf and Midwest", subpop_v[[1]], subpop_v[[2]]) & (site %in% site_plot) & !is.na(site) & phe == "GR50"), aes(yintercept = GxE_Estimate+Estimate), linetype = 2)
   
-save_plot("../manuscript/plots/Var_Comp_greenup_site_groups.png", plot = gr_bar_gxe, base_height = 4, base_asp = 1.5)
+save_plot("../manuscript/plots/Var_Comp_greenup_site_groups.svg", plot = gr_bar_gxe, base_height = 4, base_asp = 1.5)
 ```
 
 
@@ -880,10 +884,11 @@ subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf"
 phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl",
            "crain_gr2fl", "crain_1d", "crain_2d", "crain_3d", "crain_5d",
            "crain_7d")
-phe_gr <- c("GR50", "DYLN", "cgdd_12c_jan2gr", "cgdd_8c_jan2gr", "tmax_18d", 
-            "tmin_18d", "tave_18d", "cgdd_12c_18d", "tmax_10d", "tmin_10d",
-            "tave_10d", "cgdd_12c_10d", "tmax_5d", "tmin_5d", "tave_5d",
-            "cgdd_12c_5d")
+phe_gr <- c("GR50", "DYLN", "cgdd_12c_jan2gr", "cgdd_8c_jan2gr", "tave_10d",
+            "tave_18d", "tave_5d", "cgdd_12c_10d",
+            "cgdd_12c_5d", "cgdd_12c_18d", "tmax_18d", 
+            "tmin_18d",  "tmax_10d", "tmin_10d",
+            "tmax_5d", "tmin_5d")
 phe_dfs <- list(phe_gr_df, phe_fl_df)
 phe_lists <- list(phe_gr, phe_fl)
 h2_table <- tibble()
@@ -938,7 +943,7 @@ for(p in seq_along(phe_dfs)){
   }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
   }
   
-  if(i == 12 & j == 1 & k == 1){
+  if(i == 10 & j == 1 & k == 1){
     h2_table <- h2_est
   } else {
     h2_table <- add_row(h2_table, h2_est)
@@ -956,7 +961,7 @@ for(p in seq_along(phe_dfs)){
   }
   write_csv(h2_table, file.path(outputdir, paste0("h2_df_", phe_v[1],
                                                   "_related_functions_", 
-                                                  "of_weather_v4.csv")))
+                                                  "of_weather_v5.csv")))
 }
 ```
 
@@ -996,8 +1001,8 @@ site_v <- list(TX1 = "TX1", TX2 = "TX2", TX3 = "TX3", OK = "OK", MO = "MO",
 subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
 phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl",
            "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
-phe_gr <- c("GR50", "DYLN", "cgdd_12c_jan2gr", "tmin_18d", "cgdd_12c_18d",
-            "tmin_10d", "cgdd_12c_10d", "tmin_5d", "cgdd_12c_5d")
+phe_gr <- c("GR50", "DYLN", "cgdd_12c_jan2gr", "tave_18d", "cgdd_12c_18d",
+            "tave_10d", "cgdd_12c_10d", "tave_5d", "cgdd_12c_5d")
 phe_dfs <- list(phe_gr_df, phe_fl_df)
 phe_lists <- list(phe_gr, phe_fl)
 k_list <- list(Gulf = k_gulf, Midwest = k_midw, Gulf_and_Midwest = k_gandm)

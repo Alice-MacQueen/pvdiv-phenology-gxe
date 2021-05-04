@@ -77,6 +77,109 @@ s1full %>%
 save_plot(filename = "../manuscript/plots/Figure_4_QTL_by_lod_score.svg", base_height = 3, base_width = 13.5, plot = last_plot())
 ```
 
+# Rug plot of mash hits
+```{r}
+m_gulf_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_Uhyp.rds")
+m_gulf_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_Uhyp.rds")
+
+
+m_midw_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_Uhyp.rds")
+m_midw_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_Uhyp.rds")
+
+m_gam_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_Uhyp.rds")
+m_gam_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_Uhyp.rds")
+```
+
+```{r}
+get_post_weights <- function(m){
+  log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+      as.data.frame() %>%
+      rownames_to_column(var = "value") %>%
+      dplyr::mutate(value = as.integer(.data$value)) %>%
+      as_tibble() %>%
+      left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+      dplyr::rename(log10BayesFactor = .data$V1) %>%
+      dplyr::select(-.data$value)
+  
+  pw_df <- as_tibble(m$posterior_weights)
+  pw_df <- switchgrassGWAS:::get_marker_df(m = m) %>%
+    bind_cols(pw_df)
+  
+  ggman_df <- pw_df %>%
+    #left_join(m_meta) %>%
+    tidyr::separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+             extra = "merge", convert = TRUE) %>%
+    left_join(log10bf_df, by = "Marker") %>%
+    dplyr::arrange(.data$Chr, .data$Pos) 
+  return(ggman_df)
+}
+
+pw_gg <- get_post_weights(m_gulf_gr_hyp)
+pw_gf <- get_post_weights(m_gulf_fl_hyp) %>%
+  mutate(Subpop = "Gulf")
+
+pw_mg <- get_post_weights(m_midw_gr_hyp)
+pw_mf <- get_post_weights(m_midw_fl_hyp) %>%
+  mutate(Subpop = "Midwest")
+
+pw_gamg <- get_post_weights(m_gam_gr_hyp)
+pw_gamf <- get_post_weights(m_gam_fl_hyp) %>%
+  mutate(Subpop = "Both")
+```
+
+```{r}
+test_rug1 <- pw_gf %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+test_rug2 <- pw_gamf %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+test_rug3 <- pw_mf %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+test_rug <- pw_gf %>%
+  full_join(pw_gamf) %>%
+  full_join(pw_mf) %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+```
+
+
+```{r}
+s1full %>%
+  as_tibble(rownames = "Marker") %>%
+  pivot_longer(GR50:dyln_change_sec, names_to = "Phenotype", values_to = "LOD") %>%
+  separate(Marker, into = c("Chr", "Pos"), sep = "_", remove = FALSE, convert = TRUE) %>%
+  filter(!grepl("loc", Chr)) %>%
+  ggplot(aes(x = Pos, y = LOD)) + 
+  geom_line(aes(color = Phenotype)) +
+  geom_rug(data = test_rug2, sides = "t", alpha = 0.1) + 
+  geom_rug(data = test_rug1, sides = "b", alpha = 0.2) + 
+  geom_rug(data = test_rug3, outside = TRUE, sides = "b", alpha = 0.2) + 
+  geom_hline(data = threshold_df, aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
+  facet_wrap(~Chr, nrow = 1, scales = "free_x") +
+  switchgrassGWAS::theme_oeco + 
+  scale_color_manual(values = c("#CC0066", "#FFCC00", "#006600", "#6600FF", "grey")) + 
+  scale_linetype_manual(values = c(4,5,4,4,4)) +
+  theme(legend.position = "top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 10, face="bold"),
+        strip.text = element_text(size = 10, face="bold"),
+        axis.title = element_text(size = 10,face="bold"),
+        axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
+        panel.spacing.x = unit(-0., 'cm')
+        ) + 
+  xlab("Position (Mb)") + ylab("LOD score") +
+  scale_x_continuous(breaks = c(0, 20, 40, 60, 80)) + 
+  coord_cartesian(clip = "off")
+save_plot(filename = "../manuscript/plots/Figure_4_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+```
+
 
 
 Li's additional code
@@ -127,4 +230,5 @@ for (i in 1:nrow(flank_marker_full)){
 dev.off()
 
 ```
+
 

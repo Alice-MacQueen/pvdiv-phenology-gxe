@@ -17,7 +17,7 @@
    version="1.1"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="Figure_1_GWAS.svg"
-   inkscape:export-filename="C:\Users\alice\Documents\Github\pvdiv-phenology-gxe\manuscript\plots\Figure_1_GWAS_v3.png"
+   inkscape:export-filename="/home/alice/Github/pvdiv-phenology-gxe/manuscript/plots/Fig_1_h2_corr.png"
    inkscape:export-xdpi="800.02002"
    inkscape:export-ydpi="800.02002">
   <defs
@@ -8003,8 +8003,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.3391528"
-     inkscape:cx="232.77395"
-     inkscape:cy="602.15995"
+     inkscape:cx="155.01131"
+     inkscape:cy="734.63349"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -8033,7 +8033,22 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#999999;fill-opacity:0;stroke:none;stroke-width:1;stroke-miterlimit:10;stroke-dasharray:3, 3;stroke-dashoffset:0"
+       id="rect5526"
+       width="203.81784"
+       height="727.61908"
+       x="422.42038"
+       y="209.63354" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.13211797;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2918"
+       width="807.44983"
+       height="909.37457"
+       x="3.7502027"
+       y="-5.1376057" />
     <image
+       style=""
        y="214.86804"
        x="1.235683"
        id="image5469"
@@ -8075,13 +8090,6 @@
        y="217.02589" />
     <rect
        style="fill:#999999;fill-opacity:0;stroke:none;stroke-width:1;stroke-miterlimit:10;stroke-dasharray:3, 3;stroke-dashoffset:0"
-       id="rect5526"
-       width="203.81784"
-       height="727.61908"
-       x="422.42038"
-       y="209.63354" />
-    <rect
-       style="fill:#999999;fill-opacity:0;stroke:none;stroke-width:1;stroke-miterlimit:10;stroke-dasharray:3, 3;stroke-dashoffset:0"
        id="rect5528"
        width="22.177071"
        height="148.90318"
@@ -8106,6 +8114,7 @@
          y="17.7966"
          style="font-weight:bold;font-size:17.5px;line-height:1.25">a</tspan></text>
     <image
+       style=""
        y="-100.67094"
        x="-201.50322"
        id="image5923-0"
@@ -8114,8 +8123,9 @@
        height="270"
        width="436.79999"
        clip-path="url(#clipPath5943)"
-       transform="translate(184.80891,99.49299)" />
+       transform="translate(184.80891,99.492994)" />
     <image
+       style=""
        y="-43.249783"
        x="-529.47754"
        id="image5923"
@@ -8137,6 +8147,7 @@
          id="tspan5538"
          sodipodi:role="line">b</tspan></text>
     <g
+       style=""
        id="g7025"
        transform="translate(326.83093,14.883104)">
       <rect
@@ -10468,6 +10479,7 @@
          y="299.31296"
          style="font-weight:bold;font-size:17.5px;line-height:1.25">c</tspan></text>
     <image
+       style=""
        y="546.36218"
        x="315"
        id="image7402"
@@ -10501,9 +10513,9 @@
        id="rect2092"
        style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:0.9375;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1" />
     <rect
-       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:2.76295662;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1"
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.1963954;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1"
        id="rect2094"
-       width="75"
+       width="14.062502"
        height="445.3125"
        x="782.8125"
        y="53.924706" />
