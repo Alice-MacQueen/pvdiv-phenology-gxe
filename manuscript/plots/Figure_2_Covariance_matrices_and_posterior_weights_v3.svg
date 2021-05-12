@@ -13,7 +13,7 @@
    id="svg2401"
    sodipodi:docname="Figure_2_Covariance_matrices_and_posterior_weights_v3.svg"
    inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
-   inkscape:export-filename="/home/alice/Github/pvdiv-phenology-gxe/manuscript/plots/Figure_2_Covariance_matrices_and_posterior_weights_v3.png"
+   inkscape:export-filename="/home/alice/Github/pvdiv-phenology-gxe/manuscript/plots/Final/Figure_3_DD.png"
    inkscape:export-xdpi="800.02002"
    inkscape:export-ydpi="800.02002">
   <metadata
@@ -24,7 +24,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -37,12 +37,12 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="2480"
-     inkscape:window-height="2030"
+     inkscape:window-width="2479"
+     inkscape:window-height="2029"
      id="namedview2403"
      showgrid="false"
      inkscape:zoom="2"
-     inkscape:cx="284.4596"
+     inkscape:cx="143.2096"
      inkscape:cy="198.93886"
      inkscape:window-x="0"
      inkscape:window-y="0"
@@ -5510,60 +5510,60 @@
        clip-path="url(#cpMC4wMHw2NDguMDB8NTc2LjAwfDAuMDA=)"
        id="g1600">
       <text
-         x="314.43"
+         x="314.42999"
          y="252.52"
-         style="font-size: 10.00px; fill: #4D4D4D; font-family: Liberation Sans;"
-         textLength="51.14px"
+         style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
+         textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text1598">ED_PCA_1</text>
+         id="text1598">DD_PCA_1</text>
     </g>
     <g
        style=""
        clip-path="url(#cpMC4wMHw2NDguMDB8NTc2LjAwfDAuMDA=)"
        id="g1604">
       <text
-         x="314.43"
-         y="241.57"
-         style="font-size: 10.00px; fill: #4D4D4D; font-family: Liberation Sans;"
-         textLength="51.14px"
+         x="314.42999"
+         y="241.57001"
+         style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
+         textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text1602">ED_PCA_2</text>
+         id="text1602">DD_PCA_2</text>
     </g>
     <g
        style=""
        clip-path="url(#cpMC4wMHw2NDguMDB8NTc2LjAwfDAuMDA=)"
        id="g1608">
       <text
-         x="314.43"
+         x="314.42999"
          y="230.63"
-         style="font-size: 10.00px; fill: #4D4D4D; font-family: Liberation Sans;"
-         textLength="51.14px"
+         style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
+         textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text1606">ED_PCA_3</text>
+         id="text1606">DD_PCA_3</text>
     </g>
     <g
        style=""
        clip-path="url(#cpMC4wMHw2NDguMDB8NTc2LjAwfDAuMDA=)"
        id="g1612">
       <text
-         x="314.43"
-         y="219.68"
-         style="font-size: 10.00px; fill: #4D4D4D; font-family: Liberation Sans;"
-         textLength="51.14px"
+         x="314.42999"
+         y="219.67999"
+         style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
+         textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text1610">ED_PCA_4</text>
+         id="text1610">DD_PCA_4</text>
     </g>
     <g
        style=""
        clip-path="url(#cpMC4wMHw2NDguMDB8NTc2LjAwfDAuMDA=)"
        id="g1616">
       <text
-         x="314.43"
-         y="208.74"
-         style="font-size: 10.00px; fill: #4D4D4D; font-family: Liberation Sans;"
-         textLength="51.14px"
+         x="314.42999"
+         y="208.74001"
+         style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
+         textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text1614">ED_PCA_5</text>
+         id="text1614">DD_PCA_5</text>
     </g>
     <g
        style=""
@@ -5571,11 +5571,11 @@
        id="g1620">
       <text
          x="322.78"
-         y="197.80"
-         style="font-size: 10.00px; fill: #4D4D4D; font-family: Liberation Sans;"
-         textLength="42.79px"
+         y="197.8"
+         style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
+         textLength="42.790001"
          lengthAdjust="spacingAndGlyphs"
-         id="text1618">ED_tPCA</text>
+         id="text1618">DD_tPCA</text>
     </g>
     <polyline
        points="367.76,260.02 370.50,260.02 "
@@ -6954,7 +6954,7 @@
          style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
          textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text2191">ED_PCA_1</text>
+         id="text2191">DD_PCA_1</text>
     </g>
     <g
        style=""
@@ -6967,7 +6967,7 @@
          style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
          textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text2195">ED_PCA_2</text>
+         id="text2195">DD_PCA_2</text>
     </g>
     <g
        style=""
@@ -6980,7 +6980,7 @@
          style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
          textLength="51.139999"
          lengthAdjust="spacingAndGlyphs"
-         id="text2199">ED_PCA_3</text>
+         id="text2199">DD_PCA_3</text>
     </g>
     <g
        style=""
@@ -6993,7 +6993,7 @@
          style="font-size:10px;font-family:'Liberation Sans';fill:#4d4d4d"
          textLength="42.790001"
          lengthAdjust="spacingAndGlyphs"
-         id="text2203">ED_tPCA</text>
+         id="text2203">DD_tPCA</text>
     </g>
     <polyline
        points="370.53,531.41 373.27,531.41 "

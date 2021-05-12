@@ -348,6 +348,20 @@ cov_gamg$ggobject +
 cov_gamf$ggobject + 
   ggtitle("Gulf and Midwest flowering", subtitle = "47.3% SNP mass")
 ```
+1.208534e-01+1.400286e-01  photoperiod cues
+2.371512e-02  cgdd_12c_gr2fl_Gulf_and_Midwest
+
+5.718063e-02+1.461888e-01+1.398986e-01
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
 47.3% of effect mass for both subpop flowering was on hyp matrices, while only 8.5% of greenup was.
 Gulf greenup: 8.4%  flowering: 31.8%
 Midwest greenup: 28.6% flowering 45.1%
