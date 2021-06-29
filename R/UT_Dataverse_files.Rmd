@@ -1,0 +1,31 @@
+---
+title: "UT Dataverse"
+author: "Alice MacQueen"
+date: 2021-06-29
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(bigsnpr)
+```
+
+# Make bed files
+
+Make bed/bim/fam SNP files for Midwest, Gulf, and Both genetic subpopulations.
+I've used '.rds' and '.bk' files for the analyses in this manuscript, but these
+are not common genome file formats, while bed formatted files are. So uploading
+files in this format to a permanent DOI will help reproducibility for this
+dataset.
+
+I only need to do this for the 'Both' subpopulations; the Midwest and Gulf
+subpopulation SNP sets were generated for the genome paper.
+
+```{r}
+snp <- snp_attach("~/Github/pvdiv-genome/genetic_subpops/kinship/Pvirgatum_V5_GWAS_363g_Midwest_and_Gulf_subset_maf0.05.rds")
+```
+
+```{r}
+snp_writeBed(snp, bedfile = "~/Github/pvdiv-genome/Dataverse/Pvirgatum_V5_GWAS_363g_Midwest_and_Gulf_subset_maf0.05.bed")
+```
+
