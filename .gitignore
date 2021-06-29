@@ -28,3 +28,17 @@ analysis/gwas/BLUPs/single_sites/*
 # docx working files in manuscript
 manuscript/~$*
 
+
+# Files and folders that aren't pertinent to the completed manuscript
+analysis/common-garden-allele-balancing
+analysis/environmental-index
+analysis/genetic-covariances
+analysis/gwas/G_BLUP/
+data-raw/QC/
+manuscript/Incomplete_drafts/
+manuscript/notes/
+manuscript/tables/
+manuscript/plots/
+presentations/
+R/Pre_manuscript/
+R/Visualize_BIOMASS_mash_GxE_cache/
