@@ -5,9 +5,9 @@ date: 2021-01-05
 output: html_document
 ---
 
-# TRIAL script
+# Script used to make figures
 # -------------------------
-NB: Trial script on mash-env-cov branch to use weather covariance matrices as 
+NB: This script uses weather covariance matrices as 
 U_hyp in a mash run of GR50 phenotypes from 8 gardens.
 
 
@@ -24,8 +24,8 @@ library(cowplot)
 # Load project data
 
 ```{r load data}
-source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
-workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+source("../../../Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+workingdir <- file.path("..", "..", "..", "Github", "pvdiv-phenology-gxe")
 outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs", "single_sites")
 mashdir <- file.path(workingdir, "analysis", "mash")
 metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
@@ -255,20 +255,20 @@ out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir),
 
 ## 3a. Log-likelihoods
 ```{r}
-m_gulf_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_Uhyp.rds")
-m_gulf_gr_no <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_no_Uhyp.rds")
-m_gulf_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_Uhyp.rds")
-m_gulf_fl_no <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_no_Uhyp.rds")
+m_gulf_gr_hyp <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_Uhyp.rds")
+m_gulf_gr_no <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_no_Uhyp.rds")
+m_gulf_fl_hyp <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_Uhyp.rds")
+m_gulf_fl_no <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_no_Uhyp.rds")
 
-m_midw_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_Uhyp.rds")
-m_midw_gr_no <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_no_Uhyp.rds")  
-m_midw_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_Uhyp.rds")
-m_midw_fl_no <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_no_Uhyp.rds")
+m_midw_gr_hyp <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_Uhyp.rds")
+m_midw_gr_no <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_no_Uhyp.rds")  
+m_midw_fl_hyp <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_Uhyp.rds")
+m_midw_fl_no <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_no_Uhyp.rds")
 
-m_gam_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_Uhyp.rds")
-m_gam_gr_no <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_no_Uhyp.rds")
-m_gam_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_Uhyp.rds")
-m_gam_fl_no <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_no_Uhyp.rds")
+m_gam_gr_hyp <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_Uhyp.rds")
+m_gam_gr_no <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_no_Uhyp.rds")
+m_gam_fl_hyp <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_Uhyp.rds")
+m_gam_fl_no <- readRDS("../../../Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_no_Uhyp.rds")
 ```
 
 ```{r}
@@ -1315,5 +1315,67 @@ save_plot(filename = "../manuscript/plots/Partial/AP_DS_Flowering_Both.png", plo
 We characterized patterns of differential sensitivity and antagonistic pleiotropy between all SNPs and all pairs of gardens.
 
 `get_GxE` and `mash_plot_pairwise_sharing()` should do the trick here.
+
+```{r}
+site_regions <- sites %>% 
+  mutate(Region = case_when(manu_site %in% c("SD", "MO", "IL", "MI", "NE") ~ "North",
+                            manu_site %in% c("TX1", "TX2", "TX3", "TX4") ~ "Texas",
+                                             TRUE ~ "OK")) %>%
+  select(manu_site, Region) %>%
+  rename("Site" = "manu_site")
+
+gxe_gamg$S_1_row %>%
+  as_tibble(rownames = "Condition_1") %>%
+  pivot_longer(cols = 2:9, names_to = "Condition_2", values_to = "Sig") %>%
+  separate(Condition_1, into = c(NA, NA, NA, NA, "Phenotype", "Garden_1"), sep = "_") %>%
+  separate(Condition_2, into = c(NA, NA, NA, NA, NA, "Garden_2"), sep = "_") %>%
+  left_join(site_regions, by = c("Garden_1" = "Site")) %>%
+  rename("Region_1" = "Region") %>%
+  left_join(site_regions, by = c("Garden_2" = "Site")) %>%
+  rename("Region_2" = "Region") %>%
+  filter(Region_1 != "OK" & Region_2 !="OK") %>%
+  group_by(Region_1, Region_2) %>%
+  summarise(Total_sig = sum(Sig))
+
+gxe_gf$S_AP %>%
+  as_tibble(rownames = "Condition_1") %>%
+  pivot_longer(cols = 2:9, names_to = "Condition_2", values_to = "Sig") %>%
+  separate(Condition_1, into = c(NA, NA, "Phenotype", "Garden_1"), sep = "_") %>%
+  separate(Condition_2, into = c(NA, NA, NA, "Garden_2"), sep = "_") %>%
+  left_join(site_regions, by = c("Garden_1" = "Site")) %>%
+  rename("Region_1" = "Region") %>%
+  left_join(site_regions, by = c("Garden_2" = "Site")) %>%
+  rename("Region_2" = "Region") %>%
+  filter(Region_1 != "OK" & Region_2 !="OK") %>%
+  group_by(Region_1, Region_2) %>%
+  summarise(Total_sig = sum(Sig))
+
+gxe_mg$S_2_no %>%
+  as_tibble(rownames = "Condition_1") %>%
+  pivot_longer(cols = 2:8, names_to = "Condition_2", values_to = "Sig") %>%
+  separate(Condition_1, into = c(NA, NA, "Phenotype", "Garden_1"), sep = "_") %>%
+  separate(Condition_2, into = c(NA, NA, NA, "Garden_2"), sep = "_") %>%
+  left_join(site_regions, by = c("Garden_1" = "Site")) %>%
+  rename("Region_1" = "Region") %>%
+  left_join(site_regions, by = c("Garden_2" = "Site")) %>%
+  rename("Region_2" = "Region") %>%
+  filter(Region_1 != "OK" & Region_2 !="OK") %>%
+  group_by(Region_1, Region_2) %>%
+  summarise(Total_sig = sum(Sig))
+
+gxe_mf$S_AP %>%
+  as_tibble(rownames = "Condition_1") %>%
+  pivot_longer(cols = 2:7, names_to = "Condition_2", values_to = "Sig") %>%
+  separate(Condition_1, into = c(NA, NA, "Phenotype", "Garden_1"), sep = "_") %>%
+  separate(Condition_2, into = c(NA, NA, NA, "Garden_2"), sep = "_") %>%
+  left_join(site_regions, by = c("Garden_1" = "Site")) %>%
+  rename("Region_1" = "Region") %>%
+  left_join(site_regions, by = c("Garden_2" = "Site")) %>%
+  rename("Region_2" = "Region") %>%
+  filter(Region_1 != "OK" & Region_2 !="OK") %>%
+  group_by(Region_1, Region_2) %>%
+  summarise(Total_sig = sum(Sig))
+```
+
 
 
