@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(zoo)
+library(cowplot)
 ```
 
 #
@@ -294,7 +295,13 @@ wea_ten_sites <- wea_ten_sites %>%
                               (tmax_sm + tmin_sm)/2 - 10,
                               0),
          Year = year(Working_date)) %>%
-  arrange(Latitude, Year, JDAY) %>%
+  mutate(JDAY_EXP = case_when(Year == 2018 ~ JDAY,
+                              Year == 2019 ~ JDAY + 365,
+                              Year == 2020 ~ JDAY + (365*2),
+                              Year == 2021 ~ JDAY + (365*3),
+                              TRUE ~ NA_real_)) %>%
+  arrange(Latitude, Year, JDAY_EXP) %>%
+  select(-JDAY) %>%
   group_by(manu_site) %>%
   mutate(crain_2d = prcp + lag(prcp, default = 0),
          crain_3d = prcp + lag(prcp, default = 0) + lag(prcp, default = 0, 
@@ -397,22 +404,7 @@ phe_gr_fl <- phe_ten_sites %>%
   select(-JDAY) %>%
   pivot_wider(names_from = PHE, values_from = JDAY_EXP)
 
-GR_start <- phe_gr_fl %>% 
-  group_by(manu_site, Year) %>%
-  filter(!is.na(GR50)) %>%
-  summarise(GR_start = floor(min(GR50)))
-FL_end <- phe_gr_fl %>% 
-  group_by(manu_site, Year) %>%
-  filter(!is.na(FL50)) %>%
-  summarise(FL_end = ceiling(max(FL50)))
-
-
 tmp1 <- wea_ten_sites %>%
-  mutate(JDAY_EXP = case_when(Year == 2018 ~ JDAY,
-                              Year == 2019 ~ JDAY + 365,
-                              Year == 2020 ~ JDAY + 365 + 365,
-                              Year == 2021 ~ JDAY + (365*3),
-                              TRUE ~ NA_real_)) %>%
   left_join(phe_gr_fl)
 
 tmp <- tmp1 %>%
@@ -424,13 +416,313 @@ tmp <- tmp1 %>%
 
 tmp %>%
   filter(manu_site == "TX1")
-tmp
+tmp %>%
+  filter(!is.na(PLANT_ID))
+
 ```
 
 
 
 ```{r}
-phe_ten_sites %>%
-  left_join(wea_ten_sites)
+cphe_gr2fl <- tmp %>%
+  filter(!is.na(PLANT_ID)) %>%
+  rename(cgdd_12c_gr2fl = GDD_12Cbase, crain_gr2fl = prcp)
+
+wea_ten_sites %>%
+  filter(manu_site == "TX1" & JDAY_EXP == 715)
+
+tmp2 <- wea_ten_sites %>%
+  select(-Year)
+
+gr_ten_sites <- phe_gr_fl %>%
+  mutate(GR50 = floor(GR50)) %>%
+  filter(!is.na(GR50)) %>%
+  left_join(tmp2, by = c("manu_site", "GR50" = "JDAY_EXP")) %>%
+  select(PLANT_ID, Year, manu_site, GR50, cgdd_12c_5d:tave_20d) 
+
+fl_ten_sites <- phe_gr_fl %>%
+  filter(!is.na(FL50)) %>%
+  mutate(FL50 = floor(FL50),
+         GR50 = floor(GR50)) %>%
+  left_join(tmp2, by = c("manu_site", "FL50" = "JDAY_EXP")) %>%
+  select(PLANT_ID, Year, manu_site, GR50, FL50, prcp, DYLN, crain_2d:dyln_14d_prior) %>%
+  left_join(cphe_gr2fl) %>%
+  rename(crain_1d = prcp, dyln_fl50 = DYLN)
+# 11 September flowering dates in 2021 at Pickle have NA's for weather values. Decided to let this be.
+
+1354-(365*3)
+tmp2 %>%
+  filter(manu_site == "TX2" & JDAY_EXP > 1353)
+```
+#phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", 
+#             "tave_5d", "tave_10d", "tave_18d")
+phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
+             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
+
+```{r}
+gr_ten_sites %>%
+  saveRDS(file = here("data", "Weather_related_phe_GR50_3yr.rds"))
+fl_ten_sites %>%
+  saveRDS(file = here("data", "Weather_related_phe_FL50_3yr.rds"))
 ```
 
+Make phenotypic correlation matrices for these new years, and new weather variables.
+
+```{r}
+metadata <- read_rds(here("data", "metadata.rds"))
+subpop_v2 <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest",
+                  Gulf = "Gulf")
+year_v = c(2019, 2020, 2021)
+
+fl_ten_sites <- fl_ten_sites %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP))
+gr_ten_sites <- gr_ten_sites %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP))
+
+# change based on phenotype ---------------
+#phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_20d", "cgdd_12c_5d", 
+#             "tave_5d", "tave_10d", "tave_20d")
+phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", 
+             "dyln_change_sec_7d_prior", "dyln_change_sec_14d_prior", 
+             "dyln_7d_prior", "dyln_14d_prior", "cgdd_12c_gr2fl", 
+             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
+i=1
+k=1
+
+U_hyp_2019 <- list()
+for(i in seq_along(phe_hyp)){
+  for(k in seq_along(subpop_v2)){
+
+    cov_df <- fl_ten_sites %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]]) %>%
+      filter(Year %in% 2019) %>%
+      select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+      group_by(PLANT_ID, SUBPOP, manu_site) %>%
+      mutate(IND = row_number()) %>%
+      pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+      mutate(PLANT_ID = as.factor(PLANT_ID),
+             IND = as.factor(IND)) %>%
+      select(PLANT_ID, SUBPOP, IND, IL, MI, MO, NE, SD, TX1, TX2, TX3) ##### 
+    
+    cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+    # Set diagonal of this matrix = coefficient of variation within each garden.
+    diag(cor_phe) <- cov_df %>%
+      ungroup() %>%
+      summarise(IL = sqrt(var(IL, na.rm = TRUE))/mean(IL, na.rm = TRUE),  #####
+                MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
+                MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
+                NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
+                SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
+                TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
+                TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
+                TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE)) %>%
+      as_vector()
+
+    U_hyp_2019 <- list.prepend(U_hyp_2019, cor_phe)
+    names(U_hyp_2019)[1] <- paste0(phe_hyp[i], "_", names(subpop_v2)[k])
+  }
+}
+
+# for 2020
+U_hyp_2020 <- list()
+for(i in seq_along(phe_hyp)){
+  for(k in seq_along(subpop_v2)){
+
+    cov_df <- fl_ten_sites %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]]) %>%
+      filter(Year %in% 2020) %>%
+      select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+      group_by(PLANT_ID, SUBPOP, manu_site) %>%
+      mutate(IND = row_number()) %>%
+      pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+      mutate(PLANT_ID = as.factor(PLANT_ID),
+             IND = as.factor(IND)) %>%
+      select(PLANT_ID, SUBPOP, IND, IL, MI, MO, NE, SD, TX1, TX2, TX3, TX4) ##### 
+    
+    cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+    # Set diagonal of this matrix = coefficient of variation within each garden.
+    diag(cor_phe) <- cov_df %>%
+      ungroup() %>%
+      summarise(IL = sqrt(var(IL, na.rm = TRUE))/mean(IL, na.rm = TRUE),  #####
+                MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
+                MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
+                NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
+                SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
+                TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
+                TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
+                TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE),
+                TX4 = sqrt(var(TX4, na.rm = TRUE))/mean(TX4, na.rm = TRUE)) %>%
+      as_vector()
+
+    U_hyp_2020 <- list.prepend(U_hyp_2020, cor_phe)
+    names(U_hyp_2020)[1] <- paste0(phe_hyp[i], "_", names(subpop_v2)[k])
+  }
+}
+
+U_hyp_2021 <- list()
+for(i in seq_along(phe_hyp)){
+  for(k in seq_along(subpop_v2)){
+
+    cov_df <- fl_ten_sites %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]]) %>%
+      filter(Year %in% 2021) %>%
+      select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+      group_by(PLANT_ID, SUBPOP, manu_site) %>%
+      mutate(IND = row_number()) %>%
+      pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+      mutate(PLANT_ID = as.factor(PLANT_ID),
+             IND = as.factor(IND)) %>%
+      select(PLANT_ID, SUBPOP, IND, IL, MI, MO, TX2, TX3, TX4) ##### 
+    
+    cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+    # Set diagonal of this matrix = coefficient of variation within each garden.
+    diag(cor_phe) <- cov_df %>%
+      ungroup() %>%
+      summarise(IL = sqrt(var(IL, na.rm = TRUE))/mean(IL, na.rm = TRUE),  #####
+                MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
+                MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
+                TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
+                TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE),
+                TX4 = sqrt(var(TX4, na.rm = TRUE))/mean(TX4, na.rm = TRUE)) %>%
+      as_vector()
+
+    U_hyp_2021 <- list.prepend(U_hyp_2021, cor_phe)
+    names(U_hyp_2021)[1] <- paste0(phe_hyp[i], "_", names(subpop_v2)[k])
+  }
+}
+
+```
+
+Visualize correlation matrices themselves
+```{r}
+library(switchgrassGWAS)
+
+i=7
+switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2019[[i]],
+                                            reorder = FALSE)
+switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2020[[i]],
+                                            reorder = FALSE)
+switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2021[[i]],
+                                            reorder = FALSE)
+```
+
+How related are correlation matrices? Mantel tests & visualization of pairwise tests.
+```{r}
+for(i in seq_along(U_hyp_2019)) {
+  U_hyp_2019[[i]] <- replace_na(U_hyp_2019[[i]], 0)
+}
+
+U_dist_2019 <- list()
+for(i in seq_along(U_hyp_2019)) {
+  U_dist_2019[[i]] <- as.dist(U_hyp_2019[[i]])
+  
+}
+names(U_dist_2019) <- names(U_hyp_2019)
+
+
+pval_mantel_2019 <- data.frame()
+for(i in seq_along(U_dist_2019)) {
+  for (j in seq_along(U_dist_2019)) {
+      pval_mantel_2019[i, j] <- mantel.rtest(U_dist_2019[[i]], U_dist_2019[[j]], nrepet = 1000)[5] 
+  }
+}
+colnames(pval_mantel_2019) <- names(U_dist_2019)
+```
+
+```{r}
+plot_mantel_2019 <- pval_mantel_2019 %>%
+  add_column(matrix_row = names(U_dist_2019), .before = TRUE) %>%
+  pivot_longer(cols = 2:ncol(pval_mantel_2019)+1, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = -log10(pvalue) > 2.5, color = -log10(pvalue)), 
+            size = 3.5, 
+            width = 0.7, height = 0.7) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  scale_fill_viridis_d(end = 0.95, option = "B") +
+  scale_color_viridis_c(end = 0.8, option = "D")
+
+save_plot(plot = plot_mantel_2019, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Mantel_pvalue_plot_2019.png"), base_height = 13, base_width = 15)
+```
+
+```{r}
+for(i in seq_along(U_hyp_2020)) {
+  U_hyp_2020[[i]] <- replace_na(U_hyp_2020[[i]], 0)
+}
+
+U_dist_2020 <- list()
+for(i in seq_along(U_hyp_2020)) {
+  U_dist_2020[[i]] <- as.dist(U_hyp_2020[[i]])
+  
+}
+names(U_dist_2020) <- names(U_hyp_2020)
+
+
+pval_mantel_2020 <- data.frame()
+for(i in seq_along(U_dist_2020)) {
+  for (j in seq_along(U_dist_2020)) {
+      pval_mantel_2020[i, j] <- mantel.rtest(U_dist_2020[[i]], U_dist_2020[[j]], nrepet = 1000)[5] 
+  }
+}
+colnames(pval_mantel_2020) <- names(U_dist_2020)
+```
+
+```{r}
+plot_mantel_2020 <- pval_mantel_2020 %>%
+  add_column(matrix_row = names(U_dist_2020), .before = TRUE) %>%
+  pivot_longer(cols = 2:ncol(pval_mantel_2020)+1, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = -log10(pvalue) > 2.5, color = -log10(pvalue)), 
+            size = 3.5, 
+            width = 0.7, height = 0.7) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  scale_fill_viridis_d(end = 0.95, option = "B") +
+  scale_color_viridis_c(end = 0.8, option = "D")
+
+save_plot(plot = plot_mantel_2020, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Mantel_pvalue_plot_2020.png"), base_height = 13, base_width = 15)
+```
+
+```{r}
+for(i in seq_along(U_hyp_2021)) {
+  U_hyp_2021[[i]] <- replace_na(U_hyp_2021[[i]], 0)
+}
+
+U_dist_2021 <- list()
+for(i in seq_along(U_hyp_2021)) {
+  U_dist_2021[[i]] <- as.dist(U_hyp_2021[[i]])
+  
+}
+names(U_dist_2021) <- names(U_hyp_2021)
+
+
+pval_mantel_2021 <- data.frame()
+for(i in seq_along(U_dist_2021)) {
+  for (j in seq_along(U_dist_2021)) {
+      pval_mantel_2021[i, j] <- mantel.rtest(U_dist_2021[[i]], U_dist_2021[[j]], nrepet = 1000)[5] 
+  }
+}
+colnames(pval_mantel_2021) <- names(U_dist_2021)
+```
+
+```{r}
+plot_mantel_2021 <- pval_mantel_2021 %>%
+  add_column(matrix_row = names(U_dist_2021), .before = TRUE) %>%
+  pivot_longer(cols = 2:ncol(pval_mantel_2021)+1, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = -log10(pvalue) > 2.5, color = -log10(pvalue)), 
+            size = 3.5, 
+            width = 0.7, height = 0.7) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  scale_fill_viridis_d(end = 0.95, option = "B") +
+  scale_color_viridis_c(end = 0.8, option = "D")
+
+save_plot(plot = plot_mantel_2021, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Mantel_pvalue_plot_2021.png"), base_height = 13, base_width = 15)
+```
