@@ -1,0 +1,18 @@
+---
+title: "Analysis_v1.1_weather"
+author: "Alice MacQueen"
+date: "1/7/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#
+
+```{r}
+source("~/Github/pv-weather/R/get_functions.R")
+sites <- read_rds(here("data", "sites.rds"))
+```
+

@@ -480,3 +480,7 @@ fit 7 (or more) bivariate models; compare h^2 estimates between them for A-H.
 Fit trivariate models?
 Try to fit 8-way model? Run these models on the server so my laptop isn't overloaded.
 
+```{r}
+15*3*28
+```
+

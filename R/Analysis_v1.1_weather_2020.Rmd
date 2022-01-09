@@ -1,0 +1,436 @@
+---
+title: "Analysis_v1.1_weather"
+author: "Alice MacQueen"
+date: "1/7/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(zoo)
+```
+
+#
+
+```{r}
+source("~/Github/pv-weather/R/get_functions.R")
+sites <- read_rds(here("data", "sites.rds"))
+metadata <- read_rds(here("data", "metadata.rds"))
+mesonet_stations <- read_csv("~/Github/pv-weather/data-raw/All_Mesonet_Stations.csv")
+
+
+
+get_station_info <- function(df, decdegrees = 0.1, loc_key = "Location_code"){
+  loc_key <- sym(loc_key)
+  locs <- list()
+  Location_finder <- df %>%
+    group_by(!! loc_key) %>%
+    summarize(Lat1 = mean(Latitude, na.rm = TRUE) - decdegrees,
+              Long1 = mean(Longitude, na.rm = TRUE) - decdegrees,
+              Lat2 = Lat1 + decdegrees*2,
+              Long2 = Long1 + decdegrees*2)
+  for(i in 1:nrow(df)){
+    locs[[i]] <- mesonet_stations %>%
+      filter(between(lon, Location_finder$Long1[i], Location_finder$Long2[i]) &
+               between(lat, Location_finder$Lat1[i], Location_finder$Lat2[i])) %>%
+      arrange(begints)
+  }
+  station_info <- do.call(rbind.data.frame, locs)
+  return(station_info)
+}
+
+
+Station1 <- metadata %>%
+  filter(PLANT_ID == "J001.A") %>%
+  rename(Latitude = LATITUDE, Longitude = LONGITUDE) %>%
+  mutate(Longitude = -Longitude)
+get_station_info(Station1, loc_key = "PLANT_ID")
+Station1$station <- "BKV"
+J001_2018 <- get_mesonet_weather(station = Station1$station, year1 = "2018", 
+                                 month1 = "06", day1 = "01", year2 = "2021", 
+                                 month2 = "11", day2 = "01", 
+                                 tz = "America/New_York")
+```
+
+SD stid: SMCS2 (or MDYS2)
+MO stid: MO027
+IL stid: WSCI2 (don't need this)
+MI stid: KBSM4 (or GLLM4)
+NE stid: MPHN1
+
+
+```{r}
+meso_url <- "https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py/"
+library(httr)
+library(data.table)
+library(lubridate)
+#' @import httr
+#' @import data.table
+#' @import dplyr
+#' @import lubridate
+#'
+#' @export
+get_mesonet_weather <- function(station, year1, month1, day1, year2, month2, day2, tz){
+  MESO_WEA <- GET(url = meso_url,
+                  query = list(station = station,
+                               data = "all",
+                               year1 = year1,
+                               month1 = month1,
+                               day1 = day1,
+                               year2 = year2,
+                               month2 = month2,
+                               day2 = day2,
+                               tz = tz,
+                               format = "comma")) %>%
+    content() %>%
+    read_csv(skip = 5, na = "M") %>%
+    mutate(Working_date = as_date(valid)) %>%
+    group_by(Working_date) %>%
+    summarise(tmin = (min(as.numeric(tmpf), na.rm = TRUE)-32)*(5/9), # convert F to C for all temperatures
+              tmax = (max(as.numeric(tmpf), na.rm = TRUE)-32)*(5/9),
+              RHmean = mean(as.numeric(relh), na.rm = TRUE),
+              dewp = (mean(as.numeric(dwpf), na.rm = TRUE)-32)*(5/9),
+              wndk = mean(as.numeric(sknt), na.rm = TRUE),
+              prcp = (sum(as.numeric(p01i), na.rm = TRUE)*254), # convert inches to 0.1x mm
+              Tdrnl = mean(tmax - tmin),
+              Tmean = (mean(as.numeric(tmpf), na.rm = TRUE)-32)*(5/9)) %>%
+    mutate_if(is.double, funs(na_if(., NaN)))
+  DT <- data.table(MESO_WEA)
+  invisible(lapply(names(DT),function(.name) set(DT,
+                                                 which(is.infinite(DT[[.name]])),
+                                                 j = .name,value =NA)))
+  invisible(lapply(names(DT),function(.name) set(DT, which(is.nan(DT[[.name]])),
+                                                 j = .name,value =NA)))
+  return(DT)
+}
+
+get_mesonet_weather(station = "WSCI2", year = "2019", month1 = "01", day1 = "01", year2 = "2021", month2 = "10", day2 = "31", tz = "America/Chicago")
+```
+Only the ASOS stations seem to work. Still, nothing is farther than 0.18 decimal degrees away from the field site. Given that the techs haven't added weather data for the site proper, that's just going to have to be good enough.
+```{r}
+sites[1,]
+get_station_info(sites[1,], decdegrees = 0.15, loc_key = "manu_site")
+Station1$station <- "BKX"
+test_SD <- get_mesonet_weather(station = Station1$station, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[2,]
+get_station_info(sites[2,], decdegrees = 0.1, loc_key = "manu_site")
+Station2 <- "COU"
+test_MO <- get_mesonet_weather(station = Station2, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[3,]
+get_station_info(sites[3,], decdegrees = 0.1, loc_key = "manu_site")
+Station3 <- "DPA"
+test_IL <- get_mesonet_weather(station = Station3, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[4,]
+get_station_info(sites[4,], decdegrees = 0.15, loc_key = "manu_site")
+Station4 <- "BTL"
+test_MI <- get_mesonet_weather(station = Station4, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[5,]
+get_station_info(sites[5,], decdegrees = 0.1, loc_key = "manu_site")
+Station5 <- "NQI"
+test_TX1 <- get_mesonet_weather(station = Station5, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+
+sites[6,]
+get_station_info(sites[6,], decdegrees = 0.18, loc_key = "manu_site")
+Station6 <- "AHQ"
+test_NE <- get_mesonet_weather(station = Station6, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[7,]
+get_station_info(sites[7,], decdegrees = 0.18, loc_key = "manu_site")
+Station7 <- "RFI"
+test_TX4 <- get_mesonet_weather(station = Station7, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[8,]
+get_station_info(sites[8,], decdegrees = 0.1, loc_key = "manu_site")
+Station8 <- "ATT"
+test_TX2 <- get_mesonet_weather(station = Station8, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[9,]
+get_station_info(sites[9,], decdegrees = 0.18, loc_key = "manu_site")
+Station9 <- "SWO"
+test_OK <- get_mesonet_weather(station = Station9, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+sites[10,]
+get_station_info(sites[10,], decdegrees = 0.15, loc_key = "manu_site")
+Station10 <- "TPL"
+test_TX3 <- get_mesonet_weather(station = Station10, year1 = "2018", 
+                                 month1 = "01", day1 = "01", year2 = "2021", 
+                                 month2 = "12", day2 = "31", 
+                                 tz = "America/Chicago")
+
+```
+
+```{r}
+wea_MI <- test_MI %>%
+  mutate(manu_site = "MI") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_SD <- test_SD %>%
+  mutate(manu_site = "SD") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_MO <- test_MO %>%
+  mutate(manu_site = "MO") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_TX1 <- test_TX1 %>%
+  mutate(manu_site = "TX1") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_TX2 <- test_TX2 %>%
+  mutate(manu_site = "TX2") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_TX3 <- test_TX3 %>%
+  mutate(manu_site = "TX3") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_OK <- test_OK %>%
+  mutate(manu_site = "OK") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_NE <- test_NE %>%
+  mutate(manu_site = "NE") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_TX4 <- test_TX4 %>%
+  mutate(manu_site = "TX4") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+wea_IL <- test_IL %>%
+  mutate(manu_site = "IL") %>%
+  left_join(select(sites, manu_site, Latitude, Longitude, Elevation))
+    
+wea_ten_sites <- wea_MI %>%
+  full_join(wea_SD) %>%
+  full_join(wea_MO) %>%
+  full_join(wea_TX1) %>%
+  full_join(wea_TX2) %>%
+  full_join(wea_TX3) %>%
+  full_join(wea_OK) %>%
+  full_join(wea_NE) %>%
+  full_join(wea_TX4) %>%
+  full_join(wea_IL)
+
+##function to calculate daylength
+
+day.length.hrs <- function(day, latitude) {
+
+  daylength.coeff <- asin(0.39795*cos(0.2163108 + 2*atan(0.9671396*tan(0.00860*(day - 186)))))
+
+  daylength.hrs <- 24 - (24/pi)*acos((sin(0.8333*pi/180) + sin(latitude*pi/180)*sin(daylength.coeff))/(cos(latitude*pi/180)*cos(daylength.coeff)))
+
+  return(daylength.hrs)
+
+}
+
+
+```
+
+```{r}
+wea_ten_sites
+
+phenotypes <- readRDS("~/Github/pvdiv-phenotypes/data/GWAS/Phenotypes_gwas_all_subpops_2018_to_2021.rds")
+
+phe_ten_sites <- phenotypes %>%
+  select(PLANT_ID, matches("GR50"), matches("FL50")) %>%
+  pivot_longer(cols = -PLANT_ID, names_to = "SITE_YEAR_PHE", values_to = "JDAY") %>%
+  separate(SITE_YEAR_PHE, into = c("SITE", "Year", "PHE"), sep = "_", convert = TRUE) %>%
+  filter(!is.na(JDAY)) %>%
+  left_join(select(sites, SITE, manu_site))
+
+phe_ten_sites %>%
+  write_rds(file = here("data", "Phenotypes_2018_to_2021_10_sites.rds"))
+wea_ten_sites %>%
+  write_rds(file = here("data", "Daily_weather_2018_to_2021_10_sites.rds"))
+
+```
+
+Can make most weather variables before I join the weather dataframe to the phenotype dataframe. Can make most of these with mutate and the lag function, even if it's a bit ugly looking in terms of code.
+
+Greenup
+#phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", 
+#             "tave_5d", "tave_10d", "tave_18d")
+```{r}
+colSums(is.na(wea_ten_sites))
+
+wea_ten_sites <- wea_ten_sites %>%
+  mutate(JDAY = yday(Working_date),
+         DYLN = day.length.hrs(day = JDAY, latitude = Latitude),
+         tmax_sm = ifelse(is.na(tmax),
+                          (na.locf(tmax) + na.locf(tmax, fromLast = TRUE))/2,
+                          tmax),
+         tmin_sm = ifelse(is.na(tmin),
+                          (na.locf(tmin) + na.locf(tmin, fromLast = TRUE))/2,
+                          tmin),
+         tmean_sm = ifelse(is.na(Tmean),
+                          (na.locf(Tmean) + na.locf(Tmean, fromLast = TRUE))/2,
+                          Tmean),
+         GDD_12Cbase = ifelse((tmax_sm + tmin_sm)/2 >= 12.0,
+                              (tmax_sm + tmin_sm)/2 - 10,
+                              0),
+         Year = year(Working_date)) %>%
+  arrange(Latitude, Year, JDAY) %>%
+  group_by(manu_site) %>%
+  mutate(crain_2d = prcp + lag(prcp, default = 0),
+         crain_3d = prcp + lag(prcp, default = 0) + lag(prcp, default = 0, 
+                                                        n = 2),
+         crain_5d = prcp + lag(prcp, default = 0) + 
+           lag(prcp, default = 0, n = 2) + lag(prcp, default = 0, n = 3) +
+           lag(prcp, default = 0, n = 4),
+         dyln_change_sec = (DYLN - lag(DYLN))*60*60,
+         dyln_change_sec_7d_prior = (lag(DYLN, n = 6) - 
+                                       lag(DYLN, n = 7))*60*60,
+         dyln_change_sec_14d_prior = (lag(DYLN, n = 13) - 
+                                       lag(DYLN, n = 14))*60*60,
+         dyln_7d_prior = lag(DYLN, n = 6),
+         dyln_14d_prior = lag(DYLN, n = 13),
+         cgdd_12c_5d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4))/5,
+         tave_5d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4))/5,
+         cgdd_12c_10d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4) +
+           lag(GDD_12Cbase, default = 0, n = 5) +
+           lag(GDD_12Cbase, default = 0, n = 6) +
+           lag(GDD_12Cbase, default = 0, n = 7) +
+           lag(GDD_12Cbase, default = 0, n = 8) +
+           lag(GDD_12Cbase, default = 0, n = 9))/10,
+         tave_10d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4) +
+           lag(tmean_sm, default = 0, n = 5) +
+           lag(tmean_sm, default = 0, n = 6) +
+           lag(tmean_sm, default = 0, n = 7) +
+           lag(tmean_sm, default = 0, n = 8) +
+           lag(tmean_sm, default = 0, n = 9))/10,
+         cgdd_12c_20d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4) +
+           lag(GDD_12Cbase, default = 0, n = 5) +
+           lag(GDD_12Cbase, default = 0, n = 6) +
+           lag(GDD_12Cbase, default = 0, n = 7) +
+           lag(GDD_12Cbase, default = 0, n = 8) +
+           lag(GDD_12Cbase, default = 0, n = 9) +
+           lag(GDD_12Cbase, default = 0, n = 10) +
+           lag(GDD_12Cbase, default = 0, n = 11) +
+           lag(GDD_12Cbase, default = 0, n = 12) +
+           lag(GDD_12Cbase, default = 0, n = 13) +
+           lag(GDD_12Cbase, default = 0, n = 14) +
+           lag(GDD_12Cbase, default = 0, n = 15) +
+           lag(GDD_12Cbase, default = 0, n = 16) +
+           lag(GDD_12Cbase, default = 0, n = 17) +
+           lag(GDD_12Cbase, default = 0, n = 18) +
+           lag(GDD_12Cbase, default = 0, n = 19))/20,
+         tave_20d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4) +
+           lag(tmean_sm, default = 0, n = 5) +
+           lag(tmean_sm, default = 0, n = 6) +
+           lag(tmean_sm, default = 0, n = 7) +
+           lag(tmean_sm, default = 0, n = 8) +
+           lag(tmean_sm, default = 0, n = 9) +
+           lag(tmean_sm, default = 0, n = 10) +
+           lag(tmean_sm, default = 0, n = 11) +
+           lag(tmean_sm, default = 0, n = 12) +
+           lag(tmean_sm, default = 0, n = 13) +
+           lag(tmean_sm, default = 0, n = 14) +
+           lag(tmean_sm, default = 0, n = 15) +
+           lag(tmean_sm, default = 0, n = 16) +
+           lag(tmean_sm, default = 0, n = 17) +
+           lag(tmean_sm, default = 0, n = 18) +
+           lag(tmean_sm, default = 0, n = 19))/20)
+
+```
+Flowering
+phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
+             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
+             
+If I join the current wea_ten_sites to the greenup and flowering df, that should leave me with variables I want just for the dates & greenup & flowering.
+Including some new daylength ones I made which will be 1-2 weeks before flowering.
+
+The greenup to flowering variables will need to be made in a separate step. 
+These are cgdd_12c_gr2fl and crain_gr2fl. This cumulative sum is different for each year, site, and plant id.
+```{r}
+
+Tbase <- 12
+
+phe_gr_fl <- phe_ten_sites %>%
+  mutate(JDAY_EXP = case_when(Year == 2018 ~ JDAY,
+                              Year == 2019 ~ JDAY + 365,
+                              Year == 2020 ~ JDAY + (365*2),
+                              Year == 2021 ~ JDAY + (365*3),
+                              TRUE ~ NA_real_)) %>%
+  select(-JDAY) %>%
+  pivot_wider(names_from = PHE, values_from = JDAY_EXP)
+
+GR_start <- phe_gr_fl %>% 
+  group_by(manu_site, Year) %>%
+  filter(!is.na(GR50)) %>%
+  summarise(GR_start = floor(min(GR50)))
+FL_end <- phe_gr_fl %>% 
+  group_by(manu_site, Year) %>%
+  filter(!is.na(FL50)) %>%
+  summarise(FL_end = ceiling(max(FL50)))
+
+
+tmp1 <- wea_ten_sites %>%
+  mutate(JDAY_EXP = case_when(Year == 2018 ~ JDAY,
+                              Year == 2019 ~ JDAY + 365,
+                              Year == 2020 ~ JDAY + 365 + 365,
+                              Year == 2021 ~ JDAY + (365*3),
+                              TRUE ~ NA_real_)) %>%
+  left_join(phe_gr_fl)
+
+tmp <- tmp1 %>%
+  group_by(manu_site, PLANT_ID, Year, JDAY_EXP) %>%
+  filter(between(JDAY_EXP, floor(GR50), ceiling(FL50))) %>%
+  ungroup %>%
+  group_by(manu_site, Year, PLANT_ID) %>%
+  summarize_at(vars(GDD_12Cbase, prcp), funs(sum))
+
+tmp %>%
+  filter(manu_site == "TX1")
+tmp
+```
+
+
+
+```{r}
+phe_ten_sites %>%
+  left_join(wea_ten_sites)
+```
+
