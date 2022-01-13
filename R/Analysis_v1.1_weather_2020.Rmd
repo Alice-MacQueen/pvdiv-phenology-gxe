@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(zoo)
+library(lubridate)
 library(cowplot)
 ```
 
@@ -237,17 +238,6 @@ wea_ten_sites <- wea_MI %>%
   full_join(wea_TX4) %>%
   full_join(wea_IL)
 
-##function to calculate daylength
-
-day.length.hrs <- function(day, latitude) {
-
-  daylength.coeff <- asin(0.39795*cos(0.2163108 + 2*atan(0.9671396*tan(0.00860*(day - 186)))))
-
-  daylength.hrs <- 24 - (24/pi)*acos((sin(0.8333*pi/180) + sin(latitude*pi/180)*sin(daylength.coeff))/(cos(latitude*pi/180)*cos(daylength.coeff)))
-
-  return(daylength.hrs)
-
-}
 
 
 ```
@@ -268,6 +258,26 @@ phe_ten_sites %>%
   write_rds(file = here("data", "Phenotypes_2018_to_2021_10_sites.rds"))
 wea_ten_sites %>%
   write_rds(file = here("data", "Daily_weather_2018_to_2021_10_sites.rds"))
+
+```
+
+# ----
+## load phe & wea data
+```{r}
+phe_ten_sites <- readRDS(here("data", "Phenotypes_2018_to_2021_10_sites.rds"))
+wea_ten_sites <- readRDS(file = here("data", "Daily_weather_2018_to_2021_10_sites.rds"))
+
+##function to calculate daylength
+
+day.length.hrs <- function(day, latitude) {
+
+  daylength.coeff <- asin(0.39795*cos(0.2163108 + 2*atan(0.9671396*tan(0.00860*(day - 186)))))
+
+  daylength.hrs <- 24 - (24/pi)*acos((sin(0.8333*pi/180) + sin(latitude*pi/180)*sin(daylength.coeff))/(cos(latitude*pi/180)*cos(daylength.coeff)))
+
+  return(daylength.hrs)
+
+}
 
 ```
 
@@ -465,6 +475,185 @@ gr_ten_sites %>%
 fl_ten_sites %>%
   saveRDS(file = here("data", "Weather_related_phe_FL50_3yr.rds"))
 ```
+
+
+# Phe correlation matrices
+
+## load data
+```{r}
+gr_ten_sites <- readRDS(file = here("data", "Weather_related_phe_GR50_3yr.rds"))
+fl_ten_sites <- readRDS(here("data", "Weather_related_phe_FL50_3yr.rds"))
+
+```
+
+### All site*years
+Make phenotypic correlation matrices for greenup & flowering for these new years for all site*year combinations.
+
+```{r}
+metadata <- read_rds(here("data", "metadata.rds"))
+subpop_v2 <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest",
+                  Gulf = "Gulf")
+year_v = c(2019, 2020, 2021)
+
+fl_ten_sites <- fl_ten_sites %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP))
+gr_ten_sites <- gr_ten_sites %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP))
+
+fl_wide <- fl_ten_sites %>%
+  select(PLANT_ID:FL50, SUBPOP) %>%
+  select(-GR50) %>%
+  pivot_wider(names_from = c("manu_site", "Year"), values_from = "FL50")
+gr_wide <- fl_ten_sites %>%
+  select(PLANT_ID:GR50, SUBPOP) %>%
+  pivot_wider(names_from = c("manu_site", "Year"), values_from = "GR50")
+
+k=1
+U_hyp_sitephe <- list()
+library(rlist)
+for(k in seq_along(subpop_v2)){
+
+    cov_df <- fl_wide %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]])
+    
+    cor_phe <- cor(cov_df[,-(1:2)], use = "pairwise")
+    # Set diagonal of this matrix = coefficient of variation within each garden.
+    diag(cor_phe) <- cov_df %>%
+      ungroup() %>%
+      select(where(is.numeric)) %>%
+      summarise(across(everything(), ~ sqrt(var(.x, na.rm = TRUE))/mean(.x, na.rm = TRUE))) %>%
+      as_vector()
+
+    U_hyp_sitephe <- list.prepend(U_hyp_sitephe, cor_phe)
+    names(U_hyp_sitephe)[1] <- paste0("FL50", "_", names(subpop_v2)[k])
+}
+
+for(k in seq_along(subpop_v2)){
+
+    cov_df <- gr_wide %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]])
+    
+    cor_phe <- cor(cov_df[,-(1:2)], use = "pairwise")
+    # Set diagonal of this matrix = coefficient of variation within each garden.
+    diag(cor_phe) <- cov_df %>%
+      ungroup() %>%
+      select(where(is.numeric)) %>%
+      summarise(across(everything(), ~ sqrt(var(.x, na.rm = TRUE))/mean(.x, na.rm = TRUE))) %>%
+      as_vector()
+
+    U_hyp_sitephe <- list.prepend(U_hyp_sitephe, cor_phe)
+    names(U_hyp_sitephe)[1] <- paste0("GR50", "_", names(subpop_v2)[k])
+}
+
+
+```
+
+```{r}
+plot_corr_fl_gulf <- U_hyp_sitephe$FL50_Gulf %>%
+  as_tibble() %>%
+  add_column(matrix_row = colnames(U_hyp_sitephe$FL50_Gulf), .before = TRUE) %>%
+  pivot_longer(cols = -matrix_row, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = pvalue)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+      scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                      "white", "#27AD81FF", "#5DC863FF",
+                                      "#FDE725FF"), limits = c(-1,1)) +
+  labs(title = "Gulf Flowering P Corr All Site*Years", 
+       subtitle = "Grey indicates NA values")
+
+save_plot(plot = plot_corr_fl_gulf, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Corr_FL_Gulf.png"), base_height = 4.5, base_width = 5)
+
+plot_corr_fl_midw <- U_hyp_sitephe$FL50_Midwest %>%
+  as_tibble() %>%
+  add_column(matrix_row = colnames(U_hyp_sitephe$FL50_Midwest), .before = TRUE) %>%
+  pivot_longer(cols = -matrix_row, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = pvalue)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+      scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                      "white", "#27AD81FF", "#5DC863FF",
+                                      "#FDE725FF"), limits = c(-1,1)) +
+  labs(title = "Midwest Flowering P Corr All Site*Years", 
+       subtitle = "Grey indicates NA values")
+
+save_plot(plot = plot_corr_fl_midw, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Corr_FL_Midwest.png"), base_height = 4.5, base_width = 5)
+
+plot_corr_fl_gam <- U_hyp_sitephe$FL50_Gulf_and_Midwest %>%
+  as_tibble() %>%
+  add_column(matrix_row = colnames(U_hyp_sitephe$FL50_Gulf_and_Midwest), .before = TRUE) %>%
+  pivot_longer(cols = -matrix_row, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = pvalue)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+      scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                      "white", "#27AD81FF", "#5DC863FF",
+                                      "#FDE725FF"), limits = c(-1,1)) +
+  labs(title = "Gulf & Midwest Flowering P Corr All Site*Years", 
+       subtitle = "Grey indicates NA values")
+
+save_plot(plot = plot_corr_fl_gam, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Corr_FL_GAM.png"), base_height = 4.5, base_width = 5)
+
+plot_corr_gr_gulf <- U_hyp_sitephe$GR50_Gulf %>%
+  as_tibble() %>%
+  add_column(matrix_row = colnames(U_hyp_sitephe$GR50_Gulf), .before = TRUE) %>%
+  pivot_longer(cols = -matrix_row, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = pvalue)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+      scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                      "white", "#27AD81FF", "#5DC863FF",
+                                      "#FDE725FF"), limits = c(-1,1)) +
+  labs(title = "Gulf Green Up P Corr All Site*Years", 
+       subtitle = "Grey indicates NA values")
+
+save_plot(plot = plot_corr_gr_gulf, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Corr_GR_Gulf.png"), base_height = 4.5, base_width = 5)
+
+plot_corr_gr_midw <- U_hyp_sitephe$GR50_Midwest %>%
+  as_tibble() %>%
+  add_column(matrix_row = colnames(U_hyp_sitephe$GR50_Midwest), .before = TRUE) %>%
+  pivot_longer(cols = -matrix_row, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = pvalue)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+      scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                      "white", "#27AD81FF", "#5DC863FF",
+                                      "#FDE725FF"), limits = c(-1,1)) +
+  labs(title = "Midwest Green Up P Corr All Site*Years", 
+       subtitle = "Grey indicates NA values")
+
+save_plot(plot = plot_corr_gr_midw, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Corr_GR_Midwest.png"), base_height = 4.5, base_width = 5)
+
+plot_corr_gr_gam <- U_hyp_sitephe$GR50_Gulf_and_Midwest %>%
+  as_tibble() %>%
+  add_column(matrix_row = colnames(U_hyp_sitephe$GR50_Gulf_and_Midwest), .before = TRUE) %>%
+  pivot_longer(cols = -matrix_row, names_to = "matrix_col", values_to = "pvalue") %>%
+  #filter(matrix_row != matrix_col) %>%
+  arrange(pvalue) %>%
+  ggplot(aes(x = matrix_col, y = matrix_row)) + 
+  geom_tile(aes(fill = pvalue)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+      scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                      "white", "#27AD81FF", "#5DC863FF",
+                                      "#FDE725FF"), limits = c(-1,1)) +
+  labs(title = "Gulf & Midwest Green Up P Corr All Site*Years", 
+       subtitle = "Grey indicates NA values")
+
+save_plot(plot = plot_corr_gr_gam, filename = here("analysis", "hypothesis_matrices", "Weather_Uhyp_Corr_GR_GAM.png"), base_height = 4.5, base_width = 5)
+```
+
 
 Make phenotypic correlation matrices for these new years, and new weather variables.
 
