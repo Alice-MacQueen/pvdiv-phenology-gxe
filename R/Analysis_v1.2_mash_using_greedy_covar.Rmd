@@ -1,0 +1,586 @@
+---
+title: "Analysis v1.2 mash"
+author: "Alice MacQueen"
+date: "2023-08-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(bigsnpr)
+library(switchgrassGWAS)
+library(mashr)
+library(rlist)
+library(cowplot)
+library(here)
+library(zoo)
+```
+
+# Installation reminders for any reinstalls
+On debian: `apt install libgsl-dev` to install the GNU Scientific Library, zB.
+
+#
+
+Sam used a greedy mash algorithm to find the best set of covariance matrices to include, using 19K randomly associated variants.
+
+Now use the best set of covariance matrices on 19K strongly associated variants.
+
+Step 0. Set up.
+  0a. Look at phenotype distribution & heritability; run GWAS to get univariate SNP effect estimates & standard errors. Already done.
+  0b. Make hypothesis covariance matrices based on weather data from 2018 - 2020. For cumulative weather variables, use a range of days, 1 - 20, say. Come back and add more if 20 is chosen by greedy mash.
+Step 1. Run greedy mash to find best set of covariance matrices that explain SNP effect variation across environments, using 19K 'randomly associated variants'. Go back to 0b. if high number of day covar matrices tend to be chosen by greedy mash.
+Step 2. Use covariances from (1) to run mash on 19K 'strongly associated variants'. 
+3. Look at loadings on covariance matrices and meanings of covariance matrices as the writeup (Figure 2, 3; Table 1). Look at amount of antagonistic pleiotropy vs same sign significant effects.
+4. Repeat the QTL analysis... with Li.
+
+How much of a lift is it to re-run the greedy mash algorithm? If we, or if reviewers are thinking about this in a Jiaming Yu sense, I think the next logical question to ask is 'Why these covariance matrices'? The overly honest answer for the current set is that there were computational limits to running mash with so many covariance matrices, so I chose a few arbitrary time points for each weather variable we thought might be a environmental driver. But now we have introduced a method to choose between highly correlated covariance matrices, perhaps we could do better. 
+2. 
+
+# Deprecated analysis
+### Code from Plots_v0.2_manuscript_figures.Rmd to make weather variables
+
+Actually, code from Analysis_v1.1_weather_2020.Rmd might be more suitable, if I am remaking these anyway.
+
+```{r}
+wea_df <- readRDS("~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
+metadata <- readRDS("~/Github/pvdiv-phenology-gxe/data/metadata.rds")
+sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
+phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
+jday_phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+```
+
+```{r}
+jday_phe <- wea_df %>%
+  group_by(SITE) %>%
+  mutate(dyln_change_sec = (DYLN - lag(DYLN))*60*60,
+         FL50 = yday(DOY)) %>%
+  select(DOY, DYLN, dyln_change_sec, everything()) %>%
+  select(-PTT_12C) %>%
+  right_join(jday_phe, by = c("SITE", "FL50")) %>%
+  select(-(TMAX:CPTT_11C))
+jday_phe <- metadata %>%
+  rename(Lat_origin = LATITUDE, Long_origin = LONGITUDE) %>%
+  select(PLANT_ID, SUBPOP, Lat_origin, Long_origin) %>%
+  right_join(jday_phe) %>%
+  left_join(sites)
+
+jday_phe$SUBPOP <- factor(jday_phe$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
+jday_phe$SITE <- factor(jday_phe$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
+jday_phe$manu_site <- factor(jday_phe$manu_site, levels = rev(c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD")))
+```
+
+## define environmental cues for greenup
+Probably all CGDD related.
+```{r}
+
+asreml_fl <- jday_phe %>%
+  select(PLANT_ID:Long_origin, PLOT_GL, SITE, FL50, GR50, CGDD_12C, CRAIN, CRAIN_5d, DYLN, dyln_change_sec) %>%
+  rename(dyln_fl50 = DYLN, cgdd_12c_gr2fl = CGDD_12C, crain_gr2fl = CRAIN) %>%
+  left_join(wea_df) %>%
+  group_by(SITE, PLOT_GL) %>%
+  filter(between(DOY, as_date(FL50, origin = "2019-01-01") - 6, as_date(FL50, origin = "2019-01-01"))) %>%
+  mutate(crain_2d = RAIN_SM + lag(RAIN_SM),
+         crain_3d = RAIN_SM + lag(RAIN_SM) + lag(RAIN_SM, n = 2),
+         crain_7d = sum(RAIN_SM)) %>%
+  filter(DOY == as_date(FL50, origin = "2019-01-01")) %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf", "Atlantic") & !(SITE %in% c("OVTN"))) %>%
+  select(-(TMAX:TMIN_SM), -(GDD_13C_SM:CPTT_13C)) %>%
+  rename(crain_1d = RAIN_SM, crain_5d = CRAIN_5d)
+saveRDS(asreml_fl, file = "../data/Weather_related_phe_for_asreml_h2_FL50.rds")
+asreml_gr <- jday_phe %>%
+  select(PLANT_ID:Long_origin, PLOT_GL, SITE, GR50) %>%
+  left_join(wea_df) %>%
+  group_by(SITE, PLOT_GL) %>%
+  filter(DOY <= as_date(GR50, origin = "2019-01-01")) %>%
+  mutate(cgdd_12c_jan2gr = sum(GDD_12C_SM),
+         cgdd_8c_jan2gr = sum(GDD_8C_SM)
+         ) %>%
+  select(-(GDD_13C_SM:CPTT_13C), -(TMAX:Longitude), GDD_12C_SM) %>%
+  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 17, as_date(GR50, origin = "2019-01-01"))) %>%
+  mutate(tmax_18d = mean(TMAX_SM),
+         tmin_18d = mean(TMIN_SM),
+         tave_18d = (tmax_18d + tmin_18d)/2,
+         cgdd_12c_18d = mean(GDD_12C_SM)) %>%
+  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 9, as_date(GR50, origin = "2019-01-01"))) %>%
+  mutate(tmax_10d = mean(TMAX_SM),
+         tmin_10d = mean(TMIN_SM),
+         tave_10d = (tmax_10d + tmin_10d)/2,
+         cgdd_12c_10d = mean(GDD_12C_SM)) %>%
+  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 4, as_date(GR50, origin = "2019-01-01"))) %>%
+  mutate(tmax_5d = mean(TMAX_SM),
+         tmin_5d = mean(TMIN_SM),
+         tave_5d = (tmax_5d + tmin_5d)/2,
+         cgdd_12c_5d = mean(GDD_12C_SM))%>%
+  filter(DOY == as_date(GR50, origin = "2019-01-01")) %>%
+  filter(SUBPOP %in% c("Midwest", "Gulf", "Atlantic") & !(SITE %in% c("OVTN"))) %>%
+  select(-(TMAX_SM:RAIN_SM), -Day_of_year)
+saveRDS(asreml_gr, file = "../data/Weather_related_phe_for_asreml_h2_GR50.rds")
+```
+
+
+## 
+
+# ----
+## load phe & wea data
+```{r}
+phe_ten_sites <- readRDS(here("data", "Phenotypes_2018_to_2021_10_sites.rds"))
+jday_phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
+wea_ten_sites <- readRDS(file = here("data", "Daily_weather_2018_to_2021_10_sites.rds"))
+
+##function to calculate daylength
+
+day.length.hrs <- function(day, latitude) {
+
+  daylength.coeff <- asin(0.39795*cos(0.2163108 + 2*atan(0.9671396*tan(0.00860*(day - 186)))))
+
+  daylength.hrs <- 24 - (24/pi)*acos((sin(0.8333*pi/180) + sin(latitude*pi/180)*sin(daylength.coeff))/(cos(latitude*pi/180)*cos(daylength.coeff)))
+
+  return(daylength.hrs)
+
+}
+
+phe_2019 <- jday_phe %>%
+  select(-(CGDD_12C:dyln_change_sec)) %>%
+  pivot_longer(cols = GR50:FL50, names_to = "PHE", values_to = "JDAY")
+```
+
+```{r}
+
+wea_ten_sites <- wea_ten_sites %>%
+  mutate(JDAY = yday(Working_date),
+         DYLN = day.length.hrs(day = JDAY, latitude = Latitude),
+         tmax_sm = ifelse(is.na(tmax),
+                          (na.locf(tmax) + na.locf(tmax, fromLast = TRUE))/2,
+                          tmax),
+         tmin_sm = ifelse(is.na(tmin),
+                          (na.locf(tmin) + na.locf(tmin, fromLast = TRUE))/2,
+                          tmin),
+         tmean_sm = ifelse(is.na(Tmean),
+                          (na.locf(Tmean) + na.locf(Tmean, fromLast = TRUE))/2,
+                          Tmean),
+         GDD_12Cbase = ifelse((tmax_sm + tmin_sm)/2 >= 12.0,
+                              (tmax_sm + tmin_sm)/2 - 10,
+                              0),
+         Year = year(Working_date)) %>%
+  mutate(JDAY_EXP = case_when(Year == 2018 ~ JDAY,
+                              Year == 2019 ~ JDAY + 365,
+                              Year == 2020 ~ JDAY + (365*2),
+                              Year == 2021 ~ JDAY + (365*3),
+                              TRUE ~ NA_real_)) %>%
+  arrange(Latitude, Year, JDAY_EXP) %>%
+  select(-JDAY) %>%
+  group_by(manu_site) %>%
+  mutate(crain_2d = prcp + lag(prcp, default = 0),
+         crain_3d = prcp + lag(prcp, default = 0) + 
+           lag(prcp, default = 0, n = 2),
+         crain_4d = prcp + lag(prcp, default = 0) + 
+           lag(prcp, default = 0, n = 2) + 
+           lag(prcp, default = 0, n = 3),
+         crain_5d = prcp + lag(prcp, default = 0) + 
+           lag(prcp, default = 0, n = 2) + lag(prcp, default = 0, n = 3) +
+           lag(prcp, default = 0, n = 4),
+         crain_6d = prcp + lag(prcp, default = 0) + 
+           lag(prcp, default = 0, n = 2) + lag(prcp, default = 0, n = 3) +
+           lag(prcp, default = 0, n = 4) +
+           lag(prcp, default = 0, n = 5),
+         crain_7d = prcp + lag(prcp, default = 0) + 
+           lag(prcp, default = 0, n = 2) + lag(prcp, default = 0, n = 3) +
+           lag(prcp, default = 0, n = 4) +
+           lag(prcp, default = 0, n = 5) +
+           lag(prcp, default = 0, n = 6),
+         dyln_change_sec = (DYLN - lag(DYLN))*60*60,
+         dyln_change_sec_2d_prior = (lag(DYLN, n = 1) - 
+                                       lag(DYLN, n = 2))*60*60,
+         dyln_change_sec_3d_prior = (lag(DYLN, n = 2) - 
+                                       lag(DYLN, n = 3))*60*60,
+         dyln_change_sec_4d_prior = (lag(DYLN, n = 3) - 
+                                       lag(DYLN, n = 4))*60*60,
+         dyln_change_sec_5d_prior = (lag(DYLN, n = 4) - 
+                                       lag(DYLN, n = 5))*60*60,
+         dyln_change_sec_6d_prior = (lag(DYLN, n = 5) - 
+                                       lag(DYLN, n = 6))*60*60,
+         dyln_change_sec_7d_prior = (lag(DYLN, n = 6) - 
+                                       lag(DYLN, n = 7))*60*60,
+         dyln_change_sec_14d_prior = (lag(DYLN, n = 13) - 
+                                       lag(DYLN, n = 14))*60*60,
+         dyln_2d_prior = lag(DYLN, n = 1),
+         dyln_3d_prior = lag(DYLN, n = 2),
+         dyln_4d_prior = lag(DYLN, n = 3),
+         dyln_5d_prior = lag(DYLN, n = 4),
+         dyln_6d_prior = lag(DYLN, n = 5),
+         dyln_7d_prior = lag(DYLN, n = 6),
+         dyln_14d_prior = lag(DYLN, n = 13),
+         cgdd_12c_2d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0))/2,
+         tave_2d = (tmean_sm + lag(tmean_sm, default = 0))/2,
+         cgdd_12c_3d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2))/3,
+         tave_3d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2))/3,
+         cgdd_12c_4d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3))/4,
+         tave_4d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3))/4,
+         cgdd_12c_5d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4))/5,
+         tave_5d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4))/5,
+         cgdd_12c_6d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4) +
+           lag(GDD_12Cbase, default = 0, n = 5))/6,
+         tave_6d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4) +
+           lag(tmean_sm, default = 0, n = 5))/6,
+         cgdd_12c_7d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4) +
+           lag(GDD_12Cbase, default = 0, n = 5) +
+           lag(GDD_12Cbase, default = 0, n = 6))/7,
+         tave_7d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4) +
+           lag(tmean_sm, default = 0, n = 5) +
+           lag(tmean_sm, default = 0, n = 6))/7,
+         cgdd_12c_14d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4) +
+           lag(GDD_12Cbase, default = 0, n = 5) +
+           lag(GDD_12Cbase, default = 0, n = 6) +
+           lag(GDD_12Cbase, default = 0, n = 7) +
+           lag(GDD_12Cbase, default = 0, n = 8) +
+           lag(GDD_12Cbase, default = 0, n = 9) +
+           lag(GDD_12Cbase, default = 0, n = 10) +
+           lag(GDD_12Cbase, default = 0, n = 11) +
+           lag(GDD_12Cbase, default = 0, n = 12) +
+           lag(GDD_12Cbase, default = 0, n = 13))/14,
+         tave_14d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4) +
+           lag(tmean_sm, default = 0, n = 5) +
+           lag(tmean_sm, default = 0, n = 6) +
+           lag(tmean_sm, default = 0, n = 7) +
+           lag(tmean_sm, default = 0, n = 8) +
+           lag(tmean_sm, default = 0, n = 9) +
+           lag(tmean_sm, default = 0, n = 10) +
+           lag(tmean_sm, default = 0, n = 11) +
+           lag(tmean_sm, default = 0, n = 12) +
+           lag(tmean_sm, default = 0, n = 13))/14,
+         cgdd_12c_21d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4) +
+           lag(GDD_12Cbase, default = 0, n = 5) +
+           lag(GDD_12Cbase, default = 0, n = 6) +
+           lag(GDD_12Cbase, default = 0, n = 7) +
+           lag(GDD_12Cbase, default = 0, n = 8) +
+           lag(GDD_12Cbase, default = 0, n = 9) +
+           lag(GDD_12Cbase, default = 0, n = 10) +
+           lag(GDD_12Cbase, default = 0, n = 11) +
+           lag(GDD_12Cbase, default = 0, n = 12) +
+           lag(GDD_12Cbase, default = 0, n = 13) +
+           lag(GDD_12Cbase, default = 0, n = 14) +
+           lag(GDD_12Cbase, default = 0, n = 15) +
+           lag(GDD_12Cbase, default = 0, n = 16) +
+           lag(GDD_12Cbase, default = 0, n = 17) +
+           lag(GDD_12Cbase, default = 0, n = 18) +
+           lag(GDD_12Cbase, default = 0, n = 19) +
+           lag(GDD_12Cbase, default = 0, n = 20))/21,
+         tave_21d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4) +
+           lag(tmean_sm, default = 0, n = 5) +
+           lag(tmean_sm, default = 0, n = 6) +
+           lag(tmean_sm, default = 0, n = 7) +
+           lag(tmean_sm, default = 0, n = 8) +
+           lag(tmean_sm, default = 0, n = 9) +
+           lag(tmean_sm, default = 0, n = 10) +
+           lag(tmean_sm, default = 0, n = 11) +
+           lag(tmean_sm, default = 0, n = 12) +
+           lag(tmean_sm, default = 0, n = 13) +
+           lag(tmean_sm, default = 0, n = 14) +
+           lag(tmean_sm, default = 0, n = 15) +
+           lag(tmean_sm, default = 0, n = 16) +
+           lag(tmean_sm, default = 0, n = 17) +
+           lag(tmean_sm, default = 0, n = 18) +
+           lag(tmean_sm, default = 0, n = 19) +
+           lag(tmean_sm, default = 0, n = 20))/21,
+         cgdd_12c_28d = (GDD_12Cbase + lag(GDD_12Cbase, default = 0) + 
+           lag(GDD_12Cbase, default = 0, n = 2) + 
+           lag(GDD_12Cbase, default = 0, n = 3) +
+           lag(GDD_12Cbase, default = 0, n = 4) +
+           lag(GDD_12Cbase, default = 0, n = 5) +
+           lag(GDD_12Cbase, default = 0, n = 6) +
+           lag(GDD_12Cbase, default = 0, n = 7) +
+           lag(GDD_12Cbase, default = 0, n = 8) +
+           lag(GDD_12Cbase, default = 0, n = 9) +
+           lag(GDD_12Cbase, default = 0, n = 10) +
+           lag(GDD_12Cbase, default = 0, n = 11) +
+           lag(GDD_12Cbase, default = 0, n = 12) +
+           lag(GDD_12Cbase, default = 0, n = 13) +
+           lag(GDD_12Cbase, default = 0, n = 14) +
+           lag(GDD_12Cbase, default = 0, n = 15) +
+           lag(GDD_12Cbase, default = 0, n = 16) +
+           lag(GDD_12Cbase, default = 0, n = 17) +
+           lag(GDD_12Cbase, default = 0, n = 18) +
+           lag(GDD_12Cbase, default = 0, n = 19) +
+           lag(GDD_12Cbase, default = 0, n = 20) +
+           lag(GDD_12Cbase, default = 0, n = 21) +
+           lag(GDD_12Cbase, default = 0, n = 22) +
+           lag(GDD_12Cbase, default = 0, n = 23) +
+           lag(GDD_12Cbase, default = 0, n = 24) +
+           lag(GDD_12Cbase, default = 0, n = 25) +
+           lag(GDD_12Cbase, default = 0, n = 26) +
+           lag(GDD_12Cbase, default = 0, n = 27))/28,
+         tave_28d = (tmean_sm + lag(tmean_sm, default = 0) + 
+           lag(tmean_sm, default = 0, n = 2) + 
+           lag(tmean_sm, default = 0, n = 3) +
+           lag(tmean_sm, default = 0, n = 4) +
+           lag(tmean_sm, default = 0, n = 5) +
+           lag(tmean_sm, default = 0, n = 6) +
+           lag(tmean_sm, default = 0, n = 7) +
+           lag(tmean_sm, default = 0, n = 8) +
+           lag(tmean_sm, default = 0, n = 9) +
+           lag(tmean_sm, default = 0, n = 10) +
+           lag(tmean_sm, default = 0, n = 11) +
+           lag(tmean_sm, default = 0, n = 12) +
+           lag(tmean_sm, default = 0, n = 13) +
+           lag(tmean_sm, default = 0, n = 14) +
+           lag(tmean_sm, default = 0, n = 15) +
+           lag(tmean_sm, default = 0, n = 16) +
+           lag(tmean_sm, default = 0, n = 17) +
+           lag(tmean_sm, default = 0, n = 18) +
+           lag(tmean_sm, default = 0, n = 19) +
+           lag(tmean_sm, default = 0, n = 20) +
+           lag(tmean_sm, default = 0, n = 21) +
+           lag(tmean_sm, default = 0, n = 22) +
+           lag(tmean_sm, default = 0, n = 23) +
+           lag(tmean_sm, default = 0, n = 24) +
+           lag(tmean_sm, default = 0, n = 25) +
+           lag(tmean_sm, default = 0, n = 26) +
+           lag(tmean_sm, default = 0, n = 27))/28,
+         )
+
+```
+
+```{r}
+wea_ten_sites
+```
+
+# Define phenotypes
+```{r}
+Tbase <- 12
+
+phe_gr_fl <- phe_2019 %>%
+  mutate(JDAY_EXP = case_when(YEAR == 2018 ~ JDAY,
+                              YEAR == 2019 ~ JDAY + 365,
+                              YEAR == 2020 ~ JDAY + (365*2),
+                              YEAR == 2021 ~ JDAY + (365*3),
+                              TRUE ~ NA_real_)) %>%
+  select(-JDAY) %>%
+  pivot_wider(names_from = PHE, values_from = JDAY_EXP) %>%
+  left_join(select(sites, SITE, manu_site)) %>%
+  mutate(Region = case_when(manu_site %in% c("SD", "MO", "IL", "MI", "NE") ~ "North",
+                            manu_site %in% c("TX1", "TX2", "TX3", "TX4") ~ "Texas",
+                                             TRUE ~ "OK"))
+
+tmp2 <- wea_ten_sites %>%
+  select(-Year)
+
+gr_ten_sites <- phe_gr_fl %>%
+  ungroup() %>%
+  mutate(GR50 = floor(GR50)) %>%
+  filter(!is.na(GR50)) %>%
+  left_join(tmp2, by = c("manu_site", "GR50" = "JDAY_EXP")) %>%
+  select(-SITE, -FL50, -(Working_date:wndk), -Tdrnl, -(Latitude:Elevation), -(tmax_sm:tmean_sm), -DLYN) %>%
+  rename(crain_1d = prcp, dyln_gr50 = DYLN, cgdd_12c_1d = GDD_12Cbase, tave_1d = Tmean)
+
+fl_ten_sites <- phe_gr_fl %>%
+  ungroup() %>%
+  filter(!is.na(FL50)) %>%
+  mutate(FL50 = floor(FL50),
+         GR50 = floor(GR50)) %>%
+  left_join(tmp2, by = c("manu_site", "FL50" = "JDAY_EXP")) %>%
+  select(-SITE, -(Working_date:wndk), -Tdrnl, -(Latitude:Elevation), -(tmax_sm:tmean_sm), -DLYN) %>%
+  rename(crain_1d = prcp, dyln_gr50 = DYLN, cgdd_12c_1d = GDD_12Cbase, tave_1d = Tmean)
+# 11 September flowering dates in 2021 at Pickle have NA's for weather values. Decided to let this be.
+
+```
+
+# Covar csv for greedy mash algorithm
+
+Make & save hypothesis matrices in a hypothesis_matrices directory in data. 
+Then hopefully it's not much of a lift for Sam to run the greedy mash algorithm again. Otherwise I will figure out how to run it.
+
+phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", 
+             "tave_5d", "tave_10d", "tave_18d")
+phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
+             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
+
+```{r}
+gr_ten_sites %>%
+  saveRDS(file = here("data", "Weather_related_phe_GR50_2019.rds"))
+fl_ten_sites %>%
+  saveRDS(file = here("data", "Weather_related_phe_FL50_2019.rds"))
+```
+
+### load weather phenotypes
+```{r}
+gr_ten_sites <- readRDS(file = here("data", 
+                                    "Weather_related_phe_GR50_2019.rds"))
+fl_ten_sites <- readRDS(file = here("data", 
+                                    "Weather_related_phe_FL50_2019.rds"))
+```
+
+```{r}
+phe_hyp <- colnames(fl_ten_sites)[c(5,9:51)]
+colnames(gr_ten_sites)[8:50]
+```
+
+
+```{r}
+metadata <- read_rds(here("data", "metadata.rds"))
+subpop_v2 <- list(all = c("Gulf", "Midwest"), midwest = "Midwest",
+                  gulf = "Gulf")
+year_v = c(2019, 2020, 2021)
+
+fl_ten_sites <- fl_ten_sites %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP)) %>%
+  rename(Year = YEAR)
+
+# change based on phenotype ---------------
+#phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", 
+#             "dyln_change_sec_7d_prior", "dyln_change_sec_14d_prior", 
+#             "dyln_7d_prior", "dyln_14d_prior", "cgdd_12c_gr2fl", 
+#             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
+
+phe_hyp <- colnames(fl_ten_sites)[c(5,9:51)]
+i=1
+k=1
+
+U_hyp_2019 <- list()
+for(i in seq_along(phe_hyp)){
+  for(k in seq_along(subpop_v2)){
+
+    cov_df <- fl_ten_sites %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]]) %>%
+      filter(Year %in% 2019) %>%
+      select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+      group_by(PLANT_ID, SUBPOP, manu_site) %>%
+      mutate(IND = row_number()) %>%
+      pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+      mutate(PLANT_ID = as.factor(PLANT_ID),
+             IND = as.factor(IND)) %>%
+      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, SD, TX1, TX2, TX3) #####  IL,
+    
+    cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+    # Set diagonal of this matrix = coefficient of variation within each garden.
+    diag(cor_phe) <- cov_df %>%
+      ungroup() %>%
+      summarise(#IL = sqrt(var(IL, na.rm = TRUE))/mean(IL, na.rm = TRUE),  #####
+                MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
+                MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
+                NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
+                SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
+                TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
+                TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
+                TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE)) %>%
+      as_vector()
+
+    U_hyp_2019 <- list.prepend(U_hyp_2019, cor_phe)
+    names(U_hyp_2019)[1] <- paste0("flowering.", names(subpop_v2)[k], ".", phe_hyp[i], ".U.mat")
+  }
+}
+
+U_hyp_2019
+length(U_hyp_2019)
+for (i in 1:length(U_hyp_2019)) {
+  d_out <- as.data.frame(U_hyp_2019[[i]], optional = FALSE) %>%
+    rownames_to_column(var = " ")
+  write_csv(d_out, file = here("data", "greedy_more_cov", "hypothesis_matrices", paste0(names(U_hyp_2019)[i], ".csv")), )
+}
+```
+
+```{r}
+gr_ten_sites <- gr_ten_sites %>%
+  left_join(select(metadata, PLANT_ID, SUBPOP)) %>%
+  rename(Year = YEAR)
+
+# change based on phenotype ---------------
+#phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_20d", "cgdd_12c_5d", 
+#             "tave_5d", "tave_10d", "tave_20d")
+phe_hyp <- colnames(gr_ten_sites)[8:50]
+i=1
+k=1
+
+U_hyp_2019 <- list()
+for(i in seq_along(phe_hyp)){
+  for(k in seq_along(subpop_v2)){
+
+    cov_df <- gr_ten_sites %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]]) %>%
+      filter(Year %in% 2019) %>%
+      select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+      group_by(PLANT_ID, SUBPOP, manu_site) %>%
+      mutate(IND = row_number()) %>%
+      pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+      mutate(PLANT_ID = as.factor(PLANT_ID),
+             IND = as.factor(IND)) %>%
+      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, SD, TX1, TX2, TX3) #####  IL,
+    
+    cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+    # Set diagonal of this matrix = coefficient of variation within each garden.
+    diag(cor_phe) <- cov_df %>%
+      ungroup() %>%
+      summarise(#IL = sqrt(var(IL, na.rm = TRUE))/mean(IL, na.rm = TRUE),  #####
+                MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
+                MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
+                NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
+                SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
+                TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
+                TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
+                TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE)) %>%
+      as_vector()
+
+    U_hyp_2019 <- list.prepend(U_hyp_2019, cor_phe)
+    names(U_hyp_2019)[1] <- paste0("greenup.", names(subpop_v2)[k], ".", phe_hyp[i], ".U.mat")
+  }
+}
+for (i in 1:length(U_hyp_2019)) {
+  d_out <- as.data.frame(U_hyp_2019[[i]], optional = FALSE) %>%
+    rownames_to_column(var = " ")
+  write_csv(d_out, file = here("data", "greedy_more_cov", "hypothesis_matrices", paste0(names(U_hyp_2019)[i], ".csv")), )
+}
+```
+
+
+
+Visualize correlation matrices
+```{r}
+
+i=7
+switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2019[[i]],
+                                            reorder = FALSE)
+switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2019[[i+1]],
+                                            reorder = FALSE)
+switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2019[[i+2]],
+                                            reorder = FALSE) 
+names(U_hyp_2019)[[i+2]]
+```
+
