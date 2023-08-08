@@ -486,7 +486,7 @@ for(i in seq_along(phe_hyp)){
       pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
       mutate(PLANT_ID = as.factor(PLANT_ID),
              IND = as.factor(IND)) %>%
-      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, SD, TX1, TX2, TX3) #####  IL,
+      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, OK, SD, TX1, TX2, TX3) #####  IL,
     
     cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
     # Set diagonal of this matrix = coefficient of variation within each garden.
@@ -496,6 +496,7 @@ for(i in seq_along(phe_hyp)){
                 MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
                 MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
                 NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
+                OK = sqrt(var(OK, na.rm = TRUE))/mean(OK, na.rm = TRUE),
                 SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
                 TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
                 TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
@@ -512,7 +513,7 @@ length(U_hyp_2019)
 for (i in 1:length(U_hyp_2019)) {
   d_out <- as.data.frame(U_hyp_2019[[i]], optional = FALSE) %>%
     rownames_to_column(var = " ")
-  write_csv(d_out, file = here("data", "greedy_more_cov", "hypothesis_matrices", paste0(names(U_hyp_2019)[i], ".csv")), )
+  write_csv(d_out, file = here("data", "greedy_more_cov", "hypothesis_matrices", paste0(names(U_hyp_2019)[i], ".csv")))
 }
 ```
 
@@ -542,7 +543,7 @@ for(i in seq_along(phe_hyp)){
       pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
       mutate(PLANT_ID = as.factor(PLANT_ID),
              IND = as.factor(IND)) %>%
-      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, SD, TX1, TX2, TX3) #####  IL,
+      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, OK, SD, TX1, TX2, TX3) #####  IL,
     
     cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
     # Set diagonal of this matrix = coefficient of variation within each garden.
@@ -552,6 +553,7 @@ for(i in seq_along(phe_hyp)){
                 MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
                 MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
                 NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
+                OK = sqrt(var(OK, na.rm = TRUE))/mean(OK, na.rm = TRUE),
                 SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
                 TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
                 TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
