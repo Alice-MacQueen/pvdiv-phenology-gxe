@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "pvdiv_phenology_gxe"
+version = "0.1.0"
+description = "Switchgrass phenology GxE in 2019 using mash"
+authors = ["Alice MacQueen"]
+license = "GNU General Public License v3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+pandas = "^2.0.3"
+numpy = "^1.25.2"
+argparse = "^1.4.0"
+scipy = "^1.11.1"
+
+[tool.poetry.dev-dependencies]
+# Run this in genegenie RStudio Terminal to run Poetry
+# export PATH="/home/alice/.local/bin:$PATH" 
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
