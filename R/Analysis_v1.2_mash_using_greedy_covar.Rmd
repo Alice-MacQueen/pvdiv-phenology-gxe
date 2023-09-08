@@ -9,8 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(bigsnpr)
-library(switchgrassGWAS)
 library(mashr)
+library(switchgrassGWAS)
 library(rlist)
 library(cowplot)
 library(here)
@@ -20,6 +20,7 @@ library(zoo)
 # Installation reminders for any reinstalls
 On debian: `apt install libgsl-dev` to install the GNU Scientific Library, zB.
 
+For mashr: Sometimes install.packages("RcppGSL") is also needed.
 #
 
 Sam used a greedy mash algorithm to find the best set of covariance matrices to include, using 19K randomly associated variants.
