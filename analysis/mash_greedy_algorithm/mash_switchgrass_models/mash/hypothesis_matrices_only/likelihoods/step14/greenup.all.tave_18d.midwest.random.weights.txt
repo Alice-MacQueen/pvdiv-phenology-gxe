@@ -1,0 +1,15 @@
+"null" 0.662183793204038
+"all.tave_18d" 0
+"gulf.tave_5d" 0.0187162517376838
+"all.cgdd_12c_18d" 0.00965645702715387
+"midwest.cgdd_12c_5d" 0.0358328840637567
+"gulf.cgdd_12c_5d" 0.14833649942304
+"gulf.tave_10d" 0.000198743298368823
+"all.tave_10d" 0
+"midwest.tave_10d" 0
+"all.cgdd_12c_5d" 0.0356896773537915
+"all.tave_5d" 0.0181170784034455
+"midwest.tave_5d" 0.0712686154887213
+"midwest.cgdd_12c_10d" 0
+"all.cgdd_12c_10d" 0
+"gulf.tave_18d" 0

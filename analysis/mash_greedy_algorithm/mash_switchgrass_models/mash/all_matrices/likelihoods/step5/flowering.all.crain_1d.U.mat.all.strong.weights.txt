@@ -1,0 +1,6 @@
+"null" 0.000221988857804747
+"flowering.all.crain_1d.U.mat" 0
+"flowering.identity" 0.850571284933038
+"flowering.simple_het_3" 0.0267147000492568
+"flowering.equal_effects" 0.00758947535762921
+"flowering.simple_het_1" 0.114902550802272

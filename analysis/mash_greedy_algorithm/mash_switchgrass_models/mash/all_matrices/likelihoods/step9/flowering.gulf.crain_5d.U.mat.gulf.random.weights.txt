@@ -1,0 +1,10 @@
+"null" 0.013639387842496
+"flowering.gulf.crain_5d.U.mat" 0.00193900201494553
+"flowering.identity" 0.665990438845617
+"flowering.simple_het_1" 0.304458695036251
+"flowering.singleton.TX1" 0.00226093062491174
+"flowering.singleton.MO" 0.00220231171854889
+"flowering.singleton.MI" 0.00234753781310392
+"flowering.singleton.SD" 0.00188476776250759
+"flowering.singleton.TX3" 0.00344435176715133
+"flowering.singleton.NE" 0.00183257657446672

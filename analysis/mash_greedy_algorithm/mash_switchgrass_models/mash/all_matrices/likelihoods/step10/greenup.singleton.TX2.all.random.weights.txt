@@ -1,0 +1,11 @@
+"null" 0.0102406626957872
+"greenup.singleton.TX2" 0.000144044749861006
+"greenup.identity" 0.876963695493796
+"greenup.simple_het_1" 0.0932040243357256
+"greenup.simple_het_3" 0.00868407642134399
+"greenup.singleton.OK" 0.000455578170118711
+"greenup.singleton.MI" 0.000524685495667856
+"greenup.all.random.PCA_2" 0.00102430374532647
+"greenup.singleton.TX1" 0.000548157420867261
+"greenup.singleton.TX3" 0.000587100248404531
+"greenup.all.tave_10d.U.mat" 0.00762367122310101

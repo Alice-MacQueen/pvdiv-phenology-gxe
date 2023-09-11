@@ -1,0 +1,6 @@
+"null" 0.00560155782587173
+"greenup.singleton.NE" 0.00261631776728771
+"greenup.identity" 0.801623136088836
+"greenup.simple_het_1" 0.124182740786571
+"greenup.simple_het_2" 0.0438298435817322
+"greenup.gulf.tave_5d.U.mat" 0.0221464039497009

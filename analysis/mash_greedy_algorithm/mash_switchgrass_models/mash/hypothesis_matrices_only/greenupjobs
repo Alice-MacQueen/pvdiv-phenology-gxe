@@ -1,0 +1,6 @@
+python run.mash.greedy.search.py -p greenup -c gulf -e random
+python run.mash.greedy.search.py -p greenup -c midwest -e random
+python run.mash.greedy.search.py -p greenup -c all -e random
+python run.mash.greedy.search.py -p greenup -c gulf -e strong
+python run.mash.greedy.search.py -p greenup -c midwest -e strong
+python run.mash.greedy.search.py -p greenup -c all -e strong

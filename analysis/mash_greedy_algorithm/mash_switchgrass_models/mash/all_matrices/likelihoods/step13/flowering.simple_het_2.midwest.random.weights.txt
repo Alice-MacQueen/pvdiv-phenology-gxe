@@ -1,0 +1,14 @@
+"null" 0.132490675294314
+"flowering.simple_het_2" 0.0773674647393279
+"flowering.identity" 0.734534054215659
+"flowering.singleton.SD" 0.00348908120692108
+"flowering.singleton.MO" 0.00650761691284278
+"flowering.singleton.OK" 0.00255903211049577
+"flowering.singleton.MI" 0.00562936638076906
+"flowering.simple_het_1" 0.0154936456671993
+"flowering.singleton.TX3" 0.00464336193843685
+"flowering.singleton.NE" 0.00224229584646881
+"flowering.singleton.TX2" 0.0032309634053811
+"flowering.singleton.TX1" 0.00170505678317554
+"flowering.midwest.random.tPCA" 0.000614046260794671
+"flowering.midwest.crain_1d.U.mat" 0.00949333923821393

@@ -1,0 +1,8 @@
+"null" 0.00450355900684034
+"greenup.all.strong.PCA_5" 0
+"greenup.identity" 0.78506099075926
+"greenup.simple_het_2" 0
+"greenup.simple_het_1" 0.153228004239624
+"greenup.simple_het_3" 0.0528861533507115
+"greenup.singleton.TX3" 0.00193581455387444
+"greenup.singleton.NE" 0.00238547808968984

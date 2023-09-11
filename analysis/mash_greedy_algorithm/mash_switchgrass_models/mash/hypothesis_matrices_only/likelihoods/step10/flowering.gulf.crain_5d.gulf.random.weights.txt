@@ -1,0 +1,11 @@
+"null" 0.0202598932808662
+"gulf.crain_5d" 0
+"gulf.crain_1d" 0.176953119203469
+"midwest.dyln_change_sec" 0.163733151671475
+"midwest.crain_3d" 0.39894254349108
+"midwest.GR50" 0.0222503649839462
+"midwest.cgdd_12c_gr2fl" 0.0888716202341515
+"all.GR50" 0.0222458828751703
+"all.crain_5d" 0
+"gulf.GR50" 0.0222417918089968
+"all.crain_1d" 0.084501632450845

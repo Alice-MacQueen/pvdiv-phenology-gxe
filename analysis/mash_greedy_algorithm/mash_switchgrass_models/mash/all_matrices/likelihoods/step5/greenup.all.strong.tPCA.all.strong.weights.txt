@@ -1,0 +1,6 @@
+"null" 0.00483507027099366
+"greenup.all.strong.tPCA" 0.00339127711909895
+"greenup.identity" 0.787593154308397
+"greenup.simple_het_2" 0
+"greenup.simple_het_1" 0.150929867603932
+"greenup.simple_het_3" 0.0532506306975783

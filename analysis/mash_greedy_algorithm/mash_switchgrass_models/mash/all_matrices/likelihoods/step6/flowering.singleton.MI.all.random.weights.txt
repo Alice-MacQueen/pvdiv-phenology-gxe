@@ -1,0 +1,7 @@
+"null" 0.000140198946883035
+"flowering.singleton.MI" 0
+"flowering.identity" 0.906640630264164
+"flowering.simple_het_1" 0.0842314743128176
+"flowering.simple_het_3" 0.0041312731880787
+"flowering.all.random.tPCA" 0.00437434561353709
+"flowering.equal_effects" 0.000482077674519971

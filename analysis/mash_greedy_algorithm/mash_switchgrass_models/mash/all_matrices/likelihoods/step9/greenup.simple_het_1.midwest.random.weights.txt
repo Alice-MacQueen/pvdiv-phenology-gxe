@@ -1,0 +1,10 @@
+"null" 0.619415517059487
+"greenup.simple_het_1" 0.289403280440915
+"greenup.identity" 0.0307250389046883
+"greenup.singleton.TX2" 0.00947614570074535
+"greenup.singleton.MI" 0.00773474152738915
+"greenup.singleton.SD" 0.0076724389629654
+"greenup.singleton.MO" 0.00806619892565533
+"greenup.singleton.TX3" 0.0111990123149025
+"greenup.singleton.NE" 0.00927399429700877
+"greenup.singleton.OK" 0.00703363186624278

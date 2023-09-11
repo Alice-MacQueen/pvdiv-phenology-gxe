@@ -1,0 +1,5 @@
+"null" 0.000222957123188574
+"flowering.all.strong.PCA_5" 0
+"flowering.identity" 0.94453347063436
+"flowering.simple_het_3" 0.0475279528543391
+"flowering.equal_effects" 0.0077156193881126

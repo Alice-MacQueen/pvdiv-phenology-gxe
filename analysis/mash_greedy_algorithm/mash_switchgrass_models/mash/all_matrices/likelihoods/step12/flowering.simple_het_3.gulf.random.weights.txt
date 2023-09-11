@@ -1,0 +1,13 @@
+"null" 0.0136899396789618
+"flowering.simple_het_3" 0
+"flowering.identity" 0.723030912429147
+"flowering.simple_het_1" 0.231327901147874
+"flowering.singleton.TX1" 0.00228268539310733
+"flowering.singleton.MO" 0.00221200334535157
+"flowering.singleton.MI" 0.00235660737059696
+"flowering.singleton.SD" 0.00208097435412256
+"flowering.singleton.TX3" 0.00370292011349907
+"flowering.singleton.NE" 0.00184227793176297
+"flowering.singleton.TX2" 0.00222761260510781
+"flowering.singleton.OK" 0.0016078909413058
+"flowering.equal_effects" 0.0136382746891629
