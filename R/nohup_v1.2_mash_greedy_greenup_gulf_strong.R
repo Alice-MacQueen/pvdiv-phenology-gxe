@@ -94,8 +94,8 @@ Shat_random <- as.matrix(list_input$S_hat_random)
 data_r <- mashr::mash_set_data(Bhat_random, Shat_random)
 Vhat <- mashr::estimate_null_correlation_simple(data = data_r)
 
-data_strong <- mashr::mash_set_data(Bhat_strong, Shat_strong, V=Vhat)
-data_random <- mashr::mash_set_data(Bhat_random, Shat_random, V=Vhat)
+data_strong <- mashr::mash_set_data(Bhat_strong, Shat_strong, V = Vhat)
+data_random <- mashr::mash_set_data(Bhat_random, Shat_random, V = Vhat)
 
 U_single <- as.matrix(U_single)
 # Run mash on the random dataset using the random data w/ correlation structure
