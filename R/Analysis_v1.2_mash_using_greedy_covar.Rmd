@@ -15,6 +15,7 @@ library(rlist)
 library(cowplot)
 library(here)
 library(zoo)
+library(rrBLUP)
 ```
 
 # Installation reminders for any reinstalls
@@ -38,90 +39,11 @@ Step 2. Use covariances from (1) to run mash on 19K 'strongly associated variant
 How much of a lift is it to re-run the greedy mash algorithm? If we, or if reviewers are thinking about this in a Jiaming Yu sense, I think the next logical question to ask is 'Why these covariance matrices'? The overly honest answer for the current set is that there were computational limits to running mash with so many covariance matrices, so I chose a few arbitrary time points for each weather variable we thought might be a environmental driver. But now we have introduced a method to choose between highly correlated covariance matrices, perhaps we could do better. 
 2. 
 
-# Deprecated analysis
-### Code from Plots_v0.2_manuscript_figures.Rmd to make weather variables
-
-Actually, code from Analysis_v1.1_weather_2020.Rmd might be more suitable, if I am remaking these anyway.
-
-```{r}
-wea_df <- readRDS("~/Github/pvdiv-phenology-gxe/data/Weather_with_PTT_2019.rds")
-metadata <- readRDS("~/Github/pvdiv-phenology-gxe/data/metadata.rds")
-sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
-phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Phenology_CGDD_PTT_and_rainfall_phenotypes.rds")
-jday_phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
-```
-
-```{r}
-jday_phe <- wea_df %>%
-  group_by(SITE) %>%
-  mutate(dyln_change_sec = (DYLN - lag(DYLN))*60*60,
-         FL50 = yday(DOY)) %>%
-  select(DOY, DYLN, dyln_change_sec, everything()) %>%
-  select(-PTT_12C) %>%
-  right_join(jday_phe, by = c("SITE", "FL50")) %>%
-  select(-(TMAX:CPTT_11C))
-jday_phe <- metadata %>%
-  rename(Lat_origin = LATITUDE, Long_origin = LONGITUDE) %>%
-  select(PLANT_ID, SUBPOP, Lat_origin, Long_origin) %>%
-  right_join(jday_phe) %>%
-  left_join(sites)
-
-jday_phe$SUBPOP <- factor(jday_phe$SUBPOP, levels = c("4X", "Atlantic", "Gulf", "Midwest", "8X"))
-jday_phe$SITE <- factor(jday_phe$SITE, levels = c("KING", "PKLE", "TMPL", "OVTN", "STIL", "CLMB", "LINC", "FRMI", "KBSM", "BRKG"))
-jday_phe$manu_site <- factor(jday_phe$manu_site, levels = rev(c("TX1", "TX2", "TX3", "TX4", "OK", "MO", "NE", "IL", "MI", "SD")))
-```
-
-## define environmental cues for greenup
-Probably all CGDD related.
-```{r}
-
-asreml_fl <- jday_phe %>%
-  select(PLANT_ID:Long_origin, PLOT_GL, SITE, FL50, GR50, CGDD_12C, CRAIN, CRAIN_5d, DYLN, dyln_change_sec) %>%
-  rename(dyln_fl50 = DYLN, cgdd_12c_gr2fl = CGDD_12C, crain_gr2fl = CRAIN) %>%
-  left_join(wea_df) %>%
-  group_by(SITE, PLOT_GL) %>%
-  filter(between(DOY, as_date(FL50, origin = "2019-01-01") - 6, as_date(FL50, origin = "2019-01-01"))) %>%
-  mutate(crain_2d = RAIN_SM + lag(RAIN_SM),
-         crain_3d = RAIN_SM + lag(RAIN_SM) + lag(RAIN_SM, n = 2),
-         crain_7d = sum(RAIN_SM)) %>%
-  filter(DOY == as_date(FL50, origin = "2019-01-01")) %>%
-  filter(SUBPOP %in% c("Midwest", "Gulf", "Atlantic") & !(SITE %in% c("OVTN"))) %>%
-  select(-(TMAX:TMIN_SM), -(GDD_13C_SM:CPTT_13C)) %>%
-  rename(crain_1d = RAIN_SM, crain_5d = CRAIN_5d)
-saveRDS(asreml_fl, file = "../data/Weather_related_phe_for_asreml_h2_FL50.rds")
-asreml_gr <- jday_phe %>%
-  select(PLANT_ID:Long_origin, PLOT_GL, SITE, GR50) %>%
-  left_join(wea_df) %>%
-  group_by(SITE, PLOT_GL) %>%
-  filter(DOY <= as_date(GR50, origin = "2019-01-01")) %>%
-  mutate(cgdd_12c_jan2gr = sum(GDD_12C_SM),
-         cgdd_8c_jan2gr = sum(GDD_8C_SM)
-         ) %>%
-  select(-(GDD_13C_SM:CPTT_13C), -(TMAX:Longitude), GDD_12C_SM) %>%
-  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 17, as_date(GR50, origin = "2019-01-01"))) %>%
-  mutate(tmax_18d = mean(TMAX_SM),
-         tmin_18d = mean(TMIN_SM),
-         tave_18d = (tmax_18d + tmin_18d)/2,
-         cgdd_12c_18d = mean(GDD_12C_SM)) %>%
-  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 9, as_date(GR50, origin = "2019-01-01"))) %>%
-  mutate(tmax_10d = mean(TMAX_SM),
-         tmin_10d = mean(TMIN_SM),
-         tave_10d = (tmax_10d + tmin_10d)/2,
-         cgdd_12c_10d = mean(GDD_12C_SM)) %>%
-  filter(between(DOY, as_date(GR50, origin = "2019-01-01") - 4, as_date(GR50, origin = "2019-01-01"))) %>%
-  mutate(tmax_5d = mean(TMAX_SM),
-         tmin_5d = mean(TMIN_SM),
-         tave_5d = (tmax_5d + tmin_5d)/2,
-         cgdd_12c_5d = mean(GDD_12C_SM))%>%
-  filter(DOY == as_date(GR50, origin = "2019-01-01")) %>%
-  filter(SUBPOP %in% c("Midwest", "Gulf", "Atlantic") & !(SITE %in% c("OVTN"))) %>%
-  select(-(TMAX_SM:RAIN_SM), -Day_of_year)
-saveRDS(asreml_gr, file = "../data/Weather_related_phe_for_asreml_h2_GR50.rds")
-```
 
 # ----
+# Generate weather variables
 
-# Covar 1-20d weather
+# Covar 1-28d weather
 As of 2023-09-11, want to remake these per reviewer revision to have h2 on the diagonal instead of the CV. Need to estimate h2 for these new covar matrices, probably using rrBLUP.
 
 
@@ -425,23 +347,25 @@ fl_ten_sites <- phe_gr_fl %>%
 
 ```
 
-# ---
-# Covar csv for greedy mash algorithm
-
-Make & save hypothesis matrices in a hypothesis_matrices directory in data. 
-Then hopefully it's not much of a lift for Sam to run the greedy mash algorithm again. Otherwise I will figure out how to run it.
-
-phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", 
-             "tave_5d", "tave_10d", "tave_18d")
-phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
-             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
-
+## save weather-based phenotypes
 ```{r}
 gr_ten_sites %>%
   saveRDS(file = here("data", "Weather_related_phe_GR50_2019.rds"))
 fl_ten_sites %>%
   saveRDS(file = here("data", "Weather_related_phe_FL50_2019.rds"))
 ```
+# --- can start here
+# Covar csv for greedy mash algorithm
+
+Make & save hypothesis matrices in a hypothesis_matrices directory in data. 
+Then run the greedy mash algorithm again.
+
+phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", 
+             "tave_5d", "tave_10d", "tave_18d")
+phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
+             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
+
+
 
 ### load weather phenotypes
 ```{r}
@@ -458,6 +382,10 @@ colnames(gr_ten_sites)[8:50]
 
 ## Calculate heritability for diagonal
 I don't have access to ASREML any more, so need a different package to do this.
+
+### sketch out how h2 is calculated in rrBLUP
+
+Use the kinship matrix I've already calculated (using the van Raden method, using switchgrassGWAS::pvdiv_kinship()) using the SNPs as the K matrix.
 ```{r}
 library(rrBLUP)
 k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
@@ -478,7 +406,12 @@ mod2 <- mixed.solve(y = phe_one$crain_1d, K = k_one)
 h2 <- mod2$Vu/(mod2$Vu + mod2$Ve)
 ```
 
+Another error: "Error in mash(data, covmats) : 
+  All U_scaled matrices should be positive semi-definite
 
+So I should adjust these to make sure all are positive semi-definite, too, in addition to replacing the diagonals with h2.
+
+### Loop to calculate covar for flowering
 ```{r}
 metadata <- read_rds(here("data", "metadata.rds"))
 subpop_v2 <- list(all = c("Gulf", "Midwest"), midwest = "Midwest",
@@ -579,7 +512,7 @@ for (i in seq_along(U_hyp_2019)) {
 Another error: "Error in mash(data, covmats) : 
   All U_scaled matrices should be positive semi-definite
 
-
+### Loop to calculate covar for greenup
 ```{r}
 gr_ten_sites <- gr_ten_sites %>%
   left_join(select(metadata, PLANT_ID, SUBPOP)) %>%
@@ -652,9 +585,261 @@ for (i in seq_along(U_hyp_2019)) {
 
 ```
 
+### Midwest covar fewer sites
+
+#### flowering: 6 sites
+MI, MO, SD, TX1, TX2, TX3
+```{r flowering midwest}
+
+phe_hyp <- colnames(fl_ten_sites)[c(5,9:51)]
+i=2
+k=2
+
+U_hyp_2019 <- list()
+for(i in seq_along(phe_hyp)){
+  
+    cov_df <- fl_ten_sites %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]]) %>%
+      filter(Year %in% 2019) %>%
+      select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+      group_by(PLANT_ID, SUBPOP, manu_site) %>%
+      mutate(IND = row_number()) %>%
+      pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+      mutate(PLANT_ID = as.factor(PLANT_ID),
+             IND = as.factor(IND)) %>%
+      select(PLANT_ID, SUBPOP, IND, MI, MO, SD, TX1, TX2, TX3) %>% #####  IL,
+      replace_na(list(MI = 0, MO = 0, SD = 0, TX1 = 0, TX2 = 0, 
+                      TX3 = 0))
+    
+    cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+    # Set diagonal of this matrix = heritability within each garden
+    h2_diag <- c()
+    site_names <- c("MI", "MO", "SD", "TX1", "TX2", "TX3")
+    for(j in seq_along(site_names)) {
+      phe_one <- fl_ten_sites %>% filter(manu_site == site_names[j]) %>%
+        filter(WHERE != "FWCR") %>%
+        group_by(PLANT_ID) %>%
+        summarise(phenotype = mean(!! sym(phe_hyp[i]), na.rm = TRUE)) %>%
+        filter(!is.na(PLANT_ID))
+      k_in_phe <- which(colnames(k_full) %in% phe_one$PLANT_ID)
+      k_one <- k_full[k_in_phe, k_in_phe]
+      mod2 <- mixed.solve(y = phe_one$phenotype, K = k_one)
+      h2_diag[j] <- mod2$Vu/(mod2$Vu + mod2$Ve)
+    }
+    
+    diag(cor_phe) <- h2_diag
+    if (!matrixcalc::is.positive.semi.definite(cor_phe)) {
+      cor_phe <- Matrix::nearPD(cor_phe)
+    }
+    U_hyp_2019 <- list.prepend(U_hyp_2019, cor_phe)
+    names(U_hyp_2019)[1] <- paste0("flowering.", names(subpop_v2)[k], ".", 
+                                   phe_hyp[i], ".U.mat")
+}
+
+U_hyp_2019
+
+# Test that every matrix is positive semi definite. Should all be true now changed code above.
+U_psd <- c() 
+for (i in seq_along(U_hyp_2019)) {
+  if (is.matrix(U_hyp_2019[[i]])) {
+    U_psd[i] <- matrixcalc::is.positive.semi.definite(U_hyp_2019[[i]])
+  } else {
+    U_psd[i] <- matrixcalc::is.positive.semi.definite(as.matrix(U_hyp_2019[[i]]$mat))
+  }
+  
+}
 
 
-Visualize correlation matrices
+for (i in seq_along(U_hyp_2019)) {
+  if (is.matrix(U_hyp_2019[[i]])) {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]), ncol = 6, byrow = TRUE)
+  } else {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]$mat), ncol = 6, byrow = TRUE)
+  }
+  row.names(matrixout) = site_names
+  colnames(matrixout) = site_names
+  #print(matrixout)
+  write.csv(matrixout, file = here("analysis", "mash_greedy_algorithm", 
+                                   "mash_h2_diag_covar", "midwest_flowering", "matrices", 
+                                   paste0(names(U_hyp_2019)[i], ".csv")))
+}
+
+
+
+```
+
+```{r}
+workingdir <- here("analysis", "mash_greedy_algorithm", 
+                                   "mash_h2_diag_covar", "midwest_flowering")
+pheno = "flowering"
+betas = read.table(here(workingdir, "combined_mash_effects", paste0( pheno,'.midwest.betas.random.txt')))
+stderrs = read.table(here(workingdir, "combined_mash_stderrs", paste0( pheno,'.midwest.stderrs.random.txt')))
+
+mat_betas = matrix(unlist(betas),ncol=6,byrow = TRUE)
+mat_stderrs = matrix(unlist(stderrs),ncol=6,byrow = TRUE)
+
+sites = c('MI','MO','SD','TX1','TX2','TX3')
+data=mash_set_data(mat_betas,mat_stderrs) 
+
+canonical = cov_canonical(data = data)
+matnames = ls(canonical)
+for (matrix in matnames) {
+  if (matrix %in% c('equal_effects','identity','simple_het_1','simple_het_2','simple_het_3')) {
+  matrixout = matrix(unlist(canonical[matrix]), ncol = 6, byrow = TRUE)
+  row.names(matrixout) = sites
+  colnames(matrixout) = sites
+  write.csv(matrixout, file = here(workingdir, "matrices", paste0(pheno,'.', matrix, '.csv')))
+  }
+}
+print(canonical)
+for (i in 1:6) {
+  singleton = paste0('singletons_',i)
+  print(singleton)
+  singmat = canonical[singleton]
+  site = sites[i]
+  
+  singmat = matrix(unlist(canonical[singleton]),ncol = 6, byrow = TRUE)
+  row.names(singmat) = sites
+  colnames(singmat) = sites
+  write.csv(singmat, file = here(workingdir, "matrices", paste0(pheno, '.singleton.', site, '.csv')))
+}
+
+canonical = cov_pca(data,5)
+cohort = "midwest"
+effect = "random"
+matnames = ls(canonical)
+for (mat in matnames) {
+  matrixout = matrix(unlist(canonical[mat]),ncol=6,byrow=TRUE)
+  row.names(matrixout) = sites
+  colnames(matrixout) = sites
+  print(matrixout)
+  write.csv(matrixout, file = here(workingdir, "matrices",
+                                   paste0(pheno,'.', cohort,'.', effect,'.', mat, '.csv')))
+}
+
+```
+
+
+
+
+#### greenup: 7 sites
+MI, MO, NE, OK, TX1, TX2, TX3
+```{r}
+phe_hyp <- colnames(gr_ten_sites)[8:50]
+i=1
+k=2
+
+U_hyp_2019 <- list()
+for(i in seq_along(phe_hyp)){
+
+    cov_df <- gr_ten_sites %>%
+      ungroup() %>%
+      filter(SUBPOP %in% subpop_v2[[k]]) %>%
+      filter(Year %in% 2019) %>%
+      select(PLANT_ID, SUBPOP, manu_site, phe_hyp[i]) %>%
+      group_by(PLANT_ID, SUBPOP, manu_site) %>%
+      mutate(IND = row_number()) %>%
+      pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
+      mutate(PLANT_ID = as.factor(PLANT_ID),
+             IND = as.factor(IND)) %>%
+      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, OK, TX1, TX2, TX3) #####  IL,
+    
+    cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
+    # Set diagonal of this matrix = heritability within each garden
+    h2_diag <- c()
+    site_names <- c("MI", "MO", "NE", "OK", "TX1", "TX2", "TX3")
+    for(j in seq_along(site_names)) {
+      phe_one <- fl_ten_sites %>% filter(manu_site == site_names[j]) %>%
+        filter(WHERE != "FWCR") %>%
+        group_by(PLANT_ID) %>%
+        summarise(phenotype = mean(!! sym(phe_hyp[i]), na.rm = TRUE)) %>%
+        filter(!is.na(PLANT_ID))
+      k_in_phe <- which(colnames(k_full) %in% phe_one$PLANT_ID)
+      k_one <- k_full[k_in_phe, k_in_phe]
+      mod2 <- mixed.solve(y = phe_one$phenotype, K = k_one)
+      h2_diag[j] <- mod2$Vu/(mod2$Vu + mod2$Ve)
+    }
+    
+    diag(cor_phe) <- h2_diag
+    if (!matrixcalc::is.positive.semi.definite(cor_phe)) {
+      cor_phe <- Matrix::nearPD(cor_phe)
+    }
+
+    U_hyp_2019 <- list.prepend(U_hyp_2019, cor_phe)
+    names(U_hyp_2019)[1] <- paste0("greenup.", names(subpop_v2)[k], ".", phe_hyp[i], ".U.mat")
+}
+
+for (i in seq_along(U_hyp_2019)) {
+  if (is.matrix(U_hyp_2019[[i]])) {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]), ncol = 7, byrow = TRUE)
+  } else {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]$mat), ncol = 7, byrow = TRUE)
+  }
+  row.names(matrixout) = site_names
+  colnames(matrixout) = site_names
+  #print(matrixout)
+  write.csv(matrixout, file = here("analysis", "mash_greedy_algorithm", 
+                                   "mash_h2_diag_covar", "midwest_greenup",
+                                   "matrices", 
+                                   paste0(names(U_hyp_2019)[i], ".csv")))
+}
+
+
+```
+
+```{r}
+workingdir <- here("analysis", "mash_greedy_algorithm", 
+                                   "mash_h2_diag_covar", "midwest_greenup")
+pheno = "greenup"
+betas = read.table(here(workingdir, "combined_mash_effects", paste0( pheno,'.midwest.betas.random.txt')))
+stderrs = read.table(here(workingdir, "combined_mash_stderrs", paste0( pheno,'.midwest.stderrs.random.txt')))
+
+mat_betas = matrix(unlist(betas),ncol=7,byrow = TRUE)
+mat_stderrs = matrix(unlist(stderrs),ncol=7,byrow = TRUE)
+
+sites = c('MI','MO','NE', 'OK','TX1','TX2','TX3')
+data=mash_set_data(mat_betas,mat_stderrs) 
+
+canonical = cov_canonical(data = data)
+matnames = ls(canonical)
+for (matrix in matnames) {
+  if (matrix %in% c('equal_effects','identity','simple_het_1','simple_het_2','simple_het_3')) {
+  matrixout = matrix(unlist(canonical[matrix]), ncol = 7, byrow = TRUE)
+  row.names(matrixout) = sites
+  colnames(matrixout) = sites
+  write.csv(matrixout, file = here(workingdir, "matrices", paste0(pheno,'.', matrix, '.csv')))
+  }
+}
+print(canonical)
+for (i in 1:7) {
+  singleton = paste0('singletons_',i)
+  print(singleton)
+  singmat = canonical[singleton]
+  site = sites[i]
+  
+  singmat = matrix(unlist(canonical[singleton]),ncol = 7, byrow = TRUE)
+  row.names(singmat) = sites
+  colnames(singmat) = sites
+  write.csv(singmat, file = here(workingdir, "matrices", paste0(pheno, '.singleton.', site, '.csv')))
+}
+
+canonical = cov_pca(data,5)
+cohort = "midwest"
+effect = "random"
+matnames = ls(canonical)
+for (mat in matnames) {
+  matrixout = matrix(unlist(canonical[mat]),ncol = 7,byrow=TRUE)
+  row.names(matrixout) = sites
+  colnames(matrixout) = sites
+  print(matrixout)
+  write.csv(matrixout, file = here(workingdir, "matrices",
+                                   paste0(pheno,'.', cohort,'.', effect,'.', mat, '.csv')))
+}
+
+```
+
+#### Visualize correlation matrices
 ```{r}
 
 i=7
@@ -672,13 +857,101 @@ names(U_hyp_2019)[[i+2]]
 
 data/mash_switchgrass_models/mash/all_matrices/matrices hosts all covar mat (?)
 analysis/mash_greedy_algorithm/mash_switchgrass_models/mash/all_matrices/matrices has more? covar mat?
+Can cp from these matrices dir to mash_h2_diag_covar/matrices the following regex, which run.mash.greedy.search.py looks for:
 
-Set up new analysis/mash_greedy_algorithm/mash_1_to_28d_covar/ or subdirectory to have all the subdir necessary to run `run.mash.greedy.search.py` python script.
+ '.singleton.*'
+'.identity.*'
+'.simple_het_*.*'
+ '.equal_effects.*'
+'.*PCA*'
 
-Make sure all matrices are present in matrices/ subdir and named appropriately for recognition
-Make sure random and strong Bhat and Shat in combined_mash_effects and combined_mash_stderrs are appropriate - perhaps replace these with my inputs in mash/Subpop/inputs; perhaps use what's here as tests first
 
-May need to adjust midwest covar & effects appropriately to reflect only 6 (floewring) and 7 (greenup) rows & columns used; other GWAS were dropped & I think including them would be misleading, likely.
+Set up new analysis/mash_greedy_algorithm/mash_1_to_28d_covar/ or subdirectory to have all the subdir necessary to run `run.mash.greedy.search.py` python script. I think these may have to be pre-generated for the script to work, and I'll make sure they're empty to keep there from being I/O issues I haven't tested for.
+
+Make sure all matrices are present in matrices/ subdir and named & output appropriately for recognition
+
+Make sure random and strong Bhat and Shat in combined_mash_effects and combined_mash_stderrs are appropriate - perhaps ultimately replace these with my inputs in mash/Subpop/inputs; perhaps use what's here as tests first
+
+When I change to my inputs for effects & stderrs, I will need to adjust midwest covar & effects appropriately to reflect only 6 (flowering) and 7 (greenup) rows & columns used; the other GWAS were dropped as too low power or due to substantial phenotype data loss, & I think including them would be misleading, likely.
+
+### Next steps
+Redo Midwest: Remake Midwest covar matrices, including hypothesis, singleton, identity, simple het, equal effects, and data-driven matrices. Make mash_greedy.R variants for changed input dir & for different Midwest column numbers. 
+Run two new run.mash.greedy.search.py commands:
+python run.mash.greedy.search.py -p greenup -c midwest -e random
+python run.mash.greedy.search.py -p flowering -c midwest -e random
+
+Try Gulf & All with my known inputs:
+python run.mash.greedy.search.py -p greenup -c gulf -e random
+python run.mash.greedy.search.py -p greenup -c all -e random
+python run.mash.greedy.search.py -p flowering -c gulf -e random
+python run.mash.greedy.search.py -p flowering -c all -e random
+
+
+Write inputs to mash_h2_diag_covar/All_inputs, Gulf_inputs, and Midwest_inputs, from the original mash work. Especially important for Midwest which has some poor GWAS at dropped sites.
+The inputs Sam used have no column or rownames and look to be tab delimited.
+
+aka combined_mash_effects/greenup.all.betas.random.txt 
+and combined_mash_stderrs/flowering.gulf.betas.strong.txt
+
+I only really need the random ones here, run mash again on the strong effects below.
+```{r}
+popkey = list(all = "Gulf_and_Midwest", midwest = "Midwest", gulf = "Gulf")
+phekey = list(greenup = "GR50", flowering = "FL50")
+# i=2; j=1
+
+for (i in seq_along(popkey)) {
+  for (j in seq_along(phekey)) {
+    
+    if (i == 2 & j == 1) {
+      betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("B_hat_random_df_24000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+      stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("S_hat_random_df_24000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+    } else if (i == 2 & j == 2) {
+      betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("B_hat_random_df_33000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+      stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("S_hat_random_df_33000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+    } else {
+      betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("B_hat_random_df_19000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+      stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("S_hat_random_df_19000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+    }
+    write.table(betas, file = here("analysis", "mash_greedy_algorithm", 
+                                   "mash_h2_diag_covar", 
+                                   paste0(names(popkey)[i], "_inputs"), 
+                                   paste0(names(phekey)[j], ".", 
+                                          names(popkey)[i], 
+                                          ".betas.random.txt")),
+                row.names = FALSE, col.names = FALSE)
+    write.table(stderr, file = here("analysis", "mash_greedy_algorithm", 
+                                    "mash_h2_diag_covar", 
+                                    paste0(names(popkey)[i], "_inputs"), 
+                                    paste0(names(phekey)[j], ".", 
+                                           names(popkey)[i], 
+                                           ".stderrs.random.txt")),
+                row.names = FALSE, col.names = FALSE)
+  }
+}
+
+```
+
+```{r}
+for (i in 1:35) {
+  if (!dir.exists(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar", "midwest_inputs", "likelihoods", paste0("step", i)))) {
+    dir.create(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar", "midwest_inputs", "likelihoods", paste0("step", i)))
+  }
+}
+```
+
+
 
 # -----------------------------
 # Run mash
