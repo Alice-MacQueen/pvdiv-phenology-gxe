@@ -6,6 +6,14 @@ pvdiv-phenology-gxe.Rproj
 .Rbuildignore
 large-files/
 
+# Sam's analysis he says he will upload, for the blame :)
+data/mash_switchgrass_models/
+
+# Large .txt from Sam's analysis that have to be duplicated to run as-is
+analysis/mash_greedy_algorithm/mash_1_to_20d_covar/
+analysis/mash_greedy_algorithm/mash_1_to_20d_covar/mash_h2_diag_covar/combined_mash_effects/
+analysis/mash_greedy_algorithm/mash_1_to_20d_covar/mash_h2_diag_covar/combined_mash_stderrs/
+
 # Large .rds that I identify and rename appropriately
 *_.rds
 GWAS_object_*

@@ -119,13 +119,16 @@ asreml_gr <- jday_phe %>%
 saveRDS(asreml_gr, file = "../data/Weather_related_phe_for_asreml_h2_GR50.rds")
 ```
 
-
-## 
-
 # ----
+
+# Covar 1-20d weather
+As of 2023-09-11, want to remake these per reviewer revision to have h2 on the diagonal instead of the CV. Need to estimate h2 for these new covar matrices, probably using rrBLUP.
+
+
 ## load phe & wea data
 ```{r}
 phe_ten_sites <- readRDS(here("data", "Phenotypes_2018_to_2021_10_sites.rds"))
+sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
 jday_phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
 wea_ten_sites <- readRDS(file = here("data", "Daily_weather_2018_to_2021_10_sites.rds"))
 
@@ -422,6 +425,7 @@ fl_ten_sites <- phe_gr_fl %>%
 
 ```
 
+# ---
 # Covar csv for greedy mash algorithm
 
 Make & save hypothesis matrices in a hypothesis_matrices directory in data. 
@@ -452,6 +456,28 @@ phe_hyp <- colnames(fl_ten_sites)[c(5,9:51)]
 colnames(gr_ten_sites)[8:50]
 ```
 
+## Calculate heritability for diagonal
+I don't have access to ASREML any more, so need a different package to do this.
+```{r}
+library(rrBLUP)
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+fl_ten_sites
+colnames(k_full)
+
+phe_one <- fl_ten_sites %>% filter(manu_site == "TX1") %>%
+  filter(WHERE != "FWCR") %>%
+  group_by(PLANT_ID) %>%
+  summarise(crain_1d = mean(crain_1d, na.rm = TRUE)) %>%
+  filter(!is.na(PLANT_ID))
+k_in_phe <- which(colnames(k_full) %in% phe_one$PLANT_ID)
+k_one <- k_full[k_in_phe, k_in_phe]
+
+nrow(k_one)
+nrow(phe_one)
+mod2 <- mixed.solve(y = phe_one$crain_1d, K = k_one)
+h2 <- mod2$Vu/(mod2$Vu + mod2$Ve)
+```
+
 
 ```{r}
 metadata <- read_rds(here("data", "metadata.rds"))
@@ -462,6 +488,7 @@ year_v = c(2019, 2020, 2021)
 fl_ten_sites <- fl_ten_sites %>%
   left_join(select(metadata, PLANT_ID, SUBPOP)) %>%
   rename(Year = YEAR)
+fl_ten_sites$PLANT_ID <- factor(fl_ten_sites$PLANT_ID, levels = colnames(k_full))
 
 # change based on phenotype ---------------
 #phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", 
@@ -470,7 +497,7 @@ fl_ten_sites <- fl_ten_sites %>%
 #             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
 
 phe_hyp <- colnames(fl_ten_sites)[c(5,9:51)]
-i=1
+i=2
 k=1
 
 U_hyp_2019 <- list()
@@ -487,36 +514,71 @@ for(i in seq_along(phe_hyp)){
       pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
       mutate(PLANT_ID = as.factor(PLANT_ID),
              IND = as.factor(IND)) %>%
-      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, OK, SD, TX1, TX2, TX3) #####  IL,
+      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, OK, SD, TX1, TX2, TX3) %>% #####  IL,
+      replace_na(list(MI = 0, MO = 0, NE = 0, OK = 0, SD = 0, TX1 = 0, TX2 = 0, 
+                      TX3 = 0))
     
     cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
-    # Set diagonal of this matrix = coefficient of variation within each garden.
-    diag(cor_phe) <- cov_df %>%
-      ungroup() %>%
-      summarise(#IL = sqrt(var(IL, na.rm = TRUE))/mean(IL, na.rm = TRUE),  #####
-                MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
-                MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
-                NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
-                OK = sqrt(var(OK, na.rm = TRUE))/mean(OK, na.rm = TRUE),
-                SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
-                TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
-                TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
-                TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE)) %>%
-      as_vector()
-
+    # Set diagonal of this matrix = heritability within each garden
+    h2_diag <- c()
+    site_names <- c("MI", "MO", "NE", "OK", "SD", "TX1", "TX2", "TX3")
+    for(j in seq_along(site_names)) {
+      phe_one <- fl_ten_sites %>% filter(manu_site == site_names[j]) %>%
+        filter(WHERE != "FWCR") %>%
+        group_by(PLANT_ID) %>%
+        summarise(phenotype = mean(!! sym(phe_hyp[i]), na.rm = TRUE)) %>%
+        filter(!is.na(PLANT_ID))
+      k_in_phe <- which(colnames(k_full) %in% phe_one$PLANT_ID)
+      k_one <- k_full[k_in_phe, k_in_phe]
+      mod2 <- mixed.solve(y = phe_one$phenotype, K = k_one)
+      h2_diag[j] <- mod2$Vu/(mod2$Vu + mod2$Ve)
+    }
+    
+    diag(cor_phe) <- h2_diag
+    if (!matrixcalc::is.positive.semi.definite(cor_phe)) {
+      cor_phe <- Matrix::nearPD(cor_phe)
+    }
     U_hyp_2019 <- list.prepend(U_hyp_2019, cor_phe)
-    names(U_hyp_2019)[1] <- paste0("flowering.", names(subpop_v2)[k], ".", phe_hyp[i], ".U.mat")
+    names(U_hyp_2019)[1] <- paste0("flowering.", names(subpop_v2)[k], ".", 
+                                   phe_hyp[i], ".U.mat")
   }
 }
 
 U_hyp_2019
-length(U_hyp_2019)
-for (i in 1:length(U_hyp_2019)) {
-  d_out <- as.data.frame(U_hyp_2019[[i]], optional = FALSE) %>%
-    rownames_to_column(var = " ")
-  write_csv(d_out, file = here("data", "greedy_more_cov", "hypothesis_matrices", paste0(names(U_hyp_2019)[i], ".csv")))
+
+# Test that every matrix is positive semi definite. Should all be true now changed code above.
+U_psd <- c() 
+for (i in seq_along(U_hyp_2019)) {
+  if (is.matrix(U_hyp_2019[[i]])) {
+    U_psd[i] <- matrixcalc::is.positive.semi.definite(U_hyp_2019[[i]])
+  } else {
+    U_psd[i] <- matrixcalc::is.positive.semi.definite(as.matrix(U_hyp_2019[[i]]$mat))
+  }
+  
 }
+
+
+for (i in seq_along(U_hyp_2019)) {
+  if (is.matrix(U_hyp_2019[[i]])) {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]), ncol = 8, byrow = TRUE)
+  } else {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]$mat), ncol = 8, byrow = TRUE)
+  }
+  row.names(matrixout) = site_names
+  colnames(matrixout) = site_names
+  #print(matrixout)
+  write.csv(matrixout, file = here("analysis", "mash_greedy_algorithm", 
+                                   "mash_h2_diag_covar", "matrices", 
+                                   paste0(names(U_hyp_2019)[i], ".csv")))
+}
+
+
+
+
 ```
+Another error: "Error in mash(data, covmats) : 
+  All U_scaled matrices should be positive semi-definite
+
 
 ```{r}
 gr_ten_sites <- gr_ten_sites %>%
@@ -547,29 +609,47 @@ for(i in seq_along(phe_hyp)){
       select(PLANT_ID, SUBPOP, IND, MI, MO, NE, OK, SD, TX1, TX2, TX3) #####  IL,
     
     cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
-    # Set diagonal of this matrix = coefficient of variation within each garden.
-    diag(cor_phe) <- cov_df %>%
-      ungroup() %>%
-      summarise(#IL = sqrt(var(IL, na.rm = TRUE))/mean(IL, na.rm = TRUE),  #####
-                MI = sqrt(var(MI, na.rm = TRUE))/mean(MI, na.rm = TRUE),  #####
-                MO = sqrt(var(MO, na.rm = TRUE))/mean(MO, na.rm = TRUE),
-                NE = sqrt(var(NE, na.rm = TRUE))/mean(NE, na.rm = TRUE),
-                OK = sqrt(var(OK, na.rm = TRUE))/mean(OK, na.rm = TRUE),
-                SD = sqrt(var(SD, na.rm = TRUE))/mean(SD, na.rm = TRUE),
-                TX1 = sqrt(var(TX1, na.rm = TRUE))/mean(TX1, na.rm = TRUE),
-                TX2 = sqrt(var(TX2, na.rm = TRUE))/mean(TX2, na.rm = TRUE),
-                TX3 = sqrt(var(TX3, na.rm = TRUE))/mean(TX3, na.rm = TRUE)) %>%
-      as_vector()
+    # Set diagonal of this matrix = heritability within each garden
+    h2_diag <- c()
+    site_names <- c("MI", "MO", "NE", "OK", "SD", "TX1", "TX2", "TX3")
+    for(j in seq_along(site_names)) {
+      phe_one <- fl_ten_sites %>% filter(manu_site == site_names[j]) %>%
+        filter(WHERE != "FWCR") %>%
+        group_by(PLANT_ID) %>%
+        summarise(phenotype = mean(!! sym(phe_hyp[i]), na.rm = TRUE)) %>%
+        filter(!is.na(PLANT_ID))
+      k_in_phe <- which(colnames(k_full) %in% phe_one$PLANT_ID)
+      k_one <- k_full[k_in_phe, k_in_phe]
+      mod2 <- mixed.solve(y = phe_one$phenotype, K = k_one)
+      h2_diag[j] <- mod2$Vu/(mod2$Vu + mod2$Ve)
+    }
+    
+    diag(cor_phe) <- h2_diag
+    if (!matrixcalc::is.positive.semi.definite(cor_phe)) {
+      cor_phe <- Matrix::nearPD(cor_phe)
+    }
 
     U_hyp_2019 <- list.prepend(U_hyp_2019, cor_phe)
     names(U_hyp_2019)[1] <- paste0("greenup.", names(subpop_v2)[k], ".", phe_hyp[i], ".U.mat")
   }
 }
-for (i in 1:length(U_hyp_2019)) {
-  d_out <- as.data.frame(U_hyp_2019[[i]], optional = FALSE) %>%
-    rownames_to_column(var = " ")
-  write_csv(d_out, file = here("data", "greedy_more_cov", "hypothesis_matrices", paste0(names(U_hyp_2019)[i], ".csv")), )
+
+for (i in seq_along(U_hyp_2019)) {
+  if (is.matrix(U_hyp_2019[[i]])) {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]), ncol = 8, byrow = TRUE)
+  } else {
+    matrixout = matrix(unlist(U_hyp_2019[[i]]$mat), ncol = 8, byrow = TRUE)
+  }
+  row.names(matrixout) = site_names
+  colnames(matrixout) = site_names
+  #print(matrixout)
+  write.csv(matrixout, file = here("analysis", "mash_greedy_algorithm", 
+                                   "mash_h2_diag_covar", "matrices", 
+                                   paste0(names(U_hyp_2019)[i], ".csv")))
 }
+
+
+
 ```
 
 
@@ -586,6 +666,19 @@ switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2019[[i+2]],
                                             reorder = FALSE) 
 names(U_hyp_2019)[[i+2]]
 ```
+
+# ---------------
+# Info to run greedy mash algo
+
+data/mash_switchgrass_models/mash/all_matrices/matrices hosts all covar mat (?)
+analysis/mash_greedy_algorithm/mash_switchgrass_models/mash/all_matrices/matrices has more? covar mat?
+
+Set up new analysis/mash_greedy_algorithm/mash_1_to_28d_covar/ or subdirectory to have all the subdir necessary to run `run.mash.greedy.search.py` python script.
+
+Make sure all matrices are present in matrices/ subdir and named appropriately for recognition
+Make sure random and strong Bhat and Shat in combined_mash_effects and combined_mash_stderrs are appropriate - perhaps replace these with my inputs in mash/Subpop/inputs; perhaps use what's here as tests first
+
+May need to adjust midwest covar & effects appropriately to reflect only 6 (floewring) and 7 (greenup) rows & columns used; other GWAS were dropped & I think including them would be misleading, likely.
 
 # -----------------------------
 # Run mash
