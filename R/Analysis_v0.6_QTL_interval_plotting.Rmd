@@ -11,6 +11,7 @@ library(qtl)
 library(qtl2)
 library(qtl2convert)
 library(tidyverse)
+library(AnnotationDbi)
 ```
 
 #
@@ -195,7 +196,7 @@ QTLplot %>%
         axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
         )# +
     #scale_y_continuous(expand = c(0.2, 0.2)) 
-save_plot(filename = "../manuscript/plots/Figure_4_QTL_effects_by_trait.png", base_height = 4.5, base_width = 13.5, plot = last_plot())
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_QTL_effects_by_trait.png", base_height = 4.5, base_width = 13.5, plot = last_plot())
 
 QTLdf %>%
   filter(trait == 'CGDD_12C') 
@@ -282,6 +283,8 @@ qtlplot$phe <- factor(qtlplot$phe,
 ```
 # Functionally validated flowering time genes in QTL intervals (Table S2)
 ```{r}
+library(AnnotationDbi)
+library(GenomicFeatures)
 qtl_anno_df <- qtlplot %>%
   dplyr::rename(start = POS_lo, end = POS_hi)
 txdb <- loadDb("~/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite")
@@ -346,16 +349,16 @@ pw_3f <- pw_gf %>%
   full_join(pw_mf) %>%
   full_join(pw_gamf) %>%
   arrange(Chr, Pos) %>%
-  select(Chr:Pos, log10BayesFactor, subpop, value, phenotype, everything()) %>%
+  dplyr::select(Chr:Pos, log10BayesFactor, subpop, value, phenotype, everything()) %>%
   filter(log10BayesFactor > 2)
 pw_list <- list(Gulf = pw_gf, Midwest = pw_mf, Both = pw_gamf)
 m_list <- list(Gulf = m_gulf_fl_hyp, Midwest = m_midw_fl_hyp, Both = m_gam_fl_hyp)
 names(m_list)
 qtlplot <- qtlplot %>%
-  arrange(desc(lod)) %>%
+  arrange(dplyr::desc(lod)) %>%
   mutate(pos = as.integer(pos)) %>%
   group_by(CHR, pos) %>%
-  slice(1) %>%
+  dplyr::slice(1) %>%
   arrange(CHR, pos)
 mash_plot_manhattan_by_condition(m_gulf_fl_hyp)
 mash_plot_effects(m_midw_fl_hyp, n = 5)
@@ -381,7 +384,7 @@ for(k in 1:nrow(f4df)){
     filter(.data$Chr %in% qtlplot$CHR[f4df$i[k]] & between(.data$Pos, 
                                                    qtlplot$POS_lo[f4df$i[k]], 
                                                    qtlplot$POS_hi[f4df$i[k]])) %>%
-    arrange(desc(log10BayesFactor))
+    arrange(dplyr::desc(log10BayesFactor))
   
   plot_df <- 
     mash_plot_effects(m = m_list[[which(names(m_list) == pw_int$subpop[f4df$j[k]])]], 
@@ -419,7 +422,7 @@ ggdf %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
   coord_flip()
 
-save_plot(filename = "../manuscript/plots/Figure_4_mash_SNP_effects.png", plot = last_plot(), base_height = 2.4, base_width = 5.5)
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_mash_SNP_effects.png", plot = last_plot(), base_height = 2.4, base_width = 5.5)
 ```
 
 ```{r}

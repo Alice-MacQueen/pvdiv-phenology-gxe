@@ -951,6 +951,21 @@ for (i in 1:35) {
 }
 ```
 
+Run the pod.greedy.sh scripts from their dir, or run the python commands in those scripts. 
+
+Look at the results in the likelihood_paths files for the following data:
+
+Using a set of covariance matrices with h2 on the diagonal, made positive semi-definite, and for multiple weather variable averages, 1-7d, 14,21,and28d averages before the greenup or flowering event.
+
+Using the effects and standard errors that I used for my previous mash analysis. However I originally selected them, plus the reduced number of sites for the Midwest plants.
+
+Only keep covariance matrices if they significantly improve the mash model likelihoods when added. This way, we know they improve the mash model and that they are distinct enough from others matrices that we added.
+
+Using the random set of SNPs. Then, look at the mash results generated using these covariance matrices using a strong set of SNPs.
+
+
+
+Given that the greedy algorithm, run on Sam's random inputs, however he generated or found those, gives many more covar matrices especially from Uhyp, I wonder if some repetition of this analysis would be valuable, before blowing these results all out of proportion in a paper. Either different random sets of effects, or effects from different years of data. Think on this. I definitely want to use my known inputs, not Sam's, as mine have a traceable history (or anyways more traceable).
 
 
 # -----------------------------
@@ -965,16 +980,8 @@ library(rlist)
 library(here)
 
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
-mashdir <- here("analysis", "mash_greedy_algorithm")
+mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
 
-#phe_gr_df <- read_rds(here("data",
-#                           "Weather_related_phe_for_asreml_h2_GR50.rds"))
-# all greenup related phenotypes, including greenup as functions of weather variables.
-#phe_fl_df <- read_rds(here("data",
-#                           "Weather_related_phe_for_asreml_h2_FL50.rds"))
-# all flowering related phenotypes, including functions of weather variables.
-
-# Files with the six suffixes I have/want mash results for:
 numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
 suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
               "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
@@ -987,12 +994,20 @@ pop_sc <- c("all", "gulf", "all", "gulf", "midwest", "midwest")
 phe_sc <- c("flowering", "flowering", "greenup", "greenup", "greenup",
             "flowering")
 
-Upath <- here("analysis", "mash_greedy_algorithm", "mash_switchgrass_models", 
-                "mash", "all_matrices", "matrices")
-stopcondpath <- here("analysis", "mash_greedy_algorithm",
-                     "mash_switchgrass_models", "mash", 
-                     "all_matrices", "likelihood_paths")
+Upaths <- c(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                 "all_inputs"),
+            here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                 "gulf_inputs"),
+            here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                 "all_inputs"),
+            here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                 "gulf_inputs"),
+            here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                 "midwest_greenup"),
+            here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                 "midwest_flowering"))
 
+#   i = 4
 for (i in 1:6) {  # change this for different scripts
   # B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds
   # B_hat_strong_df_19000topSNPs_FL50_Gulf.rds
@@ -1003,6 +1018,8 @@ for (i in 1:6) {  # change this for different scripts
   ## mash Gulf greenup
   numSNPs <- numSNPs_v[i]
   suffix <- suffix_v[i]
+  Upath <- here(Upaths[i], "matrices")
+  stopcondpath <- here(Upaths[i], "likelihood_paths")
   # use this one for the likelihood paths
   # Read in likelihood paths, then use that to read in matrices, then use those to run mash.
 
@@ -1072,9 +1089,9 @@ for (i in 1:6) {  # change this for different scripts
                    random tests."))
   m2 = mashr::mash(data_strong, g = get_fitted_g(m), fixg = TRUE)
   
-  saveRDS(m2, file = file.path(mashdir, suffix_vli[i], 
+  saveRDS(m2, file = file.path(mashdir,  
                                    paste0("Strong_mash_posterior_",
-                                          "est_w_random_greedy_Ulist", 
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
                                           numSNPs, "_SNPs_",
                                           suffix, ".rds")))
   
@@ -1087,11 +1104,687 @@ for (i in 1:6) {  # change this for different scripts
   switchgrassGWAS::mash_plot_manhattan_by_condition(m2)
   switchgrassGWAS::mash_plot_pairwise_sharing(m2)
   gxe <- switchgrassGWAS::get_GxE(m2)
-  saveRDS(gxe, file = file.path(mashdir, suffix_vli[i], 
+  saveRDS(gxe, file = file.path(mashdir,  
                                    paste0("GxE_default_",
-                                          "est_w_random_greedy_Ulist",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist",
                                           numSNPs, "_SNPs_",
                                           suffix, "_greedy_Ulist.rds")))
 }
 ```
 
+
+
+# ----------------
+
+Reasoning from Analysis_v0.6 script for dropping sites from the Midwest:
+
+Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50.
+Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.
+
+# Remake mash figures
+
+## Load mash objects
+```{r}
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
+
+numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
+suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
+              "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
+```
+
+
+```{r}
+m_gulf_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[4], "_SNPs_",
+                                          suffix_v[4], ".rds")))
+m_gulf_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[2], "_SNPs_",
+                                          suffix_v[2], ".rds")))
+
+m_midw_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[5], "_SNPs_",
+                                          suffix_v[5], ".rds")))
+m_midw_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[6], "_SNPs_",
+                                          suffix_v[6], ".rds")))
+
+m_gam_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[3], "_SNPs_",
+                                          suffix_v[3], ".rds")))
+m_gam_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[1], "_SNPs_",
+                                          suffix_v[1], ".rds")))
+
+```
+
+
+## Figure 2
+```{r}
+get_cov_type <- function(m, summarise = FALSE, subpop = FALSE){
+  cov_df <- mash_plot_covar(m)
+  cov_type <- cov_df$covar_df %>% 
+    mutate(Type = case_when(grepl("PCA", `Covariance Matrix`) ~ "data-driven",
+                            grepl("singleton", `Covariance Matrix`) ~
+                              "canonical",
+                            grepl("simple_het", `Covariance Matrix`) ~
+                              "canonical",
+                            grepl("no_effects", `Covariance Matrix`) ~
+                              "canonical",
+                            grepl("identity", `Covariance Matrix`) ~
+                              "canonical",
+                            grepl("equal_effects", `Covariance Matrix`) ~
+                              "canonical",
+                            grepl("U.mat$", `Covariance Matrix`) ~
+                              "hypothesized",
+                            TRUE ~ "other"
+                            )) 
+  if (summarise == TRUE) {
+    cov_type <- cov_type %>%
+      group_by(Type) %>%
+      summarise(Mass = sum(Mass))
+  }
+  return(cov_type)
+}
+
+get_cov_type(m_gulf_gr_hyp, summarise = TRUE, subpop = TRUE)
+get_cov_type(m_gulf_fl_hyp, summarise = TRUE, subpop = TRUE)
+get_cov_type(m_midw_gr_hyp, summarise = FALSE, subpop = TRUE)
+get_cov_type(m_midw_fl_hyp, summarise = TRUE, subpop = TRUE)
+get_cov_type(m_gam_gr_hyp, summarise = TRUE, subpop = TRUE)
+get_cov_type(m_gam_fl_hyp, summarise = TRUE, subpop = TRUE)
+```
+
+```{r}
+cov_gg <- mash_plot_covar(m_gulf_gr_hyp)
+cov_gf <- mash_plot_covar(m_gulf_fl_hyp)
+
+cov_mg <- mash_plot_covar(m_midw_gr_hyp)
+cov_mf <- mash_plot_covar(m_midw_fl_hyp)
+
+cov_gamg <- mash_plot_covar(m_gam_gr_hyp)
+cov_gamf <- mash_plot_covar(m_gam_fl_hyp)
+
+cov_gg$ggobject + 
+  ggtitle("Gulf greenup", subtitle = "64.5% SNP mass")
+cov_gf$ggobject + 
+  ggtitle("Gulf flowering", subtitle = "33.0% SNP mass")
+cov_mg$ggobject + 
+  ggtitle("Midwest greenup", subtitle = "0% SNP mass")
+cov_mf$ggobject + 
+  ggtitle("Midwest flowering", subtitle = "22.6% SNP mass")
+cov_gamg$ggobject + 
+  ggtitle("Gulf and Midwest greenup", subtitle = "32.7% SNP mass")
+cov_gamf$ggobject + 
+  ggtitle("Gulf and Midwest flowering", subtitle = "0% SNP mass")
+```
+### covar
+
+```{r get covar matrices picked by greedy mash}
+get_greedy_Ulist <- function(i) {
+  pop_sc <- c("all", "gulf", "all", "gulf", "midwest", "midwest")
+  phe_sc <- c("flowering", "flowering", "greenup", "greenup", "greenup",
+              "flowering")
+  Upaths <- c(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                   "all_inputs"),
+              here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                   "gulf_inputs"),
+              here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                   "all_inputs"),
+              here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                   "gulf_inputs"),
+              here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                   "midwest_greenup"),
+              here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
+                   "midwest_flowering"))
+
+#   i = 4
+#for (i in 1:6) {  # change this for different scripts
+  # B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds
+  # B_hat_strong_df_19000topSNPs_FL50_Gulf.rds
+  # B_hat_strong_df_19000topSNPs_GR50_Gulf_and_Midwest.rds
+  # B_hat_strong_df_19000topSNPs_GR50_Gulf.rds
+  # B_hat_strong_df_24000topSNPs_GR50_Midwest.rds
+  # B_hat_strong_df_33000topSNPs_FL50_Midwest.rds
+  ## mash Gulf greenup
+  Upath <- here(Upaths[i], "matrices")
+  stopcondpath <- here(Upaths[i], "likelihood_paths")
+  # use this one for the likelihood paths
+  # Read in likelihood paths, then use that to read in matrices, then use those to run mash.
+
+  U_greedy <- 
+    read_csv(file = file.path(stopcondpath, 
+                              paste0(phe_sc[i], ".", pop_sc[i], 
+                                     ".random.stop.condition.csv"))) %>%
+    filter(matrix != "0.0")
+  ## Read in Uhyp
+  
+  U_list <- list()
+  for (k in 1:nrow(U_greedy)) {
+    U_single <- read_csv(file = file.path(Upath, U_greedy$matrix[k]), show_col_types = FALSE)
+    # if conditions for Midwest
+    if (i == 5) {
+    # MI, MO, NE, OK, TX1, TX2, TX3 used for GR50  
+      U_single <- U_single %>%
+        filter(`...1` %in% c("MI", "MO", "NE", "OK", "TX1", "TX2", "TX3")) %>%
+        select(`...1`, .data$MI, .data$MO, .data$NE, .data$OK, .data$TX1,
+               .data$TX2, .data$TX3)
+    } else if (i == 6) {
+    # MI, MO, SD, TX1, TX2, TX3 used for FL50  
+      U_single <- U_single %>%
+        filter(`...1` %in% c("MI", "MO", "SD", "TX1", "TX2", "TX3")) %>%
+        select(`...1`, .data$MI, .data$MO, .data$SD, .data$TX1, .data$TX2,
+               .data$TX3)
+    }
+    
+    # format cov matrices correctly for mash
+    U_list <- list.append(U_list, U_single)
+  }
+  names(U_list) <- str_remove(U_greedy$matrix, ".csv") %>%
+    enframe(value = "Covariance Matrix") %>%
+  mutate(`Covariance Matrix` = str_replace(`Covariance Matrix`, "greenup.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "gulf.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "all.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "midwest.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "singleton.", "Single Effect "),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "simple_het_", "Simple Het. "),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "no_effects", "No Effects"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "tave_1d.U.mat", "Temp Ave, 1d"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_14d_prior.U.mat", "Daylength (14d prior)"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_change_sec.U.mat", "Daylength change (s)"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "flowering.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "crain_7d.U.mat", "Cumulative rainfall, 7d"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_change_sec_2d_prior.U.mat", "Daylength change (s), 2d prior")
+         ) %>% 
+    select(`Covariance Matrix`) %>%
+    as_vector()
+  return(U_list)
+}
+
+#}
+```
+
+
+```{r pick covar matrices to plot fig 2}
+plot_covar_Ulist_fig2 <- function(df, mf = FALSE, mg = FALSE) {
+  if (mg) {
+    df <- df %>%
+      select(`...1`, TX1, TX2, TX3, OK, MO, NE, MI) 
+  } else if (mf) {
+    df <- df %>%
+      select(`...1`, TX1, TX2, TX3, MO, MI, SD) 
+  } else {
+    df <- df %>%
+      select(`...1`, TX1, TX2, TX3, OK, MO, NE, MI, SD) 
+  }
+  
+
+df$`...1` <- factor(df$`...1`, levels = rev(c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD")))
+
+  U1 <- df %>%
+          pivot_longer(cols = -.data$`...1`, names_to = "colU",
+                       values_to = "covar") %>%
+          filter(!is.na(.data$covar)) %>%
+    rename(rowU = `...1`)
+  U1$colU <- factor(U1$colU, levels = colnames(df)[2:ncol(df)])
+  U1$rowU <- factor(U1$rowU, levels = colnames(df)[2:ncol(df)])
+  
+  U1$Site_pair <- NA
+for (i in 1:nrow(U1)) {
+  v <- sort(c(U1$rowU[i], U1$colU[i]))
+  U1$Site_pair[i] <- paste0(v[1], "_", v[2])
+}
+  
+  plot_covar <- U1 %>%
+    arrange(desc(rowU), desc(colU)) %>%
+    distinct(Site_pair, .keep_all = TRUE) %>%
+    ggplot(aes(x = .data$rowU, y = .data$colU)) +
+    switchgrassGWAS::theme_oeco +
+    geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
+    scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
+                                  "white", "#27AD81FF", "#5DC863FF",
+                                  "#FDE725FF"),
+                         limits = c(-1, 1)) +
+    theme(legend.position = "none",
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.line.x = element_blank(),
+          axis.line.y = element_blank(),
+          axis.title.y.right = element_text()) +
+    labs(x = "", y = "")
+  return(plot_covar)
+}
+```
+
+```{r}
+Ulist_gamf <- get_greedy_Ulist(1)
+Ulist_gf <- get_greedy_Ulist(2)
+Ulist_gamg <- get_greedy_Ulist(3)
+Ulist_gg <- get_greedy_Ulist(4)
+Ulist_mg <- get_greedy_Ulist(5)
+Ulist_mf <- get_greedy_Ulist(6)
+Ulist_gf$`Cumulative rainfall, 7d`
+Ulist_mg$dyln_change_sec_7d_prior.U.mat
+```
+
+```{r build panels of covar matrices for 2a}
+pa01 <- plot_covar_Ulist_fig2(Ulist_gg$`Daylength (14d prior)`) + 
+  labs(subtitle = "Daylength (14d prior)")
+pa03 <- plot_covar_Ulist_fig2(Ulist_gg$cgdd_12c_6d.U.mat) + 
+  labs(subtitle = "Cumulative GDD, 6d")
+
+pa06 <- plot_covar_Ulist_fig2(Ulist_gf$`Cumulative rainfall, 7d`) + 
+  labs(subtitle = "Cumulative rainfall, 7d")
+
+pa04 <- plot_covar_Ulist_fig2(Ulist_mg$dyln_change_sec_7d_prior.U.mat, mg = TRUE) + 
+  labs(subtitle = "Daylength change (s), 7d prior")
+pa07 <- plot_covar_Ulist_fig2(Ulist_mf$`Daylength change (s), 2d prior`, mf = TRUE) + 
+  labs(subtitle = "Daylength change (s), 2d prior")
+
+pa02 <- plot_covar_Ulist_fig2(Ulist_gamg$`Daylength change (s)`) + 
+  labs(subtitle = "Daylength change (s)")
+pa05 <- plot_covar_Ulist_fig2(Ulist_gamg$`Temp Ave, 1d`) + 
+  labs(subtitle = "Temp Ave, 1d")
+pa08 <- plot_covar_Ulist_fig2(Ulist_gamf$crain_1d.U.mat) + 
+  labs(subtitle = "Cumulative rainfall, 1d")
+
+pa13 <- plot_covar_Ulist_fig2(Ulist_gf[[1]]) + 
+  labs(subtitle = "identity (Mass <1%)") 
+pa09 <- plot_covar_Ulist_fig2(Ulist_gf[[5]]) + 
+  labs(subtitle = names(Ulist_gf)[5]) 
+pa10 <- plot_covar_Ulist_fig2(Ulist_gf[[2]]) + 
+  labs(subtitle = names(Ulist_gf)[2])
+pa12 <- plot_covar_Ulist_fig2(Ulist_gg[[2]]) + 
+  labs(subtitle = names(Ulist_gg)[2])
+pa11 <- plot_covar_Ulist_fig2(Ulist_gf[[8]]) + 
+  labs(subtitle = names(Ulist_gf)[8])
+```
+
+
+```{r build panels of barplots for fig 2}
+cov_gr1 <- mash_plot_Ulist(m_gulf_gr_hyp, range = 2, limits = TRUE)
+legend <- get_legend(cov_gr1) 
+fig_eqeff <- cov_gr1$greenup.simple_het_2_df %>%
+  get_covar_fig2() +
+  labs(subtitle = "simple heterozygousity")
+
+df_2a <- get_cov_type(m_gulf_gr_hyp, summarise = TRUE) %>%
+  mutate(subpop = "Gulf",
+         phenotype = "greenup")
+df_2b <- get_cov_type(m_midw_gr_hyp, summarise = TRUE) %>%
+  mutate(subpop = "Midwest",
+         phenotype = "greenup")
+df_2c <- get_cov_type(m_gam_gr_hyp, summarise = TRUE) %>%
+  mutate(subpop = "Both",
+         phenotype = "greenup")
+df_2d <- get_cov_type(m_gulf_fl_hyp, summarise = TRUE) %>%
+  mutate(subpop = "Gulf",
+         phenotype = "flowering")
+df_2e <- get_cov_type(m_midw_fl_hyp, summarise = TRUE) %>%
+  mutate(subpop = "Midwest",
+         phenotype = "flowering")
+df_2f <- get_cov_type(m_gam_fl_hyp, summarise = TRUE) %>%
+  mutate(subpop = "Both",
+         phenotype = "flowering")
+df_2gr_b <- df_2a %>% full_join(df_2b) %>% full_join(df_2c)
+df_2fl_b <- df_2d %>% full_join(df_2e) %>% full_join(df_2f)
+
+df_2a <- get_cov_type(m_gulf_gr_hyp) %>%
+  mutate(subpop = "Gulf",
+         phenotype = "greenup")
+df_2b <- get_cov_type(m_midw_gr_hyp) %>%
+  mutate(subpop = "Midwest",
+         phenotype = "greenup")
+df_2c <- get_cov_type(m_gam_gr_hyp) %>%
+  mutate(subpop = "Both",
+         phenotype = "greenup")
+df_2d <- get_cov_type(m_gulf_fl_hyp) %>%
+  mutate(subpop = "Gulf",
+         phenotype = "flowering")
+df_2e <- get_cov_type(m_midw_fl_hyp) %>%
+  mutate(subpop = "Midwest",
+         phenotype = "flowering")
+df_2f <- get_cov_type(m_gam_fl_hyp) %>%
+  mutate(subpop = "Both",
+         phenotype = "flowering")
+df_2gr_a <- df_2a %>% full_join(df_2b) %>% full_join(df_2c) %>%
+  mutate(`Covariance Matrix` = str_replace(`Covariance Matrix`, "greenup.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "gulf.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "all.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "midwest.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "singleton.", "Single Effect "),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "simple_het_", "Simple Het. "),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "no_effects", "No Effects"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "tave_1d.U.mat", " Temp Ave, 1d"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_14d_prior.U.mat", " Daylength (14d prior)"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_change_sec.U.mat", " Daylength change (s)")
+         )
+df_2fl_a <- df_2d %>% full_join(df_2e) %>% full_join(df_2f) %>%
+  mutate(`Covariance Matrix` = str_replace(`Covariance Matrix`, "flowering.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "gulf.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "all.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "midwest.", ""),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "singleton.", "Single Effect "),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "simple_het_", "Simple Het. "),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "no_effects", "No Effects"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "crain_7d.U.mat", "  Cumulative rainfall, 7d"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_change_sec_2d_prior.U.mat", " Daylength change (s), 2d prior")
+         )
+
+df_2gr_b$subpop <- factor(df_2gr_b$subpop, levels = c("Gulf", "Midwest", "Both"))
+df_2fl_b$subpop <- factor(df_2fl_b$subpop, levels = c("Gulf", "Midwest", "Both"))
+df_2gr_a$subpop <- factor(df_2gr_a$subpop, levels = c("Gulf", "Midwest", "Both"))
+df_2fl_a$subpop <- factor(df_2fl_a$subpop, levels = c("Gulf", "Midwest", "Both"))
+df_2fl_a$Type <- factor(df_2fl_a$Type, levels = c("canonical", "hypothesized"))
+df_2fl_a$Type <- factor(df_2fl_a$Type, levels = c("canonical", "hypothesized"))
+
+f2b <- df_2gr_b %>%
+  filter(Mass > 1e-05) %>%
+  ggplot(aes(x = subpop, y = Mass)) + 
+  geom_bar(aes(fill = Type), stat = "identity") +
+  scale_fill_viridis_d(end = 0.9) +
+  theme(axis.title.x=element_blank(),
+        legend.position = "none",
+        axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45))
+f2d <- df_2fl_b %>%
+  filter(Mass > 1e-05) %>%
+  ggplot(aes(x = subpop, y = Mass)) + 
+  geom_bar(aes(fill = Type), stat = "identity") +
+  scale_fill_viridis_d(end = 0.9) +
+  theme(axis.title.x=element_blank(),
+        legend.position = "none",
+        axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45))
+f2a <- df_2gr_a %>%
+  filter(Mass > 1e-06) %>%
+  ggplot(aes(x = `Covariance Matrix`, y = Mass)) + 
+  geom_bar(aes(fill = Type), stat = "identity") +
+  facet_wrap(~subpop) +
+  coord_flip() + scale_fill_viridis_d(end = 0.9) +
+  theme(legend.position = c(-0.4, 0.3),
+        axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
+        panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
+f2c <- df_2fl_a %>%
+  filter(Mass > 1e-06) %>%
+  ggplot(aes(x = `Covariance Matrix`, y = Mass)) + 
+  geom_bar(aes(fill = Type), stat = "identity") +
+  facet_wrap(~subpop) +
+  coord_flip() + scale_fill_viridis_d(end = 0.9) +
+  theme(legend.position = "none",
+        axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
+        panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
+
+
+```
+
+
+
+```{r build figure 2}
+ggdraw() +
+  draw_plot(pa01, x = -0.02, y = 0.4, width = 0.1, height = 0.18) +
+  draw_plot(pa02, x = -0.02, y = 0.6, width = 0.1, height = 0.18) +
+  #draw_plot(pa03, x = -0.02, y = 0.6, width = 0.1, height = 0.18) +
+  #draw_plot(pa04, x = 0.1, y = 0.6, width = 0.1, height = 0.18) +
+  draw_plot(pa05, x = -0.02, y = 0.8, width = 0.1, height = 0.18) +
+  draw_plot(pa06, x = -0.02, y = 0, width = 0.1, height = 0.18) +
+  draw_plot(pa07, x = -0.02, y = 0.2, width = 0.1, height = 0.18) +
+  #draw_plot(pa08, x = 0.2, y = 0, width = 0.1, height = 0.18) +
+  draw_plot(pa09, x = 0.13, y = 0.6, width = 0.1, height = 0.18) +
+  draw_plot(pa10, x = 0.13, y = 0.2, width = 0.1, height = 0.18) +
+  draw_plot(pa11, x = 0.13, y = 0.4, width = 0.1, height = 0.18) +
+  draw_plot(pa12, x = 0.13, y = 0, width = 0.1, height = 0.18) +
+  draw_plot(pa13, x = 0.13, y = 0.8, width = 0.1, height = 0.18) +
+  draw_plot(f2a, x = 0.3, y = 0.47, width = 0.55, height = 0.53) +
+  #draw_plot(legend, x = 0.15, y = 0.34, width = 0.1, height = 0.2) +
+  draw_plot(f2b, x = 0.85, y = 0.47, width = 0.15, height = 0.53) +
+  draw_plot(f2c, x = 0.3, y = 0, width = 0.55, height = 0.47) +
+  draw_plot(f2d, x = 0.85, y = 0, width = 0.15, height = 0.47)
+
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_2_Covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 6, base_width = 8.5, )
+```
+
+
+
+## Table 1
+
+```{r}
+gxe_gg <- get_GxE(m_gulf_gr_hyp)
+gxe_mg <- get_GxE(m_midw_gr_hyp)
+gxe_gamg <- get_GxE(m_gam_gr_hyp)
+gxe_gf <- get_GxE(m_gulf_fl_hyp)
+gxe_mf <- get_GxE(m_midw_fl_hyp)
+gxe_gamf <- get_GxE(m_gam_fl_hyp)
+```
+
+```{r}
+sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
+
+site_regions <- sites %>% 
+  mutate(Region = case_when(manu_site %in% c("SD", "MO", "IL", "MI", "NE") ~ "North",
+                            manu_site %in% c("TX1", "TX2", "TX3", "TX4") ~ "Texas",
+                                             TRUE ~ "OK")) %>%
+  select(manu_site, Region) %>%
+  rename("Site" = "manu_site") %>%
+  add_row(Site = "M", Region = "North")
+names(gxe_gg)
+```
+
+Change these to look at S_AP, S_DS, S_2_no; S_1_row and S_1_col separately
+```{r}
+
+one_gxe_summary <- function(df, n_cond = 8, n_sep = 2) {
+  nsep <- rep(NA, times = n_sep)
+  df <- df %>%
+    as_tibble(rownames = "Condition_1") %>%
+    pivot_longer(cols = 2:(n_cond+1), names_to = "Condition_2", values_to = "Sig") %>%
+    separate(Condition_1, into = c(nsep, "Phenotype", "Garden_1"), sep = "_") %>%
+    separate(Condition_2, into = c(nsep, NA, "Garden_2"), sep = "_") %>%
+    left_join(site_regions, by = c("Garden_1" = "Site")) %>%
+    rename("Region_1" = "Region") %>%
+    left_join(site_regions, by = c("Garden_2" = "Site")) %>%
+    rename("Region_2" = "Region") %>%
+    filter(Garden_1 != Garden_2) %>%
+    filter(Region_1 != "OK" & Region_2 !="OK") %>%
+    group_by(Region_1, Region_2) %>%
+    summarise(Total_sig = sum(Sig), .groups = "keep")
+  df$Region_comparison <- NA
+  for (i in 1:nrow(df)) {
+    v <- sort(c(df$Region_1[i], df$Region_2[i]))
+    df$Region_comparison[i] <- paste0(v[1], "_", v[2])
+  }
+  df <- df %>%
+    ungroup() %>%
+    select(-Region_1, -Region_2) %>%
+    group_by(Region_comparison) %>%
+    summarise(n = floor(sum(Total_sig)/2))
+  return(df)
+}
+# test output
+one_gxe_summary(df = gxe_mf$S_AP, n_cond = 6)
+
+get_gxe_summary <- function(gxe_list, n_cond = 8, n_sep = 2) {
+  AP <- one_gxe_summary(gxe_list$S_AP, n_cond = n_cond, n_sep = n_sep) %>%
+    rename(Sign = n)
+  DS <- one_gxe_summary(gxe_list$S_DS, n_cond = n_cond, n_sep = n_sep) %>%
+    rename(Magnitude = n)
+  ND <- one_gxe_summary(gxe_list$S_2_no, n_cond = n_cond, n_sep = n_sep) %>%
+    rename(None = n)
+  gxe_n <- AP %>%
+    full_join(DS, by = "Region_comparison") %>%
+    full_join(ND, by = "Region_comparison") %>%
+    pivot_longer(cols = -Region_comparison, names_to = "Type_of_GxE", 
+                 values_to = "n") %>%
+    pivot_wider(names_from = "Region_comparison", values_from = "n")
+  gxe_frac <- gxe_n %>%
+    mutate(North_North = round(North_North/sum(North_North), digits = 4),
+           North_Texas = round(North_Texas/sum(North_Texas), digits = 4),
+           Texas_Texas = round(Texas_Texas/sum(Texas_Texas), digits = 4))
+  return(list(gxe_counts = gxe_n, gxe_fractions = gxe_frac))
+}
+
+get_gxe_summary(gxe_gg) 
+```
+
+```{r}
+get_gxe_summary(gxe_gg) 
+get_gxe_summary(gxe_gf) 
+get_gxe_summary(gxe_mg, n_cond = 7) 
+get_gxe_summary(gxe_mf, n_cond = 6) 
+get_gxe_summary(gxe_gamg, n_sep = 4) 
+get_gxe_summary(gxe_gamf, n_sep = 4) 
+```
+
+## Figure 3
+
+```{r}
+pvdiv_plot_cor <- function(corrmatrix, upper = NULL, legend = FALSE){
+  U1 <- corrmatrix
+
+  U1 <- as_tibble(U1, rownames = "rowU", .name_repair = "unique") %>%
+          pivot_longer(cols = -.data$rowU, names_to = "colU",
+                       values_to = "covar") %>%
+          filter(!is.na(.data$covar)) %>%
+    mutate(rowU = str_remove(rowU, 
+                             "Stand_BhatGulf_and_Midwest_")) %>%
+    mutate(rowU = str_remove(rowU, "Stand_BhatGulf_")) %>%
+    mutate(rowU = str_remove(rowU, "Stand_BhatMidwest_")) %>%
+    mutate(rowU = str_remove(rowU, "GR50_")) %>%
+    mutate(rowU = str_remove(rowU, "FL50_")) %>%
+    mutate(colU = str_remove(colU, 
+                             "Stand_BhatGulf_and_Midwest_")) %>%
+    mutate(colU = str_remove(colU, "Stand_BhatGulf_")) %>%
+    mutate(colU = str_remove(colU, "Stand_BhatMidwest_")) %>%
+    mutate(colU = str_remove(colU, "GR50_")) %>%
+    mutate(colU = str_remove(colU, "FL50_")) %>%
+    mutate(rowU = case_when(grepl("^M$", rowU) ~ "MI",
+                            TRUE ~ rowU),
+           colU = case_when(grepl("^M$", colU) ~ "MI",
+                            TRUE ~ colU),)
+  U1$colU <- factor(U1$colU, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+  U1$rowU <- factor(U1$rowU, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+  U1 <- arrange(U1, rowU, colU) %>%
+    pivot_wider(names_from = colU, values_from = covar) 
+  for(i in 1:nrow(U1)){
+    for(j in 2:ncol(U1)){
+      if(i <= j-1){
+        U1[i, j] <- NA
+      }
+    }
+  }
+  U1 <- U1 %>%
+    pivot_longer(cols = -.data$rowU, names_to = "colU",
+                       values_to = "covar")
+  U1$colU <- factor(U1$colU, levels = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD")) 
+  if(is.null(upper)){
+  upper <- max(U1$covar, na.rm = TRUE)+5
+  }
+  U1_covar <- U1 %>%
+    filter(!is.na(.data$covar)) %>%
+    ggplot(aes(x = .data$rowU, y = .data$colU)) +
+    switchgrassGWAS::theme_oeco +
+    geom_tile(aes(fill = .data$covar)) +
+    scale_fill_viridis_c(option = "B", limits = c(0, upper)) +
+    #geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    xlab("") + ylab("") 
+  if(legend == TRUE){
+    U1_covar <- U1_covar +
+      theme(legend.position = c(0.2, 0.9)) +
+      geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey")
+  }
+  return(U1_covar)
+}
+
+```
+
+
+```{r}
+mash_plot_Ulist(m_midw_fl_hyp)
+mash_plot_manhattan_by_condition(m_midw_fl_hyp)
+```
+
+```{r}
+p3legend <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, legend = TRUE, upper = 4333) + 
+  labs(title = "Gulf", subtitle = "Sign difference")
+legend <- get_legend(p3legend)
+
+p3a1 <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3a2 <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_DS, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3a3 <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_2_no, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3b1 <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_AP, legend = FALSE, upper = 4333) + 
+  labs(subtitle = "Sign difference")
+p3b2 <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_DS, legend = FALSE, upper = 4333) + 
+  labs(subtitle = "Magnitude difference")
+p3b3 <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_2_no, legend = FALSE, upper = 4333) + 
+  labs(subtitle = "Not distinguishable")
+p3c1 <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_AP, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3c2 <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_DS, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3c3 <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_2_no, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+
+p3d1 <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_AP, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3d2 <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_DS, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3d3 <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_2_no, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3e1 <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_AP, legend = FALSE, upper = 4333) + 
+  labs(subtitle = "Sign difference")
+p3e2 <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_DS, legend = FALSE, upper = 4333) + 
+  labs(subtitle = "Magnitude difference")
+p3e3 <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_2_no, legend = FALSE, upper = 4333) + 
+  labs(subtitle = "Not distinguishable")
+p3f1 <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_AP, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3f2 <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_DS, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+p3f3 <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_2_no, legend = FALSE, upper = 4333) + 
+  labs(subtitle = " ")
+```
+
+```{r build figure 3}
+ggdraw() +
+  draw_plot(p3a1, x = 0, y = .82, width = 1/3, height = .18) +
+  draw_plot(p3a2, x = 0, y = 4/6, width = 1/3, height = .18) +
+  draw_plot(p3a3, x = 0, y = .51, width = 1/3, height = .18) +
+  draw_plot(p3b1, x = 0.33, y = .82, width = 1/3, height = .18) +
+  draw_plot(p3b2, x = 0.33, y = 4/6, width = 1/3, height = .18) +
+  draw_plot(p3b3, x = 0.33, y = .51, width = 1/3, height = .18) +
+  draw_plot(p3c1, x = 0.66, y = .82, width = 1/3, height = .18) +
+  draw_plot(p3c2, x = 0.66, y = 4/6, width = 1/3, height = .18) +
+  draw_plot(p3c3, x = 0.66, y = .51, width = 1/3, height = .18) +
+  draw_plot(p3d1, x = 0, y = 2/6, width = 1/3, height = .18) +
+  draw_plot(p3d2, x = 0, y = 1/6, width = 1/3, height = .18) +
+  draw_plot(p3d3, x = 0, y = 0/6, width = 1/3, height = .18) +
+  draw_plot(p3e1, x = 0.33, y = 2/6, width = 1/3, height = .18) +
+  draw_plot(p3e2, x = 0.33, y = 1/6, width = 1/3, height = .18) +
+  draw_plot(p3e3, x = 0.33, y = 0/6, width = 1/3, height = .18) +
+  draw_plot(p3f1, x = 0.66, y = 2/6, width = 1/3, height = .18) +
+  draw_plot(p3f2, x = 0.66, y = 1/6, width = 1/3, height = .18) +
+  draw_plot(p3f3, x = 0.66, y = 0/6, width = 1/3, height = .18) +
+  draw_plot(legend, x = 0.37, y = .38, width = 1/3, height = .18)
+
+
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_3_Effect_Types_by_Site.svg", plot = last_plot(), base_height = 10, base_width = 5.5)
+```
+
+
+
+## Figure 4

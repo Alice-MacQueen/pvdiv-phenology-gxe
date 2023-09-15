@@ -74,7 +74,7 @@ s1full %>%
   xlab("Position (Mb)") + ylab("LOD score") +
   scale_x_continuous(breaks = c(0, 20, 40, 60, 80))
 
-save_plot(filename = "../manuscript/plots/Figure_4_QTL_by_lod_score.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_QTL_by_lod_score.svg", base_height = 3, base_width = 13.5, plot = last_plot())
 ```
 
 # Rug plot of mash hits
@@ -177,7 +177,7 @@ s1full %>%
   xlab("Position (Mb)") + ylab("LOD score") +
   scale_x_continuous(breaks = c(0, 20, 40, 60, 80)) + 
   coord_cartesian(clip = "off")
-save_plot(filename = "../manuscript/plots/Figure_4_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
 ```
 
 

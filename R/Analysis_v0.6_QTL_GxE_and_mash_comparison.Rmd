@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(cowplot)
+library(here)
 ```
 
 # TRIAL script
@@ -17,14 +18,48 @@ NB: Trial script to compare the QTL to the mash results using env covar matrices
 
 ## 3a. Log-likelihoods
 ```{r}
-m_gulf_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_Uhyp.rds")
-m_gulf_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_Uhyp.rds")
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
 
-m_midw_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_Uhyp.rds")
-m_midw_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_Uhyp.rds")
+numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
+suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
+              "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
+```
 
-m_gam_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_Uhyp.rds")
-m_gam_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_Uhyp.rds")
+
+```{r}
+m_gulf_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[4], "_SNPs_",
+                                          suffix_v[4], ".rds")))
+m_gulf_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[2], "_SNPs_",
+                                          suffix_v[2], ".rds")))
+
+m_midw_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[5], "_SNPs_",
+                                          suffix_v[5], ".rds")))
+m_midw_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[6], "_SNPs_",
+                                          suffix_v[6], ".rds")))
+
+m_gam_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[3], "_SNPs_",
+                                          suffix_v[3], ".rds")))
+m_gam_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[1], "_SNPs_",
+                                          suffix_v[1], ".rds")))
 
 ```
 
@@ -138,7 +173,7 @@ quantile(pw_gamf$log10BayesFactor, 0.8006157)
 ```
 
 ```{r}
-i=16  # from 1 to 16
+i=1  # from 1 to 16
 ## In block & > 2
 QTLandBF <- pw_3f %>%
   filter(Chr %in% qtlplot$CHR[i] & between(Pos, qtlplot$POS_lo[i], qtlplot$POS_hi[i])) %>%
@@ -390,10 +425,10 @@ tibble(`mash 1% tail significant enrichments` = sig_random) %>%
   geom_histogram(binwidth = 1) + 
   xlim(c(1, 24)) + ylab("") +
   geom_vline(xintercept = 16, linetype = 2, color = "red")
-save_plot(filename = "../manuscript/plots/Figure_4_QTL_overlaps_random_QTL_enrichments_with_mash_1000runs.png", plot = last_plot(), base_height = 1.8, base_asp = 1.8)
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_QTL_overlaps_random_QTL_enrichments_with_mash_1000runs.png", plot = last_plot(), base_height = 1.8, base_asp = 1.8)
 
 tibble(sig_r = sig_random) %>%
   arrange(desc(sig_r))
-3/1000
+11/1000
 ```
 
