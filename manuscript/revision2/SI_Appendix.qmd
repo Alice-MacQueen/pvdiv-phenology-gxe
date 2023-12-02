@@ -1,0 +1,131 @@
+---
+title: "SI Appendix"
+format: pdf
+editor: visual
+---
+
+**SI Appendix**
+
+\
+
+**Dataset 1.** SNP-associated effects and standard errors for green-up estimated using the Gulf genetic subpopulation.
+
+**Dataset 2.** SNP-associated effects and standard errors for green-up estimated using the Midwest genetic subpopulation.
+
+**Dataset 3.** SNP-associated effects and standard errors for green-up estimated using Both genetic subpopulations.
+
+**Dataset 4.** SNP-associated effects and standard errors for flowering estimated using the Gulf genetic subpopulation.
+
+**Dataset 5.** SNP-associated effects and standard errors for flowering estimated using the Midwest genetic subpopulation.
+
+**Dataset 6.** SNP-associated effects and standard errors for flowering estimated using Both genetic subpopulations.
+
+**Dataset 7.** Genes within QTL that have functionally validated roles in flowering in rice.
+
+**Dataset 8.** Overlap between quantitative trait loci for flowering measured using an outbred pseudo-F2 mapping population, and significant mash effect estimates (with a log10Bayes Factor \> 2, or in the 1% tail of most significant mash results) found using three overlapping diversity panels. Genes within 20kb with a functionally validated role in flowering in rice are  indicated. 
+
+\
+
+**Figure S1.** Variance components analysis of genetic (purple), genotype by environment (blue), environmental (green), and residual (yellow) terms in models of green-up time as functions of Julian date or weather, for the four northern common gardens (North), the three Texas common gardens (Texas), and for all eight common gardens (All). Dashed lines indicate the cumulative contribution of G and GxE for flowering as a function of day of the year. ![](https://lh7-us.googleusercontent.com/SPDH2Y9HThoK0pUZQxFuLPUDrIuXAcG73nUSk2ucYN3_CHXSG-c8G4b7Gq6crgo_1IapiGYFV66w_vhfyvxSIW8kPtTQA_tMeviTFamFdsXIPjIjTcaI0dwa7ZqpKN0P1RonX05vbxitm7vLYoYoZw)
+
+**Figure S2.** Effect patterns exhibited by the major data-driven matrices for (a,d,e,j,m,n) Gulf, (b,f,g,k,o,p) Midwest, and (c,h,i,l,q,r) Both subpopulations from Figure 2. (a-i) Green-up date. (j-r) Flowering date. (a-c,j-l) Single-garden effect representations (eigenvectors) of the DD_tPCA data-derived matrices. The percent variation explained of DD_tPCA by each eigenvector is shown on the y-axis. Common gardens are arranged in latitudinal order along the x-axis. In addition, the first eigenvector corresponds to DD_PCA_1, and second corresponds to DD_PCA_2. (d,f,h,m,o,q) The number of SNPs with significant effects in both conditions that exhibit antagonistic pleiotropy between that pair of conditions. (e,g,i,n,p,r) Same as (d,f,h,m,o,q) except for differential sensitivity. Scales for (d,e), (f,g), (h,i), (m,n), (o,p), and (q,r) are identical and located on the first panel in alphabetical order.![](https://lh7-us.googleusercontent.com/JV_8jSfymcCRhEQsEuXD2WzHAkM7bOTpEws9j3_H4SbmaTArViZOZQyWld6aMI-xs8DPYLSZBqpxogUokZwU36l5NMMlJgLy-dY8GFwACkYAntFMqAvq9b1C3BsXnbacDYOF3i4kRqXIW4ISTu2Xzg)
+
+\
+
+\
+![](https://lh7-us.googleusercontent.com/h-CoStrONeN2vAZcGvcrGRLg1RRQiAhfNYCT9xn9YF5uwInX02rCepO4NU1bRq1ykboFZcOjr1PeEiZXsXRDJ6v51BAzYPWKQ2wd8YhVg2LJA7IMkL5wvEEa8jOw0UDgrZgVwiYZlHQWSqGxT_2q0g)
+
+**Figure S3.** Comparison of mash SNP effects from a diversity panel and effects from an outbred pseudo-F2 cross. (**a**) QTL mapping for four weather-related functions of flowering, and for green-up date, as indicated by the colors: pink, growing degree days (GDD) from green-up date to flowering date, yellow, day length change on the flowering date, green, day length on flowering date; purple, flowering date; gray, green-up date.Dotted lines indicate permutation-based significance thresholds for each weather-related function. Stars indicate QTL with significant enrichment for SNPs in the 1% mash tail; B, G, and M indicate which subpopulation had enrichment: B -  both subpopulations, G - Gulf subpopulation, M -Midwest subpopulation. Rug plots show genomic locations of SNPs in the 1% mash tail for flowering date for each subpopulation. (**b**) Schematic comparison of genotypes used for QTL mapping and genotypes used in mash. (**c**) Number of mash runs enriched for SNPs in the 1% mash tail in the 23 QTL intervals from (**a**) (dotted red line), compared to 1000 sets of 23 random QTL intervals of the same size (histogram).**(d**) SNP effects estimated using mash for SNPs with the highest Bayes factor for the three QTL with the highest LOD scores from (**a**) and enrichment of SNPs in the 1% mash tail. SNP genomic position and genetic subpopulation are indicated above each plot. Common gardens are arranged in latitudinal order. (**e**) QTL effect estimates for 23 non-overlapping and partially overlapping QTLs. Colors indicate which of the four weather-related functions of flowering for which the QTL was mapped. An additional five QTLs completely overlapped the QTL displayed; in this case, the QTL with the highest lod score is shown. Solid vertical lines separate QTLs that are not overlapping. Stars indicate QTL with significant enrichment for SNPs in the 1% mash tail; B, G, and M indicate which subpopulation had enrichment, as in (**b**):B -  both subpopulations, G - Gulf subpopulation, M -Midwest subpopulation. Common gardens are arranged in latitudinal order. 
+
+**Table S1.** Green-up and flowering dates phenotypes linked to environmental cues.
+
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| Phenotype | Name                              | Description                                                                                                                          |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| green-up  | GDD, **n**d                       | Correlations in cumulative growing degree days for the five, ten, or eighteen days prior to green-up.                                |
+|           |                                   |                                                                                                                                      |
+|           | where \'**n**\' is in {5, 10, 18} |                                                                                                                                      |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| green-up  | Temp Ave, **n**d                  | Correlations in average temperature for the five, ten, or eighteen days prior to green-up.                                           |
+|           |                                   |                                                                                                                                      |
+|           | where \'**n**\' is in {5, 10, 18} |                                                                                                                                      |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| flowering | 50% green-up                      | Correlations in green-up.                                                                                                            |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| flowering | daylength                         | Correlations in day length on the day of flowering.                                                                                  |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| flowering | daylength change (s)              | Correlations in the change in daylength (in seconds) on the day of flowering.                                                        |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| flowering | GDD, GR to FL                     | Correlations in cumulative GDD between green-up and flowering.                                                                       |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+| flowering | Rainfall, **n**d sum              | Correlations in cumulative rainfall in the one, three, or five days before flowering, or in the days between green-up and flowering. |
+|           |                                   |                                                                                                                                      |
+|           | where \'**n**\' is in {1, 3, 5}   |                                                                                                                                      |
++-----------+-----------------------------------+--------------------------------------------------------------------------------------------------------------------------------------+
+
+\
+\
+
+**Section S1.** Weather-based environmental cues for green-up and flowering date.
+
+\
+
+	We scored green-up and flowering by day of the year, then linked these dates to multiple environmental factors (Table S1). We defined flowering as functions of eight variables: \'flowering date\' (day of the year), cumulative growing degree days (GDD) between green-up and flowering dates (\'flowering GDD\'), day length on the flowering date (\'flowering daylength\'), change in daylength relative to the previous day on the day of flowering (\'flowering daylength change\'), and four measures of cumulative rainfall: cumulative rainfall between green-up and flowering, and in the one day, three days, and five days before flowering. Cumulative GDD was calculated as GDD = GRFLmaxTmean−Tbase,0, where Tmean is the daily average temperature, defined as (Tmax+Tmin)/2, Tbase is the base temperature of 12 °C for switchgrass, Tmax is the maximum daily temperature, Tmin is the minimum daily temperature, GR is green-up date, and FL is flowering date (Kiniry et al. 2005; Behrman et al. 2013).  On a specific day, if Tmean is less than Tbase, the GDD for that day is 0; if Tmean is bigger than Tbase, the GDD for that day is the difference between Tmean and Tbase. We also defined green-up as functions of seven variables: \'green-up date\' (day of the year), cumulative GDD for the five, ten, or eighteen days prior to green-up, and the average air temperature for the five, ten, or eighteen days prior to green-up.
+
+	 
+
+**Section S2.** Hypothesis-based covariance matrix definitions for mash.
+
+	We generated hypothesis-based covariance matrices derived from correlations in environmental cues in the green-up or flowering date windows for the three subpopulations (Table S1). These covariance matrices were derived from the same set of phenotypes as environmental functions of green-up and flowering, and represent the correlations between genotypes for these phenotypes across our common gardens. For the diagonal of these matrices, we used the coefficient of variation in these phenotypes within the subpopulation at that garden. Code used to generate these matrices can be found at  [git\@github.com](mailto:git@github.com):Alice-MacQueen/pvdiv-phenology-gxe.git/R/Analysis_v0.6_weather_covariance_Uhyp_greenup.Rmd. We used distinct sets of user-specified, hypothesis-based covariance matrices for green-up and flowering, but the same set of matrices for all genetic subgroups. If a hypothesis-based matrix does not capture a common pattern of SNP effects, mash assigns small mixture proportions onto this matrix using maximum likelihood, giving that covariance matrix a low posterior weight summed across all SNP effects, which ultimately causes little to no change in the mash model. Alternatively, SNPs with high mixture proportions on particular environmental covariance matrices and large Bayes factors, which summarize the overall significance of a non-zero effect, represent small genomic intervals with strong evidence for a phenotypic effect correlated with an environmental driver.
+
+\
+
+**Section S3.** Narrow-sense heritability 
+
+	In the diversity panel, we determined narrow-sense heritabilities (h2) for green-up and flowering dates at single gardens using genomic relationship matrices calculated using the van Raden method (VanRaden et al. 2009). Genomic relationship matrices were calculated within each subpopulation (Midwest and Gulf) and for both genetic subpopulations (Both). We used ASReml (VSN International) to specify mixed models of the form:
+
+**y** = 1 + Zu + e
+
+Var(u) = Gσu2
+
+Var(e) = Iσe2
+
+in which the vector **y** represents the flowering date or green-up date values for that garden, Z the design matrix for random effects, u the whole genome additive genetic effect, and e the residual. Matrix G is the whole genomic relationship matrix based on all SNPs retained for subpopulation-specific analyses. I is the rank-y identity matrix. Phenotypic variance (σp2) is σu2 + σe2. Narrow-sense heritability is then h2 = (σu2/σp2).
+
+	These models were run for each of the eight gardens, and across all gardens by adding an additional environmental effect of site without an interaction term. This resulted in 54 models: 3 sets of populations (the Gulf, Midwest, and Both subpopulations) for 9 garden sets (all eight gardens separately, and all eight gardens together) and two phenotypes (green-up date and flowering date).
+
+\
+
+**Section S4.** Variance components analysis
+
+	In the diversity panel, to evaluate our environmental cues as genetic triggers of flowering, we defined green-up and flowering for individual genotypes as functions of seven and eight environmental cues, respectively, then used variance components analysis to partition variance attributed to genetic effects (G), genotype by environment interactions (GxE), environmental effects (E), and error for these phenology-related traits using linear mixed models. We used mixed models of the form:
+
+**y** = 1 + Zuu + Zll + Zulul + e
+
+Var(u) = Gσu2
+
+Var(l) = IσE2
+
+Var(ul) = GσuE2
+
+Var(e) = Iσe2
+
+in which the vector **y** represents the individual plant observations of a given trait and Z the design matrices associating trait observations with random factors. Random factors include u, the whole genome additive genetic (G) effect, l, the effect of each location (E), ul, the GxE effect, and e, the residual. Matrix G is the whole genomic relationship matrix. I are rank-y identity matrices. 
+
+	These models were run for each phenotype as a function of environmental cues. This resulted in 135 models: three sets of populations (the Gulf, Midwest, and Both subpopulations) for three garden sets (All, North, and Texas gardens) and 15 phenotypes (seven green-up functions, and eight flowering functions).
+
+\
+
+**Section S5.** Multivariate adaptive shrinkage
+
+	To evaluate the prevalence and kinds of covariance patterns of SNP effects across our eight common gardens, we used multivariate adaptive shrinkage (mash) on SNP effect estimates from the diversity panel (Urbut et al. 2019). Mash is a statistical method that allows estimation and comparison of many effects jointly across many different conditions; it improves on previous methods by allowing arbitrary correlations in effect sizes among conditions. To this end, mash allows the user to include hypothesis-based covariance matrices, specifies some \'canonical\' covariance matrices with simple patterns of effects, and also generates \'data-driven\' covariance matrices from patterns of effects in the data. Then, mash assigns mixture proportions for each SNP onto each provided covariance matrix using maximum likelihood. Finally, mash uses Bayes\' theorem to shrink effects for each SNP towards the set of covariance matrices in accordance to their mixture proportions. For example, a SNP affecting flowering may have a high mixture proportion, or weight, on a covariance matrix created from a specific environmental cue. In that case, we can infer that the effect of that SNP on flowering is caused by a response to or interaction with that environmental cue. These user-specified and data-driven covariance matrices are an important advantage mash offers for studying patterns of GxE: the user-specified covariance matrices allow hypothesis testing of specific environmental drivers for each SNP, while the data-driven covariance matrices allow exploration of additional unexplained patterns of covariation. 
+
+	We first conducted univariate GWAS at each common garden for green-up and flowering date, then analyzed the allelic effects for the top 19K unlinked SNPs per univariate GWAS using mash, as in Lovell et al. (2021). To allow for the possibility that different subpopulations had different strengths of connection between our phenotypes and genotypes (Korte and Farlow 2013), we conducted three sets of genetic analyses: on Gulf and Midwest genotypes separately, and on both subpopulations together (hereafter \'Both\' subpopulations). Only SNPs with ≤ 20% missing data and minor allele frequencies \> 0.05 were used in univariate GWAS, resulting in 8.8 million SNPs retained for the Midwest subpopulation, 10.3 million SNPs retained for the Gulf subpopulation, and 12.3 million SNPs retained for Both subpopulations. Then, we created a set of \'random\' markers to account for correlation in effects using a set of 19K relatively unlinked (r2 \< 0.2) markers. Next, we created a set of \'strong\' markers by selecting 19K SNPs with the largest -log10(p-value) in any condition in the univariate GWAS, out of all markers unlinked at (r2 \< 0.2), which represented the SNP with the strongest effect in the 19K LD blocks with the largest univariate effects. We used the \'pvdiv_standard_run()\' function of the switchgrassGWAS R package (https://github.com/Alice-MacQueen/switchgrassGWAS) to conduct GWAS on genotypes from the Midwest, Gulf, and Both subpopulations, used the \'pvdiv_bigsnp2mashr()\' function to convert univariate GWAS output to the matrices of effects and standard errors needed for mash, then used the \'mash_standard_run()\' function to conduct mash, again specifying distinct sets of hypothesis-based covariance matrices for green-up and flowering, but the same set of matrices for all genetic subgroups. 
+
+\
+
+**Section S6.** Outbred pseudo-F2 mapping population and Quantitative Trait Locus mapping
+
+	To confirm candidate genomic regions and patterns of allelic effects found in the diversity panel, we analyzed flowering in an outbred pseudo-F2 cross between four individuals, two Midwest and two Gulf individuals. The formation of this mapping population has been described previously (Milano, Lowry, and Juenger 2016). The parents of this cross were DAC, an early flowering Midwest individual, VS16, a late flowering Midwest individual, AP13, an early flowering Gulf individual, and WBC, a late flowering Gulf individual. We made F1 crosses of the two early flowering genotypes, AP13xDAC, and the two late flowering genotypes, WBCxVS16. We then clonally propagated and planted the four parents, the two F1 genotypes (AP13xDAC, and VS16xWBC), and 801 F2 genotypes at eight field sites in May-July of 2015. To be directly comparable to the diversity panel data, only 2019 phenology data from the pseudo-F2 cross from the same eight common garden sites were used here. 
+
+	Details on the genetic map construction, map polishing and fine-scale reordering can be accessed on <https://datadryad.org/stash/dataset/doi:10.5061/dryad.ghx3ffbjv>. QTL mapping was conducted with R/qtl2 (Broman et al. 2019). We performed a genome scan with a linear mixed model that accounts for the relationships among individuals and for environmental covariates (i.e., field sites). The full model can be expressed as: phenotype = µ + QTL + E + QTLxE + kinship + e, where µ is the population mean, QTL is the marker genetic effect, E is the environmental effects (here, common garden), QTLxE is the interaction between marker genetic and environmental effects, kinship corresponds to the background polygenic variation, and e is the error term. The genome scan was accomplished with the \'scan1\' function. The statistical significance of the genome scan was established by performing a stratified (i.e., stratifying on common garden) permutation test (n=1000) using \'scan1perm\' function. The estimated QTL effect was obtained using \'scan1coef\' function in R/qtl2. 

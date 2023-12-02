@@ -363,17 +363,30 @@ Texas gardens, particularly in the Gulf and Both subpopulations, and
 contributed to positive phenotypic correlations for flowering time of
 larger magnitude at more northern gardens (Fig. 1B).
 
-\begin{verbatim}
-Narrow-sense heritabilities (h2) indicated that rank-changing GxE for these phenotypes was present across the common gardens (Fig 1C). h2 were typically high at individual gardens: 59% on average for green-up date, and 87% for flowering date. However, h2 were variable across gardens, and green-up dates were uncorrelated (r2 < 0.2) or negatively correlated between pairs of gardens (Fig. 1B). These negative and small correlations undoubtedly contributed to the low h2 values for green-up and flowering date when estimated jointly at all eight gardens: h2 was 0.8% for green-up and 23.2% for flowering date.
-\end{verbatim}
+Narrow-sense heritabilities (h2) indicated that rank-changing GxE for
+these phenotypes was present across the common gardens (Fig 1C). h2 were
+typically high at individual gardens: 59\% on average for green-up date,
+and 87\% for flowering date. However, h2 were variable across gardens,
+and green-up dates were uncorrelated (r2 \textless{} 0.2) or negatively
+correlated between pairs of gardens (Fig. 1B). These negative and small
+correlations undoubtedly contributed to the low h2 values for green-up
+and flowering date when estimated jointly at all eight gardens: h2 was
+0.8\% for green-up and 23.2\% for flowering date.
 
 \subsubsection{Mapping major patterns of genotype-by-environment effects
 on green-up and
 flowering}\label{mapping-major-patterns-of-genotype-by-environment-effects-on-green-up-and-flowering}
 
-\begin{verbatim}
-We next explored how genetic variation in phenology covaried with environmental cues by using mash to jointly discover trait-associated SNPs across all common gardens for the Midwest, Gulf, and ‘Both’ subpopulations (Fig 1D, SI Appendix, Datasets 1-6). We first estimated SNP effects using GWAS on site-specific BLUPs for each phenotype. We then used mash on two subsets of these SNP effects, first to determine the covariance structures that significantly improved the mash model log likelihood when included, then to re-estimate the set of SNP effects with the largest effect estimates in univariate GWAS (hereafter “strong” effects) using the set of significant covariance matrices. 
-\end{verbatim}
+We next explored how genetic variation in phenology covaried with
+environmental cues by using mash to jointly discover trait-associated
+SNPs across all common gardens for the Midwest, Gulf, and `Both'
+subpopulations (Fig 1D, SI Appendix, Datasets 1-6). We first estimated
+SNP effects using GWAS on site-specific BLUPs for each phenotype. We
+then used mash on two subsets of these SNP effects, first to determine
+the covariance structures that significantly improved the mash model log
+likelihood when included, then to re-estimate the set of SNP effects
+with the largest effect estimates in univariate GWAS (hereafter
+``strong'' effects) using the set of significant covariance matrices.
 
 Three types of covariance matrices were tested for inclusion:
 ``canonical'' covariance matrices, with simple patterns of effects;
@@ -698,6 +711,35 @@ permutation to choose 1000 sets of 23 genomic regions of the same size
 randomly distributed throughout the genome, then calculated enrichments
 of the mash 1\% tail in these random intervals.
 
+\section{Figures and Tables}\label{figures-and-tables}
+
+\begin{figure}[H]
+
+{\centering \includegraphics{images/Fig1_200dpi.png}
+
+}
+
+\caption{Figure 1. Characterization of green-up and flowering dates from
+the switchgrass diversity panel. (a) Map and trait histograms of
+green-up and flowering dates across two genetically distinct switchgrass
+subpopulations and eight common gardens. Purple represents individuals
+from the Midwest genetic subpopulation, and pink individuals from the
+Gulf subpopulation. Vertical dashed lines indicate the summer solstice.
+Common gardens are arranged in latitudinal order. (b) Phenotypic
+correlations between clonal replicates planted at eight common gardens,
+within and between two genetic subpopulations.~ (c) Narrow sense
+heritability of green-up and flowering within single common gardens
+(purple) and across all eight common gardens (green), within and between
+two genetic subpopulations. (d) Flow diagram of the methods applied to
+the green-up and flowering dates to jointly estimate SNP effects across
+all sites. Mash was fit to SNP effect data and used to find covariance
+matrices that improved the mash model likelihood using a large set of
+randomly selected, relatively unlinked SNP effects; this model was
+applied to a "strong" set of SNP effects with large effect sizes in the
+univariate GWAS.}
+
+\end{figure}%
+
 \subsection*{Author Affiliations}\label{author-affiliations}
 \addcontentsline{toc}{subsection}{Author Affiliations}
 
@@ -739,8 +781,58 @@ and others outlined in the
 \href{https://www.pnas.org/author-center/editorial-and-journal-policies\#materials-and-data-availability}{Information
 for Authors}, is acceptable.
 
-\subsection*{Figures and Tables}\label{figures-and-tables}
+\subsection*{Figures and Tables}\label{figures-and-tables-1}
 \addcontentsline{toc}{subsection}{Figures and Tables}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3750}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3194}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3056}}@{}}
+\caption{Weather variables and time frames around the green up and
+flowering date used to construct the hypothesis-based covariance
+matrices. The correlations between values of these weather variables for
+genetically identical plants grown in different gardens were used to
+fill off-diagonal cells of the covariance matrices. Narrow-sense
+heritabilities for these values at each garden were used for the
+diagonal cells.}\tabularnewline
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Weather variable}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Time frame}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{\# Covariance Matrices tested in greedy mash algorithm}
+\end{minipage} \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Weather variable}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{Time frame}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{\# Covariance Matrices tested in greedy mash algorithm}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+cumulative GDD at 12C in the time frame & 1, 2, 3, 4, 5, 6, 7, 14, 21,
+28 days prior to green up date~ & 60, 30 per phenotype and 10 per
+phenotype \& genetic group \\
+cumulative rainfall in the time frame & 1, 2, 3, 4, 5, 6, 7, 14, 21, 28
+days prior to green up date~ & 60, 30 per phenotype and 10 per phenotype
+\&~ genetic group \\
+day length (hours) on a specific day indicated by the time frame & 1, 2,
+3, 4, 5, 6, 7, and 14 days prior to green up date & 48, 24 per phenotype
+and 8 per phenotype \&~ genetic group \\
+day length change (seconds) on a specific day indicated by the time
+frame & 1, 2, 3, 4, 5, 6, 7, and 14 days prior to green up date & 48, 24
+per phenotype and 8 per phenotype \& genetic group \\
+average temperature in the time frame & 1, 2, 3, 4, 5, 6, 7, 14, 21, 28
+days prior to green up date & 60, 30 per phenotype and 10 per phenotype
+\& genetic group \\
+\end{longtable}
 
 Figures can be included using Quarto's syntax, code chunks, or with
 LaTeX.
