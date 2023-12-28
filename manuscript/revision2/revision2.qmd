@@ -43,7 +43,7 @@ author:
         department: Department of Agronomy
         city: Brookings
         state: SD
-        postal-code: 
+        postal-code: 57006
   - name: Phillip A. Fay
     affiliations:
       - name: USDA-ARS
@@ -51,7 +51,7 @@ author:
         department: Grassland, Soil and Water Research Laboratory
         city: Temple
         state: TX
-        postal-code: 
+        postal-code: 76502
   - name: Felix B. Fritschi
     affiliations:
       - name: University of Missouri
@@ -59,7 +59,7 @@ author:
         department: Division of Plant Sciences
         city: Columbia
         state: MO
-        postal-code: 
+        postal-code: 65211
   - name: David B. Lowry
     affiliations:
       - name: Michigan State University
@@ -67,7 +67,7 @@ author:
         department: Department of Plant Biology
         city: East Lansing
         state: MI
-        postal-code: 
+        postal-code: 48824
   - name: Robert B. Mitchell
     affiliations:
       - name: USDA-ARS
@@ -75,7 +75,7 @@ author:
         department: Wheat, Sorghum, and Forage Research Unit
         city: Lincoln
         state: NE
-        postal-code: 
+        postal-code: 68583
   - name: Francis M. Rouquette Jr
     affiliations:
       - name: Texas A&M University
@@ -83,7 +83,7 @@ author:
         department: Texas A&M AgriLife Research and Extension Center
         city: Overton
         state: TX
-        postal-code: 
+        postal-code: 75684
   - name: Yanqi Wu
     affiliations:
       - name: Oklahoma State University
@@ -91,7 +91,7 @@ author:
         department: Department of Plant and Soil Sciences
         city: Stillwater
         state: OK
-        postal-code: 
+        postal-code: 74078
   - name: Arbel Harpak
     affiliations:
       - ref: a
@@ -102,14 +102,14 @@ author:
       corresponding: true
     email: tjuenger@utexas.edu
 abstract: |
-  The timing of vegetative growth and flowering in plants ("phenological timings") multiple depend on environmental cues; thus, phenological traits can have important genotype-by-environment (GxE) interactions. Here, we map genotype-by-weather effects on phenological timings in multiple populations of two highly divergent switchgrass (Panicum virgatum) populations spanning the central United States. We distinguish GxWeather patterns covarying with interpretable weather-based cues and agnostic, empirically-inferred GxWeather patterns. Most GxWeather effects belong to the latter category and do not covary with weather-based cues. However, >XX% of Gulf population effects on flowering time covary with photoperiod cues, while >XX% of Midwest upland population SNPs affecting flowering had effects that covaried with XX cues. An independent pseudo-F2 cross of Gulf and Midwest individuals mapped 23 additive QTLs for flowering at the same common gardens, all with significant mash associations and ten with enrichment of highly significant mash associations. We demonstrate that we can identify QTL with GxE and assign them to specific weather-based cues and/or data-driven patterns. Breeding for particular alleles at these loci could change flowering responsiveness to photoperiod cues in switchgrass. More broadly, this approach could be used to identify genetic marker-environment interactions in any species with related populations phenotyped in multiple environments.
+  The timing of vegetative growth and flowering in plants ("phenological timings") depend on both genetic variation and environmental cues; thus, phenological traits can have important genotype-by-environment (GxE) interactions. In particular, understanding the mixture and prevalence of genotype-by-weather (GxWeather) interactions primed by weather prior to the phenological event should aid prediction and manipulation of phenological timings. Here, we map genotype-by-weather effects on phenological timings in two highly divergent switchgrass (*Panicum virgatum*) populations using repeated plantings of these populations at sites spanning the central United States. We distinguish GxWeather patterns covarying with interpretable weather-based cues from agnostic, site-based patterns. Most GxWeather effects belong to the latter category and do not covary with weather-based cues. However, 65% of Gulf population effects on the start of vegetative growth covary with daylength 14 days prior to green-up date. 33% of Gulf population effects on flowering date covary with cumulative rainfall in the seven days prior to flowering, while 22% of Midwest population effects on flowering date covaried with day length change two days prior to flowering. An independent pseudo-F2 cross of Gulf and Midwest individuals mapped 23 additive QTLs for flowering at the same common gardens, all with significant mash associations and eleven with enrichment of highly significant mash associations. We demonstrate that we can identify QTL with GxWeather and assign them to specific weather-based cues or other patterns. Breeding for particular alleles at these loci could change flowering responsiveness to photoperiod cues in switchgrass. More broadly, this approach could be used to identify genetic marker-environment interactions in any species with related populations phenotyped in multiple environments.
 runningauthor: "MacQueen"
 significance: |
-  The timing of plant seasonal development (phenology) has major impacts on fitness because of the steep price of plant-environment mismatches. Here we map the genetic basis of two phenological events, the start of above-ground growth and flowering, in two genetically and phenologically distinct populations of switchgrass. We do this at eight field locations spanning the latitudinal range of both switchgrass populations. Our approach allows us to identify regions of the genome that covary with specific weather-related environmental features at every location. For flowering, these features differed by population: the Midwest population had genetic variation that primarily covaried with cumulative growing degree days, a temperature-related measure, while the Gulf population had genetic variation that primarily covaried with photoperiod, a day-length-related measure.
+  The timing of plant seasonal development (phenology) has major impacts on fitness because of the steep price of plant-environment mismatches. We infer the mixture of ways genetic effects on phenological traits depend on plant environment, particularly how effects covary with weather prior to the phenological event (GxWeather). Most effects do not have GxWeather, but a minority do. GxWeather is population-specific. The majority of effects on the start of vegetative growth in the Gulf population have GxWeather: these effects differ in sign across environments and covary with a photoperiod cue 14 days prior. A minority of effects on flowering date in the Gulf and Midwest populations had GxWeather, covarying with a cumulative rainfall and a photoperiod cue, respectively.
 author_contributions:  "T.E.J. designed research. D.B.L. contributed plant material and resources. J.B., D.B.L., and T.E.J. designed and executed field experiments. A.R.B., P.A.F., F.B.F., D.B.L., R.B.M., F.M.R., Y.W., and T.E.J. hosted field experiments. A.H.M., L.Z., and S.A.S. conducted statistical and computational analyses. The manuscript was written by A.H.M. with contributions from all authors."
 conflict_of_interest: "The authors declare no conflicts of interest."
 equal-contributor: "A.H.M. contributed equally to this work with L.Z. and S.A.S."
-keywords:  [allele-by-environment effect variation, antagonistic pleiotropy, photoperiod, cumulative growing degree days, genetic variation]
+keywords:  [allele-by-environment effect variation, antagonistic pleiotropy, photoperiod, cumulative rainfall, genetic variation]
 acknowledgements: | 
   We thank the Brackenridge Field laboratory, the Ladybird Johnson Wildflower Center, and the Juenger laboratory for support with plant care and propagation. This material is based upon work supported in part by the Great Lakes Bioenergy Research Center, U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research under Award Numbers DE-SC0018409 and DE-FC02-07ER64494, the US Department of Energy Awards DESC0014156 to T.E.J., DE-SC0017883 to D.B.L, National Science Foundation PGRP Awards IOS0922457 and IOS1444533 to T.E.J, and the Long-term Ecological Research Program (DEB 1832042) at the Kellogg Biological Station.
 bibliography: bibliography.bib 
@@ -120,11 +120,11 @@ classoption:
  - twoside
 ---
 
-\firstpage[15]{2}
+\firstpage[10]{2}
 
 The timing of plant vegetative and reproductive development are major components of plant fitness affected by multiple external environmental cues (e.g. degree of winter chilling, day length, temperature, and water availability) that signal existing or upcoming growing conditions [@bauerle_photoperiodic_2012; @andres2012genetic; @korner2010phenology]. Genetic responses to environmental cues determine the speed, timing, and energy apportioned to vegetative and reproductive growth and shape both the individual's lifespan and its lifetime production of viable seed. Day length (or photoperiod) is one of the most predictable environmental cues, and genetic sensitivity to photoperiod protects plants from potentially fatal consequences of phenological responses to temperature cues at the "wrong" time of year. However, the usefulness of specific environmental cues depends on both features of the environment and the species' adaptive strategies @botero2015evolutionary. Species with wide natural distributions can have multiple distinct environmentally-cued phenological responses: for example, populations of sunflower (Helianthus annuus) exhibit day-neutral, facultative short day, and facultative long-day flowering responses, which vary with their environments [@blackman2013interacting; @henry2014transitions]. Distinct genetic responses in different environments are known as genotype by environment interactions, or GxE.
 
-Flowering time, in particular, is a common subject of GxE research [@blackman2013interacting; @henry2014transitions; @aagren2017adaptive; @brachi2010linkage; @dittmar2014flowering; @li2018genomic; @romero2017study], a key output of selection driving adaptation to local environments [@andres2012genetic; @wadgymar2017identifying; @blumel2015flowering], and a selection target for crop improvement to adapt crops to local or future environments @jung2009flowering. Changing flowering responsiveness to photoperiod cues has allowed geographic range expansion and increased yields in a number of cereal species [@turner2005pseudo; @faure2012mutation; @hung2012zmcct; @zakhrabekova2012induced; @yang2013oself3] and other crops [@pin2012multifaceted; @weller2019parallel]. Recent statistical advances in studying phenological GxE have involved determining critical environmental indices before the phenological event occurs, such as photothermal time within a critical growth window @li2018genomic. However, most studies of flowering GxE focus on finding a single, best fitting form of genotype-environment covariance, despite the key expectation that different genetic subpopulations, and even different genomic regions, have likely evolved distinct patterns of GxE. Additionally, despite theoretical predictions that local adaptation should involve antagonistic pleiotropy, or sign-changing GxE, at the level of individual loci [@levene1953genetic; @felsenstein1976theoretical; @kawecki2004conceptual; @hedrick1986genetic], previous work has found limited evidence of antagonistic pleiotropy [@des2013genotype; @wadgymar2017identifying], but has been limited by a known statistical bias that reduced detection of SNP effects that differ in sign [@des2013genotype; @anderson2013genetic; @anderson2011evolutionary]. Thus, despite substantial interest in the frequencies of various forms of GxE, the prevalence of antagonistic pleiotropy relative to other forms of GxE remains unknown.
+Flowering time, in particular, is a common subject of GxE research [@blackman2013interacting; @henry2014transitions; @aagren2017adaptive; @brachi2010linkage; @dittmar2014flowering; @li2018genomic; @romero2017study], a key output of selection driving adaptation to local environments [@andres2012genetic; @wadgymar2017identifying; @blumel2015flowering], and a selection target for crop improvement to adapt crops to local or future environments @jung2009flowering. Changing flowering responsiveness to photoperiod cues has allowed geographic range expansion and increased yields in a number of cereal species [@turner2005pseudo; @faure2012mutation; @hung2012zmcct; @zakhrabekova2012induced; @yang2013oself3] and other crops [@pin2012multifaceted; @weller2019parallel]. Recent statistical advances in studying phenological GxE have involved determining critical environmental indices before the phenological event occurs, such as photothermal time within a critical growth window @li2018genomic. However, most studies of flowering GxE focus on finding a single, best fitting form of genotype-environment covariance, despite the key expectation that different genetic subpopulations, and even different genomic regions, have likely evolved distinct patterns of GxE. Additionally, despite theoretical predictions that local adaptation should involve antagonistic pleiotropy, or sign-changing GxE, at the level of individual loci [@levene1953genetic; @felsenstein1976theoretical; @kawecki2004conceptual; @hedrick1986genetic], previous work has found limited evidence of antagonistic pleiotropy [@des2013genotype; @wadgymar2017identifying], but has been limited by a known statistical bias that reduced detection of genetic effects that differ in sign [@des2013genotype; @anderson2013genetic; @anderson2011evolutionary]. Thus, despite substantial interest in the frequencies of various forms of GxE, the prevalence of antagonistic pleiotropy relative to other forms of GxE remains unknown.
 
 Switchgrass (*Panicum virgatum*) is considered a short-day plant with reproductive development strongly linked to day of the year @mitchell1997predicting. However, as part of its wide environmental adaptation across the eastern half of North America, its photoperiodicity has been predicted to differ by plant latitude of origin [@parrish2005biology; @casler2004latitudinal]. We previously found divergent Midwest and Gulf genetic subpopulations of switchgrass which segregate for distinct sets of environmental adaptations, based on the analysis of two measures of fitness (i.e.,biomass and survival) among 732 genotypes @lovell2021genomic. The Midwest genetic subpopulation is primarily composed of individuals from the well-studied upland switchgrass ecotype [@porter1966analysis; @milano2016genetic], while the Gulf subpopulation has individuals from the lowland ecotype and the phenotypically intermediate coastal ecotype @lovell2021genomic.
 
@@ -132,13 +132,13 @@ Here, we test how the Midwest and Gulf subpopulations differ in their phenologic
 
 # Results
 
-In our diversity panel of tetraploid switchgrass [@lovell2021genomic], genotypes from the Gulf and Midwest genetic subpopulations had distinct phenological timings and distinct patterns of phenological correlations across our eight common garden sites (@fig-map). At the three Texas common gardens (hereafter 'Texas' gardens), located within the natural range of the Gulf subpopulation, Gulf green-up occurred before Midwestern green-up, and Gulf flowering occurred after Midwestern flowering (Fig. 1A). At the four northernmost common gardens (hereafter 'North' gardens), located within the natural range of the Midwest subpopulation, both Gulf green-up and flowering occurred after Midwest green-up and flowering. At the Oklahoma common garden, located near the natural range limits of both the Gulf and the Midwest subpopulations, Gulf and Midwest green-up occurred over the same time period. These patterns led to strong negative phenotypic correlations for green-up between the North and Texas gardens, particularly in the Gulf and Both subpopulations, and contributed to positive phenotypic correlations for flowering time of larger magnitude at more northern gardens (Fig. 1B).
+In our diversity panel of tetraploid switchgrass @lovell2021genomic, genotypes from the Gulf and Midwest genetic subpopulations had distinct phenological timings and distinct patterns of phenological correlations across our eight common garden sites (@fig-map). At the three Texas common gardens (hereafter 'Texas' gardens), located within the natural range of the Gulf subpopulation, Gulf green-up occurred before Midwestern green-up, and Gulf flowering occurred after Midwestern flowering (@fig-map A). At the four northernmost common gardens (hereafter 'North' gardens), located within the natural range of the Midwest subpopulation, both Gulf green-up and flowering occurred after Midwest green-up and flowering. At the Oklahoma common garden, located near the natural range limits of both the Gulf and the Midwest subpopulations, Gulf and Midwest green-up occurred over the same time period. These patterns led to strong negative phenotypic correlations for green-up between the North and Texas gardens, particularly in the Gulf and Both subpopulations, and contributed to positive phenotypic correlations for flowering time of larger magnitude at more northern gardens (@fig-map B).
 
-Narrow-sense heritabilities (h2) indicated that rank-changing GxE for these phenotypes was present across the common gardens (Fig 1C). h2 were typically high at individual gardens: 59% on average for green-up date, and 87% for flowering date. However, h2 were variable across gardens, and green-up dates were uncorrelated (r2 \< 0.2) or negatively correlated between pairs of gardens (Fig. 1B). These negative and small correlations undoubtedly contributed to the low h2 values for green-up and flowering date when estimated jointly at all eight gardens: h2 was 0.8% for green-up and 23.2% for flowering date.
+Narrow-sense heritabilities (h^2^) indicated that rank-changing GxE for these phenotypes was present across the common gardens (@fig-map C). h^2^ were typically high at individual gardens: 59% on average for green-up date, and 87% for flowering date. However, h^2^ were variable across gardens, and green-up dates were uncorrelated (r^2^ \< 0.2) or negatively correlated between pairs of gardens (@fig-map B). These negative and small correlations undoubtedly contributed to the low h^2^ values for green-up and flowering date when estimated jointly at all eight gardens: h^2^ was 0.8% for green-up and 23.2% for flowering date.
 
 ### Mapping major patterns of genotype-by-environment effects on green-up and flowering
 
-We next explored how genetic variation in phenology covaried with environmental cues by using mash to jointly discover trait-associated SNPs across all common gardens for the Midwest, Gulf, and 'Both' subpopulations (Fig 1D, SI Appendix, Datasets 1-6). We first estimated SNP effects using GWAS on site-specific BLUPs for each phenotype. We then used mash on two subsets of these SNP effects, first to determine the covariance structures that significantly improved the mash model log likelihood when included, then to re-estimate the set of SNP effects with the largest effect estimates in univariate GWAS (hereafter "strong" effects) using the set of significant covariance matrices.
+We next explored how genetic variation in phenology covaried with environmental cues by using mash to jointly discover trait-associated SNPs across all common gardens for the Midwest, Gulf, and 'Both' subpopulations (@fig-map D, SI Appendix, Datasets 1-6). We first estimated SNP effects using GWAS on site-specific BLUPs for each phenotype. We then used mash on two subsets of these SNP effects, first to determine the covariance structures that significantly improved the mash model log likelihood when included, then to re-estimate the set of SNP effects with the largest effect estimates in univariate GWAS (hereafter "strong" effects) using the set of significant covariance matrices.
 
 Three types of covariance matrices were tested for inclusion: "canonical" covariance matrices, with simple patterns of effects; "data-driven" matrices derived from common patterns of SNP effects in the data, and "hypothesis-based" covariance matrices that captured the covariance of weather-based phenological cues for cloned genotypes grown at multiple common gardens (Table 1, SI Appendix, Section S2). Mash first assigns mixture proportions for each SNP onto each provided covariance matrix using maximum likelihood. Then, in a second step, each SNP's effect estimate undergoes shrinkage such that it is more aligned with the covariance structure inferred in the first step. The hypothesis-based covariance matrices are an important advantage mash offers for studying patterns of GxE: they allow hypothesis testing of specific environmental drivers for each SNP effect, and loadings on these matrices provide information on genome-wide patterns of SNP-environment interaction. Say that a SNP in FLC controls flowering in a temperature-dependent manner. In that case, that SNP effect could have a high mixture proportion, or mass, on a covariance matrix created using a temperature-based environmental cue, such as average temperature on the day prior to flowering. In our data, we would infer that the effect of that SNP on flowering was caused by a response to that or a correlated environmental cue.
 
@@ -165,8 +165,6 @@ Our analysis of green-up in the Gulf and in Both subpopulations revealed substan
 Our analysis of flowering showed that the Gulf and Midwest subpopulations have two distinct photoperiod-related flowering responses: the Midwest subpopulation is day neutral, and flowering is cued primarily by a cumulative GDD threshold; in contrast, the Gulf subpopulation is photoperiod sensitive, and flowering is cued by the transition to shortening days. This result was supported by observations that expressing flowering date as a function of the day length at flowering increased its heritability in the Gulf subpopulation, while expressing flowering date as a function of cumulative GDD between green-up and flowering increased the heritability of flowering in the Midwest subpopulation (Fig. 1D). The genomic regions affecting flowering found in mash were also supported by QTL from an independent mapping population (Fig. 4C).
 
 Identifying the environmental cues that are predictive of, or even correlated with, plant phenotypic responses remains a major challenge to studies interrogating gene action across many natural environments. Clearly, the photoperiod and cumulative GDD cues we identify here are functions of the genotypes measured, are not predictive, and capture only a minority of SNP effects on flowering. We know still less about the overwintering parameters that affect green-up, which is reflected in our lower ability to assign SNP effects on green-up to weather-based cues. More generally, it is difficult to predict the time scales over which individuals may integrate environmental cues, particularly in perennial species which may integrate these cues over longer time scales. Mash offers an opportunity to specify multiple environmental cues and compete them to explain patterns of SNP effects, allowing us to detect how important these cues are genome-wide, and how strongly each cue influences each SNP. This is a key development to further improve our understanding of genetic variation in GxE.
-
-
 
 # Figures and Tables
 
