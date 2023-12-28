@@ -156,12 +156,13 @@
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\usepackage{bookmark}
+
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same} % disable monospaced font for URLs
 \hypersetup{
-  pdftitle={Quarto Template for PNAS Submissions},
-  pdfauthor={Author One; Author Two; Author Three},
+  pdftitle={Switchgrass Phenology and Genotype-by-Environment Mapping},
+  pdfauthor={Alice H. MacQueen; Li Zhang; Samuel A. Smith; Jason Bonnette; Arvid R. Boe; Phillip A. Fay; Felix B. Fritschi; David B. Lowry; Robert B. Mitchell; Francis M. Rouquette Jr; Yanqi Wu; Arbel Harpak; Thomas E. Juenger},
   pdfkeywords={allele-by-environment effect variation, antagonistic
 pleiotropy, photoperiod, cumulative growing degree days, genetic
 variation},
@@ -174,31 +175,81 @@ variation},
 
 \templatetype{pnasresearcharticle}
 
-\title{Quarto Template for PNAS Submissions}
+\title{Switchgrass Phenology and Genotype-by-Environment Mapping}
 
 \newcommand{\equalcont}{1}
 
 \newcommand{\correspond}{2}
 
-\author[a,c%
-,\equalcont%
-%
-]{Author One}
-\author[b%
+\author[a%
 ,\equalcont%
 ,\correspond%
-]{Author Two}
+]{Alice H. MacQueen}
+\author[a%
+,\equalcont%
+%
+]{Li Zhang}
+\author[a%
+,\equalcont%
+%
+]{Samuel A. Smith}
 \author[a%
 %
 %
-]{Author Three}
+]{Jason Bonnette}
+\author[b%
+%
+%
+]{Arvid R. Boe}
+\author[c%
+%
+%
+]{Phillip A. Fay}
+\author[d%
+%
+%
+]{Felix B. Fritschi}
+\author[e%
+%
+%
+]{David B. Lowry}
+\author[f%
+%
+%
+]{Robert B. Mitchell}
+\author[g%
+%
+%
+]{Francis M. Rouquette Jr}
+\author[h%
+%
+%
+]{Yanqi Wu}
+\author[a%
+%
+%
+]{Arbel Harpak}
+\author[a%
+%
+,\correspond%
+]{Thomas E. Juenger}
 
-\affil[a]{Harvard University, Department of Government, Cambridge, 2138}
-\affil[c]{Harvard University, Department of Statistics, Cambridge, 2138}
-\affil[b]{Yale University, Department of Political Science, New
-Haven, 3401}
+\affil[a]{University of Texas at Austin, Department of Integrative
+Biology, Austin, 78712}
+\affil[b]{South Dakota State University, Department of
+Agronomy, Brookings}
+\affil[c]{USDA-ARS, Grassland, Soil and Water Research
+Laboratory, Temple}
+\affil[d]{University of Missouri, Division of Plant Sciences, Columbia}
+\affil[e]{Michigan State University, Department of Plant Biology, East
+Lansing}
+\affil[f]{USDA-ARS, Wheat, Sorghum, and Forage Research Unit, Lincoln}
+\affil[g]{Texas A\&M University, Texas A\&M AgriLife Research and
+Extension Center, Overton}
+\affil[h]{Oklahoma State University, Department of Plant and Soil
+Sciences, Stillwater}
 
-\leadauthor{One, Two, and Three}
+\leadauthor{MacQueen}
 
 \significancestatement{The timing of plant seasonal development
 (phenology) has major impacts on fitness because of the steep price of
@@ -217,16 +268,17 @@ covaried with photoperiod, a day-length-related measure.}
 \authorcontributions{T.E.J. designed research. D.B.L. contributed plant
 material and resources. J.B., D.B.L., and T.E.J. designed and executed
 field experiments. A.R.B., P.A.F., F.B.F., D.B.L., R.B.M., F.M.R., Y.W.,
-and T.E.J. hosted field experiments. A.H.M. and L.Z. conducted
+and T.E.J. hosted field experiments. A.H.M., L.Z., and S.A.S. conducted
 statistical and computational analyses. The manuscript was written by
-A.H.M., L.Z., and T.E.J. with contributions from all authors.}
+A.H.M. with contributions from all authors.}
 
-\authordeclaration{Please declare any competing interests here.}
+\authordeclaration{The authors declare no conflicts of interest.}
 
-\equalauthors{\textsuperscript{\equalcont} A.O.(Author One) contributed
-equally to this work with A.T. (Author Two) (remove if not applicable).}
+\equalauthors{\textsuperscript{\equalcont} A.H.M. contributed equally to
+this work with L.Z. and S.A.S.}
 
 \correspondingauthor{\textsuperscript{\correspond}To whom correspondence should be addressed. E-mail: alicem@uchicago.edu}
+\correspondingauthor{\textsuperscript{\correspond}To whom correspondence should be addressed. E-mail: tjuenger@utexas.edu}
 
 \keywords{allele-by-environment effect variation | antagonistic
 pleiotropy | photoperiod | cumulative growing degree days | genetic
@@ -245,27 +297,27 @@ virgatum) populations spanning the central United States. We distinguish
 GxWeather patterns covarying with interpretable weather-based cues and
 agnostic, empirically-inferred GxWeather patterns. Most GxWeather
 effects belong to the latter category and do not covary with
-weather-based cues. However, \textgreater26\% of Gulf population effects
-on flowering time covary with photoperiod cues, while
-\textgreater{}\textbf{\% of Midwest upland population SNPs affecting
-flowering had effects that covaried with } cues. An independent
-pseudo-F2 cross of Gulf and Midwest individuals mapped 23 additive QTLs
-for flowering at the same common gardens, all with significant mash
-associations and ten with enrichment of highly significant mash
-associations. We demonstrate that we can identify QTL with GxE and
-assign them to specific weather-based cues and/or data-driven patterns.
-Breeding for particular alleles at these loci could change flowering
-responsiveness to photoperiod cues in switchgrass. More broadly, this
-approach could be used to identify genetic marker-environment
-interactions in any species with related populations phenotyped in
-multiple environments.
+weather-based cues. However, \textgreater XX\% of Gulf population
+effects on flowering time covary with photoperiod cues, while
+\textgreater XX\% of Midwest upland population SNPs affecting flowering
+had effects that covaried with XX cues. An independent pseudo-F2 cross
+of Gulf and Midwest individuals mapped 23 additive QTLs for flowering at
+the same common gardens, all with significant mash associations and ten
+with enrichment of highly significant mash associations. We demonstrate
+that we can identify QTL with GxE and assign them to specific
+weather-based cues and/or data-driven patterns. Breeding for particular
+alleles at these loci could change flowering responsiveness to
+photoperiod cues in switchgrass. More broadly, this approach could be
+used to identify genetic marker-environment interactions in any species
+with related populations phenotyped in multiple environments.
 \end{abstract}
 
 \dates{This manuscript was compiled on \today}
 \doi{\url{www.pnas.org/cgi/doi/10.1073/pnas.XXXXXXXXXX}}
 
 \thispagestyle{firststyle}
-\ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}\firstpage[20]{2}
+\ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
+\firstpage[15]{2}
 
 The timing of plant vegetative and reproductive development are major
 components of plant fitness affected by multiple external environmental
@@ -289,7 +341,7 @@ environments are known as genotype by environment interactions, or GxE.
 
 Flowering time, in particular, is a common subject of GxE research
 (5--11), a key output of selection driving adaptation to local
-environments (3, 12, 13), and a selection target for crop improvement to
+environments (2, 12, 13), and a selection target for crop improvement to
 adapt crops to local or future environments (14). Changing flowering
 responsiveness to photoperiod cues has allowed geographic range
 expansion and increased yields in a number of cereal species (15--19)
@@ -309,8 +361,8 @@ SNP effects that differ in sign (26--28). Thus, despite substantial
 interest in the frequencies of various forms of GxE, the prevalence of
 antagonistic pleiotropy relative to other forms of GxE remains unknown.
 
-Switchgrass (Panicum virgatum) is considered a short-day plant with
-reproductive development strongly linked to day of the year (29).
+Switchgrass (\emph{Panicum virgatum}) is considered a short-day plant
+with reproductive development strongly linked to day of the year (29).
 However, as part of its wide environmental adaptation across the eastern
 half of North America, its photoperiodicity has been predicted to differ
 by plant latitude of origin (30, 31). We previously found divergent
@@ -336,7 +388,7 @@ multivariate adaptive shrinkage (mash) to jointly estimate SNP effects
 in each subpopulation and phenotype at all eight sites (35). Mash allows
 us to identify and specify multiple ways genetic effects linked to SNPs
 may covary with the environment, and does not have a statistical bias in
-detecting SNP effects with the same or opposite signs (39). To confirm
+detecting SNP effects with the same or opposite signs (36). To confirm
 our genetic mapping of GxE, we compare to mapping results from an
 outbred pseudo-F2 cross grown at the same sites. Taken together, our
 results allow us to describe the environmental cues and genetic
@@ -348,20 +400,20 @@ switchgrass.
 In our diversity panel of tetraploid switchgrass (32), genotypes from
 the Gulf and Midwest genetic subpopulations had distinct phenological
 timings and distinct patterns of phenological correlations across our
-eight common garden sites (Fig. 1A,B). At the three Texas common gardens
-(hereafter `Texas' gardens), located within the natural range of the
-Gulf subpopulation, Gulf green-up occurred before Midwestern green-up,
-and Gulf flowering occurred after Midwestern flowering (Fig. 1A). At the
-four northernmost common gardens (hereafter `North' gardens), located
-within the natural range of the Midwest subpopulation, both Gulf
-green-up and flowering occurred after Midwest green-up and flowering. At
-the Oklahoma common garden, located near the natural range limits of
-both the Gulf and the Midwest subpopulations, Gulf and Midwest green-up
-occurred over the same time period. These patterns led to strong
-negative phenotypic correlations for green-up between the North and
-Texas gardens, particularly in the Gulf and Both subpopulations, and
-contributed to positive phenotypic correlations for flowering time of
-larger magnitude at more northern gardens (Fig. 1B).
+eight common garden sites (Figure~\ref{fig-map}). At the three Texas
+common gardens (hereafter `Texas' gardens), located within the natural
+range of the Gulf subpopulation, Gulf green-up occurred before
+Midwestern green-up, and Gulf flowering occurred after Midwestern
+flowering (Fig. 1A). At the four northernmost common gardens (hereafter
+`North' gardens), located within the natural range of the Midwest
+subpopulation, both Gulf green-up and flowering occurred after Midwest
+green-up and flowering. At the Oklahoma common garden, located near the
+natural range limits of both the Gulf and the Midwest subpopulations,
+Gulf and Midwest green-up occurred over the same time period. These
+patterns led to strong negative phenotypic correlations for green-up
+between the North and Texas gardens, particularly in the Gulf and Both
+subpopulations, and contributed to positive phenotypic correlations for
+flowering time of larger magnitude at more northern gardens (Fig. 1B).
 
 Narrow-sense heritabilities (h2) indicated that rank-changing GxE for
 these phenotypes was present across the common gardens (Fig 1C). h2 were
@@ -575,6 +627,65 @@ detect how important these cues are genome-wide, and how strongly each
 cue influences each SNP. This is a key development to further improve
 our understanding of genetic variation in GxE.
 
+\section{Figures and Tables}\label{figures-and-tables}
+
+\begin{table}[t!]
+\centering
+\caption{Weather variables and time frames around the green up and flowering date used to construct the hypothesis-based covariance matrices. The correlations between values of these weather variables for genetically identical plants grown in different gardens were used to fill off-diagonal cells of the covariance matrices. Narrow-sense heritabilities for these values at each garden were used for the diagonal cells.}
+\begin{tabular}{lrr}
+Weather variable & Time Frame & Covariance Matrices tested \\
+\midrule
+1. cumulative GDD at 12C in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60 \\
+2. cumulative rainfall in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60  \\
+3. day length (hours) on a specific day indicated by the time frame & (1-7) and 14 days prior to green up date & 48 \\
+4. day length change (seconds) on a specific day indicated by the time frame & (1-7) and 14 days prior to green up date & 48 \\
+5. average temperature in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60 \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{images/Fig1_200dpi.png}
+
+}
+
+\caption{\label{fig-map}Figure 1. Characterization of green-up and
+flowering dates from the switchgrass diversity panel. (a) Map and trait
+histograms of green-up and flowering dates across two genetically
+distinct switchgrass subpopulations and eight common gardens. Purple
+represents individuals from the Midwest genetic subpopulation, and pink
+individuals from the Gulf subpopulation. Vertical dashed lines indicate
+the summer solstice. Common gardens are arranged in latitudinal order.
+(b) Phenotypic correlations between clonal replicates planted at eight
+common gardens, within and between two genetic subpopulations. (c)
+Narrow sense heritability of green-up and flowering within single common
+gardens (purple) and across all eight common gardens (green), within and
+between two genetic subpopulations. (d) Flow diagram of the methods
+applied to the green-up and flowering dates to jointly estimate SNP
+effects across all sites. Mash was fit to SNP effect data and used to
+find covariance matrices that improved the mash model likelihood using a
+large set of randomly selected, relatively unlinked SNP effects; this
+model was applied to a ``strong'' set of SNP effects with large effect
+sizes in the univariate GWAS.}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\includegraphics{images/Figure_2_Covariance_matrices_and_posterior_weights.png}
+
+}
+
+\caption{\label{fig-covar}Figure 2.}
+
+\end{figure}%
+
 \section{Materials and Methods}\label{materials-and-methods}
 
 Whenever possible, plant material will be shared upon request. Source
@@ -711,283 +822,242 @@ permutation to choose 1000 sets of 23 genomic regions of the same size
 randomly distributed throughout the genome, then calculated enrichments
 of the mash 1\% tail in these random intervals.
 
-\section{Figures and Tables}\label{figures-and-tables}
-
-\begin{figure}[H]
-
-{\centering \includegraphics{images/Fig1_200dpi.png}
-
-}
-
-\caption{Figure 1. Characterization of green-up and flowering dates from
-the switchgrass diversity panel. (a) Map and trait histograms of
-green-up and flowering dates across two genetically distinct switchgrass
-subpopulations and eight common gardens. Purple represents individuals
-from the Midwest genetic subpopulation, and pink individuals from the
-Gulf subpopulation. Vertical dashed lines indicate the summer solstice.
-Common gardens are arranged in latitudinal order. (b) Phenotypic
-correlations between clonal replicates planted at eight common gardens,
-within and between two genetic subpopulations.~ (c) Narrow sense
-heritability of green-up and flowering within single common gardens
-(purple) and across all eight common gardens (green), within and between
-two genetic subpopulations. (d) Flow diagram of the methods applied to
-the green-up and flowering dates to jointly estimate SNP effects across
-all sites. Mash was fit to SNP effect data and used to find covariance
-matrices that improved the mash model likelihood using a large set of
-randomly selected, relatively unlinked SNP effects; this model was
-applied to a "strong" set of SNP effects with large effect sizes in the
-univariate GWAS.}
-
-\end{figure}%
-
-\subsection*{Author Affiliations}\label{author-affiliations}
-\addcontentsline{toc}{subsection}{Author Affiliations}
-
-Include department, institution, and complete address, with the
-ZIP/postal code, for each author. Use lower case letters to match
-authors with institutions, as shown in the example. PNAS strongly
-encourages authors to supply an \href{https://orcid.org/}{ORCID
-identifier} for each author. Individual authors must link their ORCID
-account to their PNAS account at
-\href{http://www.pnascentral.org/}{www.pnascentral.org}. For proper
-authentication, authors must provide their ORCID at submission and are
-not permitted to add ORCIDs on proofs.
-
-\subsection*{Manuscript Length}\label{manuscript-length}
-\addcontentsline{toc}{subsection}{Manuscript Length}
-
-A standard 6-page article is approximately 4,000 words, 50 references,
-and 4 medium-size graphical elements (i.e., figures and tables). The
-preferred length of articles remains at 6 pages, but PNAS will allow
-articles up to a maximum of 12 pages.
-
-\subsection*{References}\label{references}
-\addcontentsline{toc}{subsection}{References}
-
-References should be cited in numerical order as they appear in text;
-this will be done automatically via bibtex, e.g.~\cite{belkin2002using}
-and
-\cite{berard1994embedding,coifman2005geometric,phdthesis,masterthesis}.
-All references cited in the main text should be included in the main
-manuscript file.
-
-\subsection*{Data Archival}\label{data-archival}
-\addcontentsline{toc}{subsection}{Data Archival}
-
-PNAS must be able to archive the data essential to a published article.
-Where such archiving is not possible, deposition of data in public
-databases, such as GenBank, ArrayExpress, Protein Data Bank, Unidata,
-and others outlined in the
-\href{https://www.pnas.org/author-center/editorial-and-journal-policies\#materials-and-data-availability}{Information
-for Authors}, is acceptable.
-
-\subsection*{Figures and Tables}\label{figures-and-tables-1}
-\addcontentsline{toc}{subsection}{Figures and Tables}
-
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3750}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3194}}
-  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3056}}@{}}
-\caption{Weather variables and time frames around the green up and
-flowering date used to construct the hypothesis-based covariance
-matrices. The correlations between values of these weather variables for
-genetically identical plants grown in different gardens were used to
-fill off-diagonal cells of the covariance matrices. Narrow-sense
-heritabilities for these values at each garden were used for the
-diagonal cells.}\tabularnewline
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-\textbf{Weather variable}
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-\textbf{Time frame}
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-\textbf{\# Covariance Matrices tested in greedy mash algorithm}
-\end{minipage} \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-\textbf{Weather variable}
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-\textbf{Time frame}
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-\textbf{\# Covariance Matrices tested in greedy mash algorithm}
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-cumulative GDD at 12C in the time frame & 1, 2, 3, 4, 5, 6, 7, 14, 21,
-28 days prior to green up date~ & 60, 30 per phenotype and 10 per
-phenotype \& genetic group \\
-cumulative rainfall in the time frame & 1, 2, 3, 4, 5, 6, 7, 14, 21, 28
-days prior to green up date~ & 60, 30 per phenotype and 10 per phenotype
-\&~ genetic group \\
-day length (hours) on a specific day indicated by the time frame & 1, 2,
-3, 4, 5, 6, 7, and 14 days prior to green up date & 48, 24 per phenotype
-and 8 per phenotype \&~ genetic group \\
-day length change (seconds) on a specific day indicated by the time
-frame & 1, 2, 3, 4, 5, 6, 7, and 14 days prior to green up date & 48, 24
-per phenotype and 8 per phenotype \& genetic group \\
-average temperature in the time frame & 1, 2, 3, 4, 5, 6, 7, 14, 21, 28
-days prior to green up date & 60, 30 per phenotype and 10 per phenotype
-\& genetic group \\
-\end{longtable}
-
-Figures can be included using Quarto's syntax, code chunks, or with
-LaTeX.
-
-For simple figures, Quarto syntax is typically easiest. Full details are
-available in \href{https://quarto.org/docs/authoring/figures.html}{the
-Quarto documentation}.
-
-\begin{figure}
-
-\centering{
-
-\includegraphics{figs/frog.pdf}
-
-}
-
-\caption{\label{fig-frog}Placeholder image of a frog with a long example
-legend to show justification setting.}
-
-\end{figure}%
-
-Tables can similarly be included using Quarto's syntax, code chunks, or
-with LaTeX. I tend to use code chunks, but LaTeX works very well for
-classic tables, like regression tables or summary statistics.
-
-\begin{table}[t!]
-\centering
-\caption{Comparison of the fitted potential energy surfaces and ab initio benchmark electronic energy calculations}
-\begin{tabular}{lrrr}
-Species & CBS & CV & G3 \\
-\midrule
-1. Acetaldehyde & 0.0 & 0.0 & 0.0 \\
-2. Vinyl alcohol & 9.1 & 9.6 & 13.5 \\
-3. Hydroxyethylidene & 50.8 & 51.2 & 54.0\\
-\bottomrule
-\end{tabular}
-
-\addtabletext{nomenclature for the TSs refers to the numbered species in the table.}
-\end{table}
-
-\subsubsection*{Digital Figures}\label{digital-figures}
-\addcontentsline{toc}{subsubsection}{Digital Figures}
-
-EPS, high-resolution PDF, and PowerPoint are preferred formats for
-figures that will be used in the main manuscript. Authors may submit PRC
-or U3D files for 3D images; these must be accompanied by 2D
-representations in TIFF, EPS, or high-resolution PDF format. Color
-images must be in RGB (red, green, blue) mode. Include the font files
-for any text.
-
-Images must be provided at final size, preferably 1 column width
-(8.7cm). Figures wider than 1 column should be sized to 11.4cm or 17.8cm
-wide. Numbers, letters, and symbols should be no smaller than 6 points
-(2mm) and no larger than 12 points (6mm) after reduction and must be
-consistent.
-
-Figures and tables should be labelled and referenced in the standard way
-using the \texttt{\textbackslash{}label\{\}} and
-\texttt{\textbackslash{}ref\{\}} commands.
-
-Figure Figure~\ref{fig-frog} shows an example of how to insert a
-column-wide figure. To insert a figure wider than one column, please use
-the \texttt{figure*} environment. Figures wider than one column should
-be sized to 11.4 cm or 17.8 cm wide. Use \texttt{SCfigure*} environment
-for a wide figure with side legends, such as Figure~\ref{fig-side}.
-
-In Quarto, we can do these by setting the \texttt{fig-env} command to
-\texttt{figure*} or \texttt{SCfigure*}
-
-\begin{SCfigure*}
-
-\centering{
-
-\includegraphics{figs/frog.pdf}
-
-}
-
-\caption{\label{fig-side}This legend would be placed at the side of the
-figure, rather than below it.}
-
-\end{SCfigure*}%
-
-\subsection*{Tables}\label{tables}
-\addcontentsline{toc}{subsection}{Tables}
-
-Tables should be included in the main manuscript file and should not be
-uploaded separately.
-
-\subsection*{Single column equations}\label{single-column-equations}
-\addcontentsline{toc}{subsection}{Single column equations}
-
-Authors may use 1- or 2-column equations in their article, according to
-their preference.
-
-To allow an equation to span both columns, use the
-\texttt{\textbackslash{}begin\{figure*\}...\textbackslash{}end\{figure*\}}
-environment mentioned above for figures.
-
-Note that the use of the \texttt{widetext} environment for equations is
-not recommended, and should not be used.
-
-\begin{figure*}[bt!]
-\begin{align*}
-(x+y)^3&=(x+y)(x+y)^2\\
-       &=(x+y)(x^2+2xy+y^2) \numberthis \label{eqn:example} \\
-       &=x^3+3x^2y+3xy^3+x^3.
-\end{align*}
-\end{figure*}
-
-\section*{Material and Methods}\label{material-and-methods}
-\addcontentsline{toc}{section}{Material and Methods}
-
-\subsection*{Supporting Information Appendix
-(SI)}\label{supporting-information-appendix-si}
-\addcontentsline{toc}{subsection}{Supporting Information Appendix (SI)}
-
-Authors should submit SI as a single separate SI Appendix PDF file,
-combining all text, figures, tables, movie legends, and SI references.
-SI will be published as provided by the authors; it will not be edited
-or composed. Additional details can be found in the
-\href{https://www.pnas.org/authors/submitting-your-manuscript\#manuscript-formatting-guidelines}{PNAS
-Author Center}. The PNAS Overleaf SI template can be found
-\href{https://www.overleaf.com/latex/templates/pnas-template-for-supplementary-information/wqfsfqwyjtsd}{here}.
-Refer to the SI Appendix in the manuscript at an appropriate point in
-the text. Number supporting figures and tables starting with S1, S2,
-etc.
-
-Authors who place detailed materials and methods in an SI Appendix must
-provide sufficient detail in the main text methods to enable a reader to
-follow the logic of the procedures and results and also must reference
-the SI methods. If a paper is fundamentally a study of a new method or
-technique, then the methods must be described completely in the main
-text.
-
-\subsubsection*{SI Datasets}\label{si-datasets}
-\addcontentsline{toc}{subsubsection}{SI Datasets}
-
-Supply .xlsx, .csv, .txt, .rtf, or .pdf files. This file type will be
-published in raw format and will not be edited or composed.
-
-\subsubsection*{SI Movies}\label{si-movies}
-\addcontentsline{toc}{subsubsection}{SI Movies}
-
-Supply Audio Video Interleave (avi), Quicktime (mov), Windows Media
-(wmv), animated GIF (gif), or MPEG files. Movie legends should be
-included in the SI Appendix file. All movies should be submitted at the
-desired reproduction size and length. Movies should be no more than 10MB
-in size.
-
-\section{References}\label{references-1}
+\section{References}\label{references}
 
 \bibsplit[2]
 
 \phantomsection\label{refs}
 \begin{CSLReferences}{0}{1}
+\bibitem[\citeproctext]{ref-bauerle_photoperiodic_2012}
+\CSLLeftMargin{1. }%
+\CSLRightInline{W. L. Bauerle, \emph{et al.},
+\href{https://doi.org/10.1073/pnas.1119131109}{Photoperiodic regulation
+of the seasonal pattern of photosynthetic capacity and the implications
+for carbon cycling}. \emph{Proceedings of the National Academy of
+Sciences} \textbf{109}, 8612--8617 (2012).}
+
+\bibitem[\citeproctext]{ref-andres2012genetic}
+\CSLLeftMargin{2. }%
+\CSLRightInline{F. Andrés, G. Coupland, The genetic basis of flowering
+responses to seasonal cues. \emph{Nature Reviews Genetics} \textbf{13},
+627--639 (2012).}
+
+\bibitem[\citeproctext]{ref-korner2010phenology}
+\CSLLeftMargin{3. }%
+\CSLRightInline{C. Körner, D. Basler, Phenology under global warming.
+\emph{Science} \textbf{327}, 1461--1462 (2010).}
+
+\bibitem[\citeproctext]{ref-botero2015evolutionary}
+\CSLLeftMargin{4. }%
+\CSLRightInline{C. A. Botero, F. J. Weissing, J. Wright, D. R.
+Rubenstein, Evolutionary tipping points in the capacity to adapt to
+environmental change. \emph{Proceedings of the National Academy of
+Sciences} \textbf{112}, 184--189 (2015).}
+
+\bibitem[\citeproctext]{ref-blackman2013interacting}
+\CSLLeftMargin{5. }%
+\CSLRightInline{B. K. Blackman, Interacting duplications, fluctuating
+selection, and convergence: The complex dynamics of flowering time
+evolution during sunflower domestication. \emph{Journal of experimental
+botany} \textbf{64}, 421--431 (2013).}
+
+\bibitem[\citeproctext]{ref-henry2014transitions}
+\CSLLeftMargin{6. }%
+\CSLRightInline{L. P. Henry, R. H. Watson, B. K. Blackman, Transitions
+in photoperiodic flowering are common and involve few loci in wild
+sunflowers (helianthus; asteraceae). \emph{American Journal of Botany}
+\textbf{101}, 1748--1758 (2014).}
+
+\bibitem[\citeproctext]{ref-aagren2017adaptive}
+\CSLLeftMargin{7. }%
+\CSLRightInline{J. Ågren, C. G. Oakley, S. Lundemo, D. W. Schemske,
+Adaptive divergence in flowering time among natural populations of
+arabidopsis thaliana: Estimates of selection and QTL mapping.
+\emph{Evolution} \textbf{71}, 550--564 (2017).}
+
+\bibitem[\citeproctext]{ref-brachi2010linkage}
+\CSLLeftMargin{8. }%
+\CSLRightInline{B. Brachi, \emph{et al.}, Linkage and association
+mapping of arabidopsis thaliana flowering time in nature. \emph{PLoS
+genetics} \textbf{6}, e1000940 (2010).}
+
+\bibitem[\citeproctext]{ref-dittmar2014flowering}
+\CSLLeftMargin{9. }%
+\CSLRightInline{E. L. Dittmar, C. G. Oakley, J. Ågren, D. W. Schemske,
+Flowering time QTL in natural populations of arabidopsis thaliana and
+implications for their adaptive value. \emph{Molecular ecology}
+\textbf{23}, 4291--4303 (2014).}
+
+\bibitem[\citeproctext]{ref-li2018genomic}
+\CSLLeftMargin{10. }%
+\CSLRightInline{X. Li, T. Guo, Q. Mu, X. Li, J. Yu, Genomic and
+environmental determinants and their interplay underlying phenotypic
+plasticity. \emph{Proceedings of the National Academy of Sciences}
+\textbf{115}, 6679--6684 (2018).}
+
+\bibitem[\citeproctext]{ref-romero2017study}
+\CSLLeftMargin{11. }%
+\CSLRightInline{J. A. Romero Navarro, \emph{et al.}, A study of allelic
+diversity underlying flowering-time adaptation in maize landraces.
+\emph{Nature genetics} \textbf{49}, 476--480 (2017).}
+
+\bibitem[\citeproctext]{ref-wadgymar2017identifying}
+\CSLLeftMargin{12. }%
+\CSLRightInline{S. M. Wadgymar, \emph{et al.}, Identifying targets and
+agents of selection: Innovative methods to evaluate the processes that
+contribute to local adaptation. \emph{Methods in Ecology and Evolution}
+\textbf{8}, 738--749 (2017).}
+
+\bibitem[\citeproctext]{ref-blumel2015flowering}
+\CSLLeftMargin{13. }%
+\CSLRightInline{M. Blümel, N. Dally, C. Jung, Flowering time regulation
+in crops---what did we learn from arabidopsis? \emph{Current opinion in
+biotechnology} \textbf{32}, 121--129 (2015).}
+
+\bibitem[\citeproctext]{ref-jung2009flowering}
+\CSLLeftMargin{14. }%
+\CSLRightInline{C. Jung, A. E. Müller, Flowering time control and
+applications in plant breeding. \emph{Trends in plant science}
+\textbf{14}, 563--573 (2009).}
+
+\bibitem[\citeproctext]{ref-turner2005pseudo}
+\CSLLeftMargin{15. }%
+\CSLRightInline{A. Turner, J. Beales, S. Faure, R. P. Dunford, D. A.
+Laurie, The pseudo-response regulator ppd-H1 provides adaptation to
+photoperiod in barley. \emph{Science} \textbf{310}, 1031--1034 (2005).}
+
+\bibitem[\citeproctext]{ref-faure2012mutation}
+\CSLLeftMargin{16. }%
+\CSLRightInline{S. Faure, \emph{et al.}, Mutation at the circadian clock
+gene EARLY MATURITY 8 adapts domesticated barley (hordeum vulgare) to
+short growing seasons. \emph{Proceedings of the National Academy of
+Sciences} \textbf{109}, 8328--8333 (2012).}
+
+\bibitem[\citeproctext]{ref-hung2012zmcct}
+\CSLLeftMargin{17. }%
+\CSLRightInline{H.-Y. Hung, \emph{et al.}, ZmCCT and the genetic basis
+of day-length adaptation underlying the postdomestication spread of
+maize. \emph{Proceedings of the National Academy of Sciences}
+\textbf{109}, E1913--E1921 (2012).}
+
+\bibitem[\citeproctext]{ref-zakhrabekova2012induced}
+\CSLLeftMargin{18. }%
+\CSLRightInline{S. Zakhrabekova, \emph{et al.}, Induced mutations in
+circadian clock regulator mat-a facilitated short-season adaptation and
+range extension in cultivated barley. \emph{Proceedings of the National
+Academy of Sciences} \textbf{109}, 4326--4331 (2012).}
+
+\bibitem[\citeproctext]{ref-yang2013oself3}
+\CSLLeftMargin{19. }%
+\CSLRightInline{Y. Yang, Q. Peng, G.-X. Chen, X.-H. Li, C.-Y. Wu, OsELF3
+is involved in circadian clock regulation for promoting flowering under
+long-day conditions in rice. \emph{Molecular Plant} \textbf{6}, 202--215
+(2013).}
+
+\bibitem[\citeproctext]{ref-pin2012multifaceted}
+\CSLLeftMargin{20. }%
+\CSLRightInline{P. Pin, O. Nilsson, The multifaceted roles of FLOWERING
+LOCUS t in plant development. \emph{Plant, cell \& environment}
+\textbf{35}, 1742--1755 (2012).}
+
+\bibitem[\citeproctext]{ref-weller2019parallel}
+\CSLLeftMargin{21. }%
+\CSLRightInline{J. L. Weller, \emph{et al.}, Parallel origins of
+photoperiod adaptation following dual domestications of common bean.
+\emph{Journal of Experimental Botany} \textbf{70}, 1209--1219 (2019).}
+
+\bibitem[\citeproctext]{ref-levene1953genetic}
+\CSLLeftMargin{22. }%
+\CSLRightInline{H. Levene, Genetic equilibrium when more than one
+ecological niche is available. \emph{The American Naturalist}
+\textbf{87}, 331--333 (1953).}
+
+\bibitem[\citeproctext]{ref-felsenstein1976theoretical}
+\CSLLeftMargin{23. }%
+\CSLRightInline{J. Felsenstein, The theoretical population genetics of
+variable selection and migration. \emph{Annual review of genetics}
+\textbf{10}, 253--280 (1976).}
+
+\bibitem[\citeproctext]{ref-kawecki2004conceptual}
+\CSLLeftMargin{24. }%
+\CSLRightInline{T. J. Kawecki, D. Ebert, Conceptual issues in local
+adaptation. \emph{Ecology letters} \textbf{7}, 1225--1241 (2004).}
+
+\bibitem[\citeproctext]{ref-hedrick1986genetic}
+\CSLLeftMargin{25. }%
+\CSLRightInline{P. W. Hedrick, Genetic polymorphism in heterogeneous
+environments: A decade later. \emph{Annual review of ecology and
+systematics} \textbf{17}, 535--566 (1986).}
+
+\bibitem[\citeproctext]{ref-des2013genotype}
+\CSLLeftMargin{26. }%
+\CSLRightInline{D. L. Des Marais, K. M. Hernandez, T. E. Juenger,
+Genotype-by-environment interaction and plasticity: Exploring genomic
+responses of plants to the abiotic environment. \emph{Annual Review of
+Ecology, Evolution, and Systematics} \textbf{44}, 5--29 (2013).}
+
+\bibitem[\citeproctext]{ref-anderson2013genetic}
+\CSLLeftMargin{27. }%
+\CSLRightInline{J. T. Anderson, C.-R. Lee, C. A. Rushworth, R. I.
+Colautti, T. Mitchell-Olds, Genetic trade-offs and conditional
+neutrality contribute to local adaptation. \emph{Molecular ecology}
+\textbf{22}, 699--708 (2013).}
+
+\bibitem[\citeproctext]{ref-anderson2011evolutionary}
+\CSLLeftMargin{28. }%
+\CSLRightInline{J. T. Anderson, J. H. Willis, T. Mitchell-Olds,
+Evolutionary genetics of plant adaptation. \emph{Trends in Genetics}
+\textbf{27}, 258--266 (2011).}
+
+\bibitem[\citeproctext]{ref-mitchell1997predicting}
+\CSLLeftMargin{29. }%
+\CSLRightInline{R. B. Mitchell, K. J. Moore, L. E. Moser, J. O. Fritz,
+D. D. Redfearn, Predicting developmental morphology in switchgrass and
+big bluestem. \emph{Agronomy Journal} \textbf{89}, 827--832 (1997).}
+
+\bibitem[\citeproctext]{ref-parrish2005biology}
+\CSLLeftMargin{30. }%
+\CSLRightInline{D. J. Parrish, J. H. Fike, The biology and agronomy of
+switchgrass for biofuels. \emph{BPTS} \textbf{24}, 423--459 (2005).}
+
+\bibitem[\citeproctext]{ref-casler2004latitudinal}
+\CSLLeftMargin{31. }%
+\CSLRightInline{M. Casler, K. P. Vogel, C. Taliaferro, R. Wynia,
+Latitudinal adaptation of switchgrass populations. \emph{Crop Science}
+\textbf{44}, 293--303 (2004).}
+
+\bibitem[\citeproctext]{ref-lovell2021genomic}
+\CSLLeftMargin{32. }%
+\CSLRightInline{J. T. Lovell, \emph{et al.}, Genomic mechanisms of
+climate adaptation in polyploid bioenergy switchgrass. \emph{Nature}
+\textbf{590}, 438--444 (2021).}
+
+\bibitem[\citeproctext]{ref-porter1966analysis}
+\CSLLeftMargin{33. }%
+\CSLRightInline{C. L. Porter Jr, An analysis of variation between upland
+and lowland switchgrass, panicum virgatum l., in central oklahoma.
+\emph{Ecology} \textbf{47}, 980--992 (1966).}
+
+\bibitem[\citeproctext]{ref-milano2016genetic}
+\CSLLeftMargin{34. }%
+\CSLRightInline{E. R. Milano, D. B. Lowry, T. E. Juenger, The genetic
+basis of upland/lowland ecotype divergence in switchgrass (panicum
+virgatum). \emph{G3: Genes, Genomes, Genetics} \textbf{6}, 3561--3570
+(2016).}
+
+\bibitem[\citeproctext]{ref-urbut2019flexible}
+\CSLLeftMargin{35. }%
+\CSLRightInline{S. M. Urbut, G. Wang, P. Carbonetto, M. Stephens,
+Flexible statistical methods for estimating and testing effects in
+genomic studies with multiple conditions. \emph{Nature genetics}
+\textbf{51}, 187--195 (2019).}
+
+\bibitem[\citeproctext]{ref-10.1093ux2fbiostatisticsux2fkxw041}
+\CSLLeftMargin{36. }%
+\CSLRightInline{M. Stephens,
+\href{https://doi.org/10.1093/biostatistics/kxw041}{{False discovery
+rates: a new deal}}. \emph{Biostatistics} \textbf{18}, 275--294 (2016).}
+
 \end{CSLReferences}
 
 \acknow{We thank the Brackenridge Field laboratory, the Ladybird Johnson

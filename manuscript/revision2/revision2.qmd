@@ -1,71 +1,138 @@
 ---
-title: Quarto Template for PNAS Submissions
+title: Switchgrass Phenology and Genotype-by-Environment Mapping
 format:
   pnas-pdf:
     keep-tex: true  
+  docx:
+    highlight-style: github
+    fig-width: 7
+    fig-asp: 1.62
+    execute:
+      echo: false
+      cache: false
 author:
-  - name: Author One
+  - name: Alice H. MacQueen
     affiliations:
-      - name: Harvard University
+      - name: University of Texas at Austin
         id: a
-        department: Department of Government
-        city: Cambridge
-        state: MA
-        postal-code: 02138
-      - name: Harvard University
-        id: c
-        department: Department of Statistics
-        city: Cambridge
-        state: MA
-        postal-code: 02138
-    attributes:
-      equal-contributor: true
-  - name: Author Two
-    affiliations:
-      - name: Yale University
-        id: b
-        department: Department of Political Science
-        city: New Haven
-        state: CT
-        postal-code: 06511
+        department: Department of Integrative Biology
+        city: Austin
+        state: TX
+        postal-code: 78712
     email: alicem@uchicago.edu
     attributes:
       equal-contributor: true
       corresponding: true
-  - name: Author Three
+  - name: Li Zhang
     affiliations:
       - ref: a
+    attributes:
+      equal-contributor: true
+  - name: Samuel A. Smith
+    affiliations:
+        - ref: a
+    attributes:
+      equal-contributor: true
+  - name: Jason Bonnette
+    affiliations:
+          - ref: a
+  - name: Arvid R. Boe
+    affiliations:
+      - name: South Dakota State University
+        id: b
+        department: Department of Agronomy
+        city: Brookings
+        state: SD
+        postal-code: 
+  - name: Phillip A. Fay
+    affiliations:
+      - name: USDA-ARS
+        id: c
+        department: Grassland, Soil and Water Research Laboratory
+        city: Temple
+        state: TX
+        postal-code: 
+  - name: Felix B. Fritschi
+    affiliations:
+      - name: University of Missouri
+        id: d
+        department: Division of Plant Sciences
+        city: Columbia
+        state: MO
+        postal-code: 
+  - name: David B. Lowry
+    affiliations:
+      - name: Michigan State University
+        id: e
+        department: Department of Plant Biology
+        city: East Lansing
+        state: MI
+        postal-code: 
+  - name: Robert B. Mitchell
+    affiliations:
+      - name: USDA-ARS
+        id: f
+        department: Wheat, Sorghum, and Forage Research Unit
+        city: Lincoln
+        state: NE
+        postal-code: 
+  - name: Francis M. Rouquette Jr
+    affiliations:
+      - name: Texas A&M University
+        id: g
+        department: Texas A&M AgriLife Research and Extension Center
+        city: Overton
+        state: TX
+        postal-code: 
+  - name: Yanqi Wu
+    affiliations:
+      - name: Oklahoma State University
+        id: h
+        department: Department of Plant and Soil Sciences
+        city: Stillwater
+        state: OK
+        postal-code: 
+  - name: Arbel Harpak
+    affiliations:
+      - ref: a
+  - name: Thomas E. Juenger
+    affiliations:
+      - ref: a
+    attributes:
+      corresponding: true
+    email: tjuenger@utexas.edu
 abstract: |
-  The timing of vegetative growth and flowering in plants ("phenological timings") multiple depend on environmental cues; thus, phenological traits can have important genotype-by-environment (GxE) interactions. Here, we map genotype-by-weather effects on phenological timings in multiple populations of two highly divergent switchgrass (Panicum virgatum) populations spanning the central United States. We distinguish GxWeather patterns covarying with interpretable weather-based cues and agnostic, empirically-inferred GxWeather patterns. Most GxWeather effects belong to the latter category and do not covary with weather-based cues. However, >26% of Gulf population effects on flowering time covary with photoperiod cues, while >__% of Midwest upland population SNPs affecting flowering had effects that covaried with __ cues. An independent pseudo-F2 cross of Gulf and Midwest individuals mapped 23 additive QTLs for flowering at the same common gardens, all with significant mash associations and ten with enrichment of highly significant mash associations. We demonstrate that we can identify QTL with GxE and assign them to specific weather-based cues and/or data-driven patterns. Breeding for particular alleles at these loci could change flowering responsiveness to photoperiod cues in switchgrass. More broadly, this approach could be used to identify genetic marker-environment interactions in any species with related populations phenotyped in multiple environments.
-runningauthor: "One, Two, and Three"
+  The timing of vegetative growth and flowering in plants ("phenological timings") multiple depend on environmental cues; thus, phenological traits can have important genotype-by-environment (GxE) interactions. Here, we map genotype-by-weather effects on phenological timings in multiple populations of two highly divergent switchgrass (Panicum virgatum) populations spanning the central United States. We distinguish GxWeather patterns covarying with interpretable weather-based cues and agnostic, empirically-inferred GxWeather patterns. Most GxWeather effects belong to the latter category and do not covary with weather-based cues. However, >XX% of Gulf population effects on flowering time covary with photoperiod cues, while >XX% of Midwest upland population SNPs affecting flowering had effects that covaried with XX cues. An independent pseudo-F2 cross of Gulf and Midwest individuals mapped 23 additive QTLs for flowering at the same common gardens, all with significant mash associations and ten with enrichment of highly significant mash associations. We demonstrate that we can identify QTL with GxE and assign them to specific weather-based cues and/or data-driven patterns. Breeding for particular alleles at these loci could change flowering responsiveness to photoperiod cues in switchgrass. More broadly, this approach could be used to identify genetic marker-environment interactions in any species with related populations phenotyped in multiple environments.
+runningauthor: "MacQueen"
 significance: |
   The timing of plant seasonal development (phenology) has major impacts on fitness because of the steep price of plant-environment mismatches. Here we map the genetic basis of two phenological events, the start of above-ground growth and flowering, in two genetically and phenologically distinct populations of switchgrass. We do this at eight field locations spanning the latitudinal range of both switchgrass populations. Our approach allows us to identify regions of the genome that covary with specific weather-related environmental features at every location. For flowering, these features differed by population: the Midwest population had genetic variation that primarily covaried with cumulative growing degree days, a temperature-related measure, while the Gulf population had genetic variation that primarily covaried with photoperiod, a day-length-related measure.
-author_contributions:  "T.E.J. designed research. D.B.L. contributed plant material and resources. J.B., D.B.L., and T.E.J. designed and executed field experiments. A.R.B., P.A.F., F.B.F., D.B.L., R.B.M., F.M.R., Y.W., and T.E.J. hosted field experiments. A.H.M. and L.Z. conducted statistical and computational analyses. The manuscript was written by A.H.M., L.Z., and T.E.J. with contributions from all authors."
-conflict_of_interest: "Please declare any competing interests here."
-equal-contributor: "A.O.(Author One) contributed equally to this work with A.T. (Author Two) (remove if not applicable)."
+author_contributions:  "T.E.J. designed research. D.B.L. contributed plant material and resources. J.B., D.B.L., and T.E.J. designed and executed field experiments. A.R.B., P.A.F., F.B.F., D.B.L., R.B.M., F.M.R., Y.W., and T.E.J. hosted field experiments. A.H.M., L.Z., and S.A.S. conducted statistical and computational analyses. The manuscript was written by A.H.M. with contributions from all authors."
+conflict_of_interest: "The authors declare no conflicts of interest."
+equal-contributor: "A.H.M. contributed equally to this work with L.Z. and S.A.S."
 keywords:  [allele-by-environment effect variation, antagonistic pleiotropy, photoperiod, cumulative growing degree days, genetic variation]
 acknowledgements: | 
   We thank the Brackenridge Field laboratory, the Ladybird Johnson Wildflower Center, and the Juenger laboratory for support with plant care and propagation. This material is based upon work supported in part by the Great Lakes Bioenergy Research Center, U.S. Department of Energy, Office of Science, Office of Biological and Environmental Research under Award Numbers DE-SC0018409 and DE-FC02-07ER64494, the US Department of Energy Awards DESC0014156 to T.E.J., DE-SC0017883 to D.B.L, National Science Foundation PGRP Awards IOS0922457 and IOS1444533 to T.E.J, and the Long-term Ecological Research Program (DEB 1832042) at the Kellogg Biological Station.
-bibliography: bibliography.bib  
+bibliography: bibliography.bib 
+csl: pnas.csl
 fontsize: "9pt"
 classoption:
  - twocolumn
  - twoside
 ---
 
-\firstpage[20]{2}
+\firstpage[15]{2}
 
-The timing of plant vegetative and reproductive development are major components of plant fitness affected by multiple external environmental cues (e.g. degree of winter chilling, day length, temperature, and water availability) that signal existing or upcoming growing conditions (1--3). Genetic responses to environmental cues determine the speed, timing, and energy apportioned to vegetative and reproductive growth and shape both the individual's lifespan and its lifetime production of viable seed. Day length (or photoperiod) is one of the most predictable environmental cues, and genetic sensitivity to photoperiod protects plants from potentially fatal consequences of phenological responses to temperature cues at the "wrong" time of year. However, the usefulness of specific environmental cues depends on both features of the environment and the species' adaptive strategies (4). Species with wide natural distributions can have multiple distinct environmentally-cued phenological responses: for example, populations of sunflower (Helianthus annuus) exhibit day-neutral, facultative short day, and facultative long-day flowering responses, which vary with their environments (5, 6). Distinct genetic responses in different environments are known as genotype by environment interactions, or GxE.
+The timing of plant vegetative and reproductive development are major components of plant fitness affected by multiple external environmental cues (e.g. degree of winter chilling, day length, temperature, and water availability) that signal existing or upcoming growing conditions [@bauerle_photoperiodic_2012; @andres2012genetic; @korner2010phenology]. Genetic responses to environmental cues determine the speed, timing, and energy apportioned to vegetative and reproductive growth and shape both the individual's lifespan and its lifetime production of viable seed. Day length (or photoperiod) is one of the most predictable environmental cues, and genetic sensitivity to photoperiod protects plants from potentially fatal consequences of phenological responses to temperature cues at the "wrong" time of year. However, the usefulness of specific environmental cues depends on both features of the environment and the species' adaptive strategies @botero2015evolutionary. Species with wide natural distributions can have multiple distinct environmentally-cued phenological responses: for example, populations of sunflower (Helianthus annuus) exhibit day-neutral, facultative short day, and facultative long-day flowering responses, which vary with their environments [@blackman2013interacting; @henry2014transitions]. Distinct genetic responses in different environments are known as genotype by environment interactions, or GxE.
 
-Flowering time, in particular, is a common subject of GxE research (5--11), a key output of selection driving adaptation to local environments (3, 12, 13), and a selection target for crop improvement to adapt crops to local or future environments (14). Changing flowering responsiveness to photoperiod cues has allowed geographic range expansion and increased yields in a number of cereal species (15--19) and other crops (20, 21). Recent statistical advances in studying phenological GxE have involved determining critical environmental indices before the phenological event occurs, such as photothermal time within a critical growth window (10). However, most studies of flowering GxE focus on finding a single, best fitting form of genotype-environment covariance, despite the key expectation that different genetic subpopulations, and even different genomic regions, have likely evolved distinct patterns of GxE. Additionally, despite theoretical predictions that local adaptation should involve antagonistic pleiotropy, or sign-changing GxE, at the level of individual loci (22--25), previous work has found limited evidence of antagonistic pleiotropy (12, 26), but has been limited by a known statistical bias that reduced detection of SNP effects that differ in sign (26--28). Thus, despite substantial interest in the frequencies of various forms of GxE, the prevalence of antagonistic pleiotropy relative to other forms of GxE remains unknown.
+Flowering time, in particular, is a common subject of GxE research [@blackman2013interacting; @henry2014transitions; @aagren2017adaptive; @brachi2010linkage; @dittmar2014flowering; @li2018genomic; @romero2017study], a key output of selection driving adaptation to local environments [@andres2012genetic; @wadgymar2017identifying; @blumel2015flowering], and a selection target for crop improvement to adapt crops to local or future environments @jung2009flowering. Changing flowering responsiveness to photoperiod cues has allowed geographic range expansion and increased yields in a number of cereal species [@turner2005pseudo; @faure2012mutation; @hung2012zmcct; @zakhrabekova2012induced; @yang2013oself3] and other crops [@pin2012multifaceted; @weller2019parallel]. Recent statistical advances in studying phenological GxE have involved determining critical environmental indices before the phenological event occurs, such as photothermal time within a critical growth window @li2018genomic. However, most studies of flowering GxE focus on finding a single, best fitting form of genotype-environment covariance, despite the key expectation that different genetic subpopulations, and even different genomic regions, have likely evolved distinct patterns of GxE. Additionally, despite theoretical predictions that local adaptation should involve antagonistic pleiotropy, or sign-changing GxE, at the level of individual loci [@levene1953genetic; @felsenstein1976theoretical; @kawecki2004conceptual; @hedrick1986genetic], previous work has found limited evidence of antagonistic pleiotropy [@des2013genotype; @wadgymar2017identifying], but has been limited by a known statistical bias that reduced detection of SNP effects that differ in sign [@des2013genotype; @anderson2013genetic; @anderson2011evolutionary]. Thus, despite substantial interest in the frequencies of various forms of GxE, the prevalence of antagonistic pleiotropy relative to other forms of GxE remains unknown.
 
-Switchgrass (Panicum virgatum) is considered a short-day plant with reproductive development strongly linked to day of the year (29). However, as part of its wide environmental adaptation across the eastern half of North America, its photoperiodicity has been predicted to differ by plant latitude of origin (30, 31). We previously found divergent Midwest and Gulf genetic subpopulations of switchgrass which segregate for distinct sets of environmental adaptations, based on the analysis of two measures of fitness (i.e.,biomass and survival) among 732 genotypes (32). The Midwest genetic subpopulation is primarily composed of individuals from the well-studied upland switchgrass ecotype (33, 34), while the Gulf subpopulation has individuals from the lowland ecotype and the phenotypically intermediate coastal ecotype (32).
+Switchgrass (*Panicum virgatum*) is considered a short-day plant with reproductive development strongly linked to day of the year @mitchell1997predicting. However, as part of its wide environmental adaptation across the eastern half of North America, its photoperiodicity has been predicted to differ by plant latitude of origin [@parrish2005biology; @casler2004latitudinal]. We previously found divergent Midwest and Gulf genetic subpopulations of switchgrass which segregate for distinct sets of environmental adaptations, based on the analysis of two measures of fitness (i.e.,biomass and survival) among 732 genotypes @lovell2021genomic. The Midwest genetic subpopulation is primarily composed of individuals from the well-studied upland switchgrass ecotype [@porter1966analysis; @milano2016genetic], while the Gulf subpopulation has individuals from the lowland ecotype and the phenotypically intermediate coastal ecotype @lovell2021genomic.
 
-Here, we test how the Midwest and Gulf subpopulations differ in their phenological adaptations across environments, and hence their phenological GxE. We phenotype a diversity panel of hundreds of switchgrass genotypes from the Midwest and Gulf subpopulations for the timing of vegetative development ("green-up") and reproductive development (flowering) at eight common garden locations spanning 17 degrees of latitude. These gardens cover the majority of the latitudinal and climatic range of switchgrass and capture the most comprehensive picture to date of the environmental variation this species encounters. After single-site estimation of SNP effects for these phenotypes, we use multivariate adaptive shrinkage (mash) to jointly estimate SNP effects in each subpopulation and phenotype at all eight sites (35). Mash allows us to identify and specify multiple ways genetic effects linked to SNPs may covary with the environment, and does not have a statistical bias in detecting SNP effects with the same or opposite signs (39). To confirm our genetic mapping of GxE, we compare to mapping results from an outbred pseudo-F2 cross grown at the same sites. Taken together, our results allow us to describe the environmental cues and genetic variation affecting phenology in two divergent natural populations of switchgrass.
+Here, we test how the Midwest and Gulf subpopulations differ in their phenological adaptations across environments, and hence their phenological GxE. We phenotype a diversity panel of hundreds of switchgrass genotypes from the Midwest and Gulf subpopulations for the timing of vegetative development ("green-up") and reproductive development (flowering) at eight common garden locations spanning 17 degrees of latitude. These gardens cover the majority of the latitudinal and climatic range of switchgrass and capture the most comprehensive picture to date of the environmental variation this species encounters. After single-site estimation of SNP effects for these phenotypes, we use multivariate adaptive shrinkage (mash) to jointly estimate SNP effects in each subpopulation and phenotype at all eight sites @urbut2019flexible. Mash allows us to identify and specify multiple ways genetic effects linked to SNPs may covary with the environment, and does not have a statistical bias in detecting SNP effects with the same or opposite signs @10.1093/biostatistics/kxw041. To confirm our genetic mapping of GxE, we compare to mapping results from an outbred pseudo-F2 cross grown at the same sites. Taken together, our results allow us to describe the environmental cues and genetic variation affecting phenology in two divergent natural populations of switchgrass.
 
 # Results
 
-In our diversity panel of tetraploid switchgrass (32), genotypes from the Gulf and Midwest genetic subpopulations had distinct phenological timings and distinct patterns of phenological correlations across our eight common garden sites (Fig. 1A,B). At the three Texas common gardens (hereafter 'Texas' gardens), located within the natural range of the Gulf subpopulation, Gulf green-up occurred before Midwestern green-up, and Gulf flowering occurred after Midwestern flowering (Fig. 1A). At the four northernmost common gardens (hereafter 'North' gardens), located within the natural range of the Midwest subpopulation, both Gulf green-up and flowering occurred after Midwest green-up and flowering. At the Oklahoma common garden, located near the natural range limits of both the Gulf and the Midwest subpopulations, Gulf and Midwest green-up occurred over the same time period. These patterns led to strong negative phenotypic correlations for green-up between the North and Texas gardens, particularly in the Gulf and Both subpopulations, and contributed to positive phenotypic correlations for flowering time of larger magnitude at more northern gardens (Fig. 1B).
+In our diversity panel of tetraploid switchgrass [@lovell2021genomic], genotypes from the Gulf and Midwest genetic subpopulations had distinct phenological timings and distinct patterns of phenological correlations across our eight common garden sites (@fig-map). At the three Texas common gardens (hereafter 'Texas' gardens), located within the natural range of the Gulf subpopulation, Gulf green-up occurred before Midwestern green-up, and Gulf flowering occurred after Midwestern flowering (Fig. 1A). At the four northernmost common gardens (hereafter 'North' gardens), located within the natural range of the Midwest subpopulation, both Gulf green-up and flowering occurred after Midwest green-up and flowering. At the Oklahoma common garden, located near the natural range limits of both the Gulf and the Midwest subpopulations, Gulf and Midwest green-up occurred over the same time period. These patterns led to strong negative phenotypic correlations for green-up between the North and Texas gardens, particularly in the Gulf and Both subpopulations, and contributed to positive phenotypic correlations for flowering time of larger magnitude at more northern gardens (Fig. 1B).
 
 Narrow-sense heritabilities (h2) indicated that rank-changing GxE for these phenotypes was present across the common gardens (Fig 1C). h2 were typically high at individual gardens: 59% on average for green-up date, and 87% for flowering date. However, h2 were variable across gardens, and green-up dates were uncorrelated (r2 \< 0.2) or negatively correlated between pairs of gardens (Fig. 1B). These negative and small correlations undoubtedly contributed to the low h2 values for green-up and flowering date when estimated jointly at all eight gardens: h2 was 0.8% for green-up and 23.2% for flowering date.
 
@@ -99,6 +166,31 @@ Our analysis of flowering showed that the Gulf and Midwest subpopulations have t
 
 Identifying the environmental cues that are predictive of, or even correlated with, plant phenotypic responses remains a major challenge to studies interrogating gene action across many natural environments. Clearly, the photoperiod and cumulative GDD cues we identify here are functions of the genotypes measured, are not predictive, and capture only a minority of SNP effects on flowering. We know still less about the overwintering parameters that affect green-up, which is reflected in our lower ability to assign SNP effects on green-up to weather-based cues. More generally, it is difficult to predict the time scales over which individuals may integrate environmental cues, particularly in perennial species which may integrate these cues over longer time scales. Mash offers an opportunity to specify multiple environmental cues and compete them to explain patterns of SNP effects, allowing us to detect how important these cues are genome-wide, and how strongly each cue influences each SNP. This is a key development to further improve our understanding of genetic variation in GxE.
 
+
+
+# Figures and Tables
+
+```{=tex}
+\begin{table}[t!]
+\centering
+\caption{Weather variables and time frames around the green up and flowering date used to construct the hypothesis-based covariance matrices. The correlations between values of these weather variables for genetically identical plants grown in different gardens were used to fill off-diagonal cells of the covariance matrices. Narrow-sense heritabilities for these values at each garden were used for the diagonal cells.}
+\begin{tabular}{lrr}
+Weather variable & Time Frame & Covariance Matrices tested \\
+\midrule
+1. cumulative GDD at 12C in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60 \\
+2. cumulative rainfall in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60  \\
+3. day length (hours) on a specific day indicated by the time frame & (1-7) and 14 days prior to green up date & 48 \\
+4. day length change (seconds) on a specific day indicated by the time frame & (1-7) and 14 days prior to green up date & 48 \\
+5. average temperature in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60 \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+```
+![Figure 1. Characterization of green-up and flowering dates from the switchgrass diversity panel. (a) Map and trait histograms of green-up and flowering dates across two genetically distinct switchgrass subpopulations and eight common gardens. Purple represents individuals from the Midwest genetic subpopulation, and pink individuals from the Gulf subpopulation. Vertical dashed lines indicate the summer solstice. Common gardens are arranged in latitudinal order. (b) Phenotypic correlations between clonal replicates planted at eight common gardens, within and between two genetic subpopulations. (c) Narrow sense heritability of green-up and flowering within single common gardens (purple) and across all eight common gardens (green), within and between two genetic subpopulations. (d) Flow diagram of the methods applied to the green-up and flowering dates to jointly estimate SNP effects across all sites. Mash was fit to SNP effect data and used to find covariance matrices that improved the mash model likelihood using a large set of randomly selected, relatively unlinked SNP effects; this model was applied to a "strong" set of SNP effects with large effect sizes in the univariate GWAS.](images/Fig1_200dpi.png){#fig-map}
+
+![Figure 2.](images/Figure_2_Covariance_matrices_and_posterior_weights.png){#fig-covar}
+
 # Materials and Methods
 
 Whenever possible, plant material will be shared upon request. Source data and code to replicate these analyses are available at: https://github.com/Alice-MacQueen/pvdiv-phenology-gxe.git. SNP data to replicate these analyses are available from the UT dataverse at https://doi.org/link.
@@ -124,123 +216,6 @@ In addition, the get_GxE function also sets an arbitrary threshold to count an e
 ### Confirmation of genotype-by-environment effects using an independent mapping population
 
 To confirm candidate genomic regions and patterns of allelic effects found in the diversity panel, we analyzed flowering in an outbred pseudo-F2 cross between four individuals, two Midwest and two Gulf individuals. The formation of this mapping population has been described previously (34); additional details on QTL mapping can be found in SI Appendix, Section S6. To be directly comparable to the diversity panel data, only 2019 phenology data from the pseudo-F2 cross from the same eight common garden sites were used. To compare our QTL enrichments of significant mash associations to the null expectation, we used permutation to choose 1000 sets of 23 genomic regions of the same size randomly distributed throughout the genome, then calculated enrichments of the mash 1% tail in these random intervals.
-
-# Figures and Tables
-
-![Figure 1. Characterization of green-up and flowering dates from the switchgrass diversity panel. (a) Map and trait histograms of green-up and flowering dates across two genetically distinct switchgrass subpopulations and eight common gardens. Purple represents individuals from the Midwest genetic subpopulation, and pink individuals from the Gulf subpopulation. Vertical dashed lines indicate the summer solstice. Common gardens are arranged in latitudinal order. (b) Phenotypic correlations between clonal replicates planted at eight common gardens, within and between two genetic subpopulations.  (c) Narrow sense heritability of green-up and flowering within single common gardens (purple) and across all eight common gardens (green), within and between two genetic subpopulations. (d) Flow diagram of the methods applied to the green-up and flowering dates to jointly estimate SNP effects across all sites. Mash was fit to SNP effect data and used to find covariance matrices that improved the mash model likelihood using a large set of randomly selected, relatively unlinked SNP effects; this model was applied to a \"strong\" set of SNP effects with large effect sizes in the univariate GWAS.](images/Fig1_200dpi.png)
-
-![Figure 2.](images/Figure_2_Covariance_matrices_and_posterior_weights.png)
-
-## Author Affiliations {.unnumbered}
-
-Include department, institution, and complete address, with the ZIP/postal code, for each author. Use lower case letters to match authors with institutions, as shown in the example. PNAS strongly encourages authors to supply an [ORCID identifier](https://orcid.org/) for each author. Individual authors must link their ORCID account to their PNAS account at [www.pnascentral.org](http://www.pnascentral.org/). For proper authentication, authors must provide their ORCID at submission and are not permitted to add ORCIDs on proofs.
-
-## Manuscript Length {.unnumbered}
-
-A standard 6-page article is approximately 4,000 words, 50 references, and 4 medium-size graphical elements (i.e., figures and tables). The preferred length of articles remains at 6 pages, but PNAS will allow articles up to a maximum of 12 pages.
-
-## References {.unnumbered}
-
-References should be cited in numerical order as they appear in text; this will be done automatically via bibtex, e.g. \cite{belkin2002using} and \cite{berard1994embedding,coifman2005geometric,phdthesis,masterthesis}. All references cited in the main text should be included in the main manuscript file.
-
-## Data Archival {.unnumbered}
-
-PNAS must be able to archive the data essential to a published article. Where such archiving is not possible, deposition of data in public databases, such as GenBank, ArrayExpress, Protein Data Bank, Unidata, and others outlined in the [Information for Authors](https://www.pnas.org/author-center/editorial-and-journal-policies#materials-and-data-availability), is acceptable.
-
-## Figures and Tables {.unnumbered}
-
-| **Weather variable**                                                      | **Time frame**                                               | **\# Covariance Matrices tested in greedy mash algorithm** |
-|---------------------------|-----------------------|----------------------|
-| cumulative GDD at 12C in the time frame                                   | 1, 2, 3, 4, 5, 6, 7, 14, 21, 28 days prior to green up date  | 60, 30 per phenotype and 10 per phenotype & genetic group  |
-| cumulative rainfall in the time frame                                     | 1, 2, 3, 4, 5, 6, 7, 14, 21, 28 days prior to green up date  | 60, 30 per phenotype and 10 per phenotype &  genetic group |
-| day length (hours) on a specific day indicated by the time frame          | 1, 2, 3, 4, 5, 6, 7, and 14 days prior to green up date      | 48, 24 per phenotype and 8 per phenotype &  genetic group  |
-| day length change (seconds) on a specific day indicated by the time frame | 1, 2, 3, 4, 5, 6, 7, and 14 days prior to green up date      | 48, 24 per phenotype and 8 per phenotype & genetic group   |
-| average temperature in the time frame                                     | 1, 2, 3, 4, 5, 6, 7, 14, 21, 28 days prior to green up date  | 60, 30 per phenotype and 10 per phenotype & genetic group  |
-
-: Weather variables and time frames around the green up and flowering date used to construct the hypothesis-based covariance matrices. The correlations between values of these weather variables for genetically identical plants grown in different gardens were used to fill off-diagonal cells of the covariance matrices. Narrow-sense heritabilities for these values at each garden were used for the diagonal cells.
-
-Figures can be included using Quarto's syntax, code chunks, or with LaTeX.
-
-For simple figures, Quarto syntax is typically easiest. Full details are available in [the Quarto documentation](https://quarto.org/docs/authoring/figures.html).
-
-![Placeholder image of a frog with a long example legend to show justification setting.](figs/frog.pdf){#fig-frog}
-
-Tables can similarly be included using Quarto's syntax, code chunks, or with LaTeX. I tend to use code chunks, but LaTeX works very well for classic tables, like regression tables or summary statistics.
-
-```{=tex}
-\begin{table}[t!]
-\centering
-\caption{Comparison of the fitted potential energy surfaces and ab initio benchmark electronic energy calculations}
-\begin{tabular}{lrrr}
-Species & CBS & CV & G3 \\
-\midrule
-1. Acetaldehyde & 0.0 & 0.0 & 0.0 \\
-2. Vinyl alcohol & 9.1 & 9.6 & 13.5 \\
-3. Hydroxyethylidene & 50.8 & 51.2 & 54.0\\
-\bottomrule
-\end{tabular}
-
-\addtabletext{nomenclature for the TSs refers to the numbered species in the table.}
-\end{table}
-```
-### Digital Figures {.unnumbered}
-
-EPS, high-resolution PDF, and PowerPoint are preferred formats for figures that will be used in the main manuscript. Authors may submit PRC or U3D files for 3D images; these must be accompanied by 2D representations in TIFF, EPS, or high-resolution PDF format. Color images must be in RGB (red, green, blue) mode. Include the font files for any text.
-
-Images must be provided at final size, preferably 1 column width (8.7cm). Figures wider than 1 column should be sized to 11.4cm or 17.8cm wide. Numbers, letters, and symbols should be no smaller than 6 points (2mm) and no larger than 12 points (6mm) after reduction and must be consistent.
-
-Figures and tables should be labelled and referenced in the standard way using the `\label{}` and `\ref{}` commands.
-
-Figure @fig-frog shows an example of how to insert a column-wide figure. To insert a figure wider than one column, please use the `figure*` environment. Figures wider than one column should be sized to 11.4 cm or 17.8 cm wide. Use `SCfigure*` environment for a wide figure with side legends, such as @fig-side.
-
-In Quarto, we can do these by setting the `fig-env` command to `figure*` or `SCfigure*`
-
-```{r}
-#| label: fig-side
-#| fig-cap: "This legend would be placed at the side of the figure, rather than below it."
-#| fig-env: "SCfigure*"
-#| echo: false
-# tell it the options as comments with a | and a space, as above.
-# set echo: false to avoid printing this text
-knitr::include_graphics('figs/frog.pdf')
-```
-
-## Tables {.unnumbered}
-
-Tables should be included in the main manuscript file and should not be uploaded separately.
-
-## Single column equations {.unnumbered}
-
-Authors may use 1- or 2-column equations in their article, according to their preference.
-
-To allow an equation to span both columns, use the `\begin{figure*}...\end{figure*}` environment mentioned above for figures.
-
-Note that the use of the `widetext` environment for equations is not recommended, and should not be used.
-
-```{=tex}
-\begin{figure*}[bt!]
-\begin{align*}
-(x+y)^3&=(x+y)(x+y)^2\\
-       &=(x+y)(x^2+2xy+y^2) \numberthis \label{eqn:example} \\
-       &=x^3+3x^2y+3xy^3+x^3.
-\end{align*}
-\end{figure*}
-```
-# Material and Methods {.unnumbered}
-
-## Supporting Information Appendix (SI) {.unnumbered}
-
-Authors should submit SI as a single separate SI Appendix PDF file, combining all text, figures, tables, movie legends, and SI references. SI will be published as provided by the authors; it will not be edited or composed. Additional details can be found in the [PNAS Author Center](https://www.pnas.org/authors/submitting-your-manuscript#manuscript-formatting-guidelines). The PNAS Overleaf SI template can be found [here](https://www.overleaf.com/latex/templates/pnas-template-for-supplementary-information/wqfsfqwyjtsd). Refer to the SI Appendix in the manuscript at an appropriate point in the text. Number supporting figures and tables starting with S1, S2, etc.
-
-Authors who place detailed materials and methods in an SI Appendix must provide sufficient detail in the main text methods to enable a reader to follow the logic of the procedures and results and also must reference the SI methods. If a paper is fundamentally a study of a new method or technique, then the methods must be described completely in the main text.
-
-### SI Datasets {.unnumbered}
-
-Supply .xlsx, .csv, .txt, .rtf, or .pdf files. This file type will be published in raw format and will not be edited or composed.
-
-### SI Movies {.unnumbered}
-
-Supply Audio Video Interleave (avi), Quicktime (mov), Windows Media (wmv), animated GIF (gif), or MPEG files. Movie legends should be included in the SI Appendix file. All movies should be submitted at the desired reproduction size and length. Movies should be no more than 10MB in size.
 
 # References
 
