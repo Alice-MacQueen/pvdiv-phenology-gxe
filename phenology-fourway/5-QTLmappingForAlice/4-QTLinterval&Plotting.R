@@ -1,4 +1,4 @@
-setwd("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/")
+setwd("D:/UT_Research/phenology-gxe/Phenology_4way/0-data/")
 library(qtl)
 library(qtl2)
 library(plyr)
