@@ -1,0 +1,8 @@
+"null" 0.0109265952440697
+"greenup.equal_effects" 0.000215136620081331
+"greenup.identity" 0.877149471175777
+"greenup.simple_het_1" 0.0769438409435554
+"greenup.all.dyln_gr50.U.mat" 0.0112534360616257
+"greenup.simple_het_3" 0.00755151640279398
+"greenup.all.dyln_change_sec_14d_prior.U.mat" 0.0125217165405334
+"greenup.all.crain_2d.U.mat" 0.00343828701156378

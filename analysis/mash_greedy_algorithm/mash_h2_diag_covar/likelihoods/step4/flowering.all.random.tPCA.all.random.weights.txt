@@ -1,0 +1,5 @@
+"null" 0.000144827952743472
+"flowering.all.random.tPCA" 0.00473416376929603
+"flowering.identity" 0.901060990823616
+"flowering.simple_het_1" 0.0825241012244781
+"flowering.all.tave_2d.U.mat" 0.0115359162298659

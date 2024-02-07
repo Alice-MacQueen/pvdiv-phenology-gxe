@@ -1,0 +1,6 @@
+"null" 0.126720738000386
+"greenup.midwest.tave_6d.U.mat" 0.0110011195469191
+"greenup.identity" 0.553784499074872
+"greenup.simple_het_1" 0.240334804599695
+"greenup.singleton.OK" 0.0307970547472678
+"greenup.singleton.MI" 0.0373617840308599

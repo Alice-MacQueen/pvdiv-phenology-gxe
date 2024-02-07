@@ -1,0 +1,12 @@
+"null" 0.381571264739781
+"greenup.gulf.crain_4d.U.mat" 0
+"greenup.identity" 0.336602258000579
+"greenup.simple_het_2" 0.163317019068366
+"greenup.singleton.MO" 0.00464886095967278
+"greenup.singleton.NE" 0.00663619860829225
+"greenup.gulf.dyln_14d_prior.U.mat" 0.0340588834467898
+"greenup.singleton.MI" 0.00974049321026046
+"greenup.singleton.SD" 0.00103422041018812
+"greenup.singleton.TX2" 0.00223589167541911
+"greenup.gulf.cgdd_12c_6d.U.mat" 0.0553771491228054
+"greenup.singleton.TX3" 0.00477776075784584

@@ -1,0 +1,9 @@
+"null" 0.712200904867929
+"greenup.midwest.crain_4d.U.mat" 0
+"greenup.identity" 0.237535316123332
+"greenup.singleton.TX2" 0.00897791055112104
+"greenup.singleton.MI" 0.00687819804660084
+"greenup.singleton.SD" 0.00734053404128466
+"greenup.singleton.MO" 0.00760489125406153
+"greenup.singleton.TX3" 0.0106593439902865
+"greenup.singleton.NE" 0.00880290112538459

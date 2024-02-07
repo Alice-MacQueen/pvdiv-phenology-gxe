@@ -1,0 +1,5 @@
+"null" 0.381233896840941
+"greenup.gulf.random.PCA_2" 0.0199853832877745
+"greenup.identity" 0.424712288852934
+"greenup.simple_het_2" 0.170917728134087
+"greenup.singleton.MO" 0.00315070288426395

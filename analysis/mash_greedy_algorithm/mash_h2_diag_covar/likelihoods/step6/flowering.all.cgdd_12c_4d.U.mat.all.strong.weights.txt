@@ -1,0 +1,7 @@
+"null" 0.000221671326308864
+"flowering.all.cgdd_12c_4d.U.mat" 0
+"flowering.identity" 0.861568112063665
+"flowering.simple_het_3" 0.0204612564394159
+"flowering.all.tave_1d.U.mat" 0.0327008402114258
+"flowering.equal_effects" 0.00756656381332921
+"flowering.simple_het_1" 0.0774815561458552

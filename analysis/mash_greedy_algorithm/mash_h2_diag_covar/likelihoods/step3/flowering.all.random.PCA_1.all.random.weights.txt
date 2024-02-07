@@ -1,0 +1,4 @@
+"null" 0.000141965957614126
+"flowering.all.random.PCA_1" 0.000934319537347663
+"flowering.identity" 0.898345624564788
+"flowering.simple_het_1" 0.10057808994025

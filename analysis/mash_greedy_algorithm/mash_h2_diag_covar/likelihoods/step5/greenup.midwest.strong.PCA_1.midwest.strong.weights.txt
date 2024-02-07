@@ -1,0 +1,6 @@
+"null" 0.12675494623498
+"greenup.midwest.strong.PCA_1" 0
+"greenup.identity" 0.560958370108645
+"greenup.simple_het_1" 0.244199181682298
+"greenup.singleton.OK" 0.030766403884492
+"greenup.singleton.MI" 0.0373210980895841

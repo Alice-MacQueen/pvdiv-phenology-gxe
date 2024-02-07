@@ -1,0 +1,9 @@
+"null" 0.222626923438288
+"flowering.all.random.PCA_5" 0
+"flowering.identity" 0.710649756706594
+"flowering.singleton.TX3" 0.0148518638050663
+"flowering.singleton.TX1" 0.00891322308367628
+"flowering.singleton.OK" 0.0112236403987816
+"flowering.singleton.MI" 0.0116172632486978
+"flowering.singleton.NE" 0.0105400250426173
+"flowering.singleton.TX2" 0.00957730427627829

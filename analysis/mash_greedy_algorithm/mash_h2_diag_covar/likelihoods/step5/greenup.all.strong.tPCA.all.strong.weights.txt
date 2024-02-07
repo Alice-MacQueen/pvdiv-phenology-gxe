@@ -1,0 +1,6 @@
+"null" 0.00468580802635701
+"greenup.all.strong.tPCA" 0.00364993342594122
+"greenup.identity" 0.83246718005336
+"greenup.simple_het_2" 0.11638005901611
+"greenup.all.dyln_change_sec_14d_prior.U.mat" 0.0296745869012424
+"greenup.all.dyln_gr50.U.mat" 0.0131424325769891

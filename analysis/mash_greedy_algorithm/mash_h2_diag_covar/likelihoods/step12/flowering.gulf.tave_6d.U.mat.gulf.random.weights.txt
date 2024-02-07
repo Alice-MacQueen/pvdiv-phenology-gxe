@@ -1,0 +1,13 @@
+"null" 0.013694961126178
+"flowering.gulf.tave_6d.U.mat" 0
+"flowering.identity" 0.723027602796617
+"flowering.simple_het_1" 0.231326600242685
+"flowering.singleton.TX1" 0.00228269578172725
+"flowering.singleton.MO" 0.00221200766893084
+"flowering.singleton.MI" 0.00235661063818187
+"flowering.singleton.SD" 0.00208098255642956
+"flowering.singleton.TX3" 0.00370247146871339
+"flowering.singleton.NE" 0.00184227938897124
+"flowering.singleton.TX2" 0.00222761318597468
+"flowering.singleton.OK" 0.00160788586614745
+"flowering.equal_effects" 0.013638289279443

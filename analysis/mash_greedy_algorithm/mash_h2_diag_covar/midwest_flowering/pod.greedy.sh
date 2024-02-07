@@ -1,0 +1,1 @@
+python run.mash.greedy.search.py -p flowering -c midwest -e random

@@ -1,0 +1,7 @@
+"null" 0.146521965911709
+"flowering.midwest.tave_3d.U.mat" 0.0408975118616567
+"flowering.identity" 0.628770425113336
+"flowering.simple_het_1" 0.159535776159189
+"flowering.singleton.TX2" 0.0079816110590088
+"flowering.singleton.NE" 0.00723495063824449
+"flowering.singleton.MO" 0.009057759256857

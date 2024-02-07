@@ -1,0 +1,13 @@
+"null" 0.505013178403325
+"greenup.midwest.random.PCA_3" 0.0251699761656426
+"greenup.identity" 0.0775165627128383
+"greenup.singleton.TX2" 0.0101183863679569
+"greenup.singleton.MI" 0.00913670449869861
+"greenup.singleton.SD" 0.0083446753744157
+"greenup.singleton.MO" 0.00831055440938915
+"greenup.singleton.TX3" 0.0119483362216979
+"greenup.singleton.NE" 0.0100151543911211
+"greenup.singleton.OK" 0.00764609114311501
+"greenup.midwest.random.PCA_1" 0.0842956691902771
+"greenup.equal_effects" 0.185249995611082
+"greenup.midwest.dyln_change_sec_14d_prior.U.mat" 0.0572347155104399

@@ -1,0 +1,7 @@
+"null" 0.366876903346488
+"greenup.gulf.dyln_3d_prior.U.mat" 0
+"greenup.identity" 0.37364159150587
+"greenup.simple_het_2" 0.168623675464164
+"greenup.singleton.MO" 0.0032576777327429
+"greenup.singleton.NE" 0.0069099390546026
+"greenup.gulf.dyln_14d_prior.U.mat" 0.0806902128961328

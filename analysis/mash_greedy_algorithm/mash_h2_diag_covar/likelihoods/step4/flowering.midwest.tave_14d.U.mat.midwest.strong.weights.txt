@@ -1,0 +1,5 @@
+"null" 0.175337986815908
+"flowering.midwest.tave_14d.U.mat" 0.0289713587922829
+"flowering.identity" 0.603319664002809
+"flowering.simple_het_1" 0.184700818733055
+"flowering.singleton.TX2" 0.00767017165594482

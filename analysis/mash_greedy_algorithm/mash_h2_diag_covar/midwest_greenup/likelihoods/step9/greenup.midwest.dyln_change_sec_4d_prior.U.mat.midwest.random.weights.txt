@@ -1,0 +1,10 @@
+"null" 0.503102302025095
+"greenup.midwest.dyln_change_sec_4d_prior.U.mat" 0.0642832497082483
+"greenup.identity" 0.400738271756099
+"greenup.singleton.MO" 0.00204922863407191
+"greenup.singleton.NE" 0.00192966931109775
+"greenup.singleton.TX2" 0.00206098194805093
+"greenup.singleton.TX1" 0.0202125935359407
+"greenup.singleton.MI" 0.00163597398800901
+"greenup.singleton.OK" 0.00271605465489366
+"greenup.singleton.TX3" 0.00127167443849396

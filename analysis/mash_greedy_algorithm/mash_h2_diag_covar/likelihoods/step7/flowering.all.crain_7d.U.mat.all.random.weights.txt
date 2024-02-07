@@ -1,0 +1,8 @@
+"null" 0.000141511258440073
+"flowering.all.crain_7d.U.mat" 0
+"flowering.identity" 0.908606291316889
+"flowering.simple_het_1" 0.0576870734999364
+"flowering.all.tave_2d.U.mat" 0.00805768723794194
+"flowering.simple_het_3" 0.00508187494126008
+"flowering.all.dyln_change_sec_14d_prior.U.mat" 0.0160355392928843
+"flowering.all.random.tPCA" 0.00439002245264849

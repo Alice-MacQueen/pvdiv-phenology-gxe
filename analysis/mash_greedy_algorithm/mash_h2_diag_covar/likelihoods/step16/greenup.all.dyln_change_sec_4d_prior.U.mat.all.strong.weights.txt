@@ -1,0 +1,17 @@
+"null" 0.00390653182203805
+"greenup.all.dyln_change_sec_4d_prior.U.mat" 0
+"greenup.identity" 0.765692054407754
+"greenup.simple_het_2" 0
+"greenup.all.dyln_change_sec_14d_prior.U.mat" 0.0276977175642129
+"greenup.all.dyln_gr50.U.mat" 0.0135476375556214
+"greenup.simple_het_1" 0.121710909361852
+"greenup.simple_het_3" 0.04972893199273
+"greenup.singleton.TX3" 0.00199002659416127
+"greenup.singleton.NE" 0.00241548747537427
+"greenup.singleton.TX2" 0.00180689894887731
+"greenup.singleton.MI" 0.00147547281929112
+"greenup.singleton.TX1" 0.00181537041126713
+"greenup.singleton.SD" 0.00167453896067903
+"greenup.singleton.OK" 0.0011935644896567
+"greenup.singleton.MO" 0.00146515856113112
+"greenup.all.crain_2d.U.mat" 0.00387969903535354

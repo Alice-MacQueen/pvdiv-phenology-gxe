@@ -1,0 +1,8 @@
+"null" 0.383272962330183
+"greenup.all.random.PCA_4" 0
+"greenup.identity" 0.593191819354106
+"greenup.singleton.MI" 0.00740075353740239
+"greenup.singleton.SD" 0.0033760324533194
+"greenup.singleton.NE" 0.00385590069643956
+"greenup.singleton.TX2" 0.00657002860987882
+"greenup.singleton.OK" 0.00233250301867074

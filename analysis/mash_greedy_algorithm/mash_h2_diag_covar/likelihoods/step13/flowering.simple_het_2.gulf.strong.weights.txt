@@ -1,0 +1,14 @@
+"null" 0.0131125038674605
+"flowering.simple_het_2" 0
+"flowering.identity" 0.753982264297282
+"flowering.simple_het_1" 0.188526624618349
+"flowering.singleton.NE" 0.00244745890206255
+"flowering.singleton.SD" 0.00168928275249229
+"flowering.singleton.MI" 0.00234627583202788
+"flowering.singleton.TX3" 0.00233120004363301
+"flowering.singleton.TX1" 0.0017735874874926
+"flowering.singleton.MO" 0.00187794234263776
+"flowering.singleton.OK" 0.000947691453988088
+"flowering.singleton.TX2" 0.000909313173715377
+"flowering.gulf.strong.PCA_3" 0.00504150277616957
+"flowering.gulf.dyln_change_sec_14d_prior.U.mat" 0.0250143524526894

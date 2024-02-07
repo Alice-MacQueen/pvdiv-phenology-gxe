@@ -1,0 +1,7 @@
+"null" 0.425238547542277
+"flowering.gulf.tave_28d.U.mat" 0.00826140032492222
+"flowering.identity" 0.385457964268258
+"flowering.simple_het_1" 0.165922532137815
+"flowering.singleton.MI" 0.00472990577434066
+"flowering.singleton.TX3" 0.00543955189255919
+"flowering.singleton.SD" 0.00495009805982832

@@ -1,0 +1,9 @@
+"null" 0.0920295909256576
+"greenup.midwest.dyln_gr50.U.mat" 0.000711879379949793
+"greenup.identity" 0.47338786497266
+"greenup.simple_het_1" 0.244022186509454
+"greenup.singleton.OK" 0.0362275282453068
+"greenup.singleton.MI" 0.0419843872055651
+"greenup.singleton.TX3" 0.0371654755047473
+"greenup.singleton.NE" 0.0385390842741837
+"greenup.singleton.TX2" 0.0359320029824755

@@ -1,0 +1,12 @@
+"null" 0.133170797380218
+"flowering.midwest.dyln_4d_prior.U.mat" 0.0661009300370817
+"flowering.identity" 0.579025214543535
+"flowering.simple_het_1" 0.139067082380906
+"flowering.singleton.TX2" 0.00900018464129178
+"flowering.singleton.NE" 0.0098141508649274
+"flowering.singleton.MO" 0.0114686677284057
+"flowering.singleton.SD" 0.00985823187402577
+"flowering.singleton.TX1" 0.0134524088569037
+"flowering.singleton.MI" 0.0123464682387836
+"flowering.singleton.TX3" 0.0110335344977993
+"flowering.midwest.strong.PCA_1" 0.00566232895612269

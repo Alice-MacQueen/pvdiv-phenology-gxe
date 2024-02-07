@@ -1,0 +1,12 @@
+"null" 0.574292820596763
+"greenup.midwest.dyln_3d_prior.U.mat" 0.00145267173274008
+"greenup.identity" 0.133239244270829
+"greenup.singleton.TX2" 0.0100818546851325
+"greenup.singleton.MI" 0.00873106138799991
+"greenup.singleton.SD" 0.00826412133102803
+"greenup.singleton.MO" 0.00879209220045579
+"greenup.singleton.TX3" 0.0118629468353412
+"greenup.singleton.NE" 0.00990454326577535
+"greenup.singleton.OK" 0.00764288662106482
+"greenup.midwest.random.PCA_1" 0.0734764374497623
+"greenup.equal_effects" 0.152259319623108

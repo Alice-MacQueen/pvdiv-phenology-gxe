@@ -1,0 +1,14 @@
+"null" 0.15286805515687
+"flowering.midwest.tave_3d.U.mat" 0.0849055875123115
+"flowering.identity" 0.555719994415924
+"flowering.simple_het_1" 0.0792141899417878
+"flowering.singleton.TX2" 0.00929779276650115
+"flowering.singleton.NE" 0.00852371067727358
+"flowering.singleton.MO" 0.0133060925136895
+"flowering.singleton.SD" 0.00662739862349914
+"flowering.singleton.TX1" 0.0140585080933587
+"flowering.singleton.MI" 0.0120539354436879
+"flowering.singleton.TX3" 0.00640189800144826
+"flowering.midwest.strong.PCA_1" 0.00637335140725215
+"flowering.midwest.crain_6d.U.mat" 0.0294225596757121
+"flowering.midwest.crain_1d.U.mat" 0.021226925770684

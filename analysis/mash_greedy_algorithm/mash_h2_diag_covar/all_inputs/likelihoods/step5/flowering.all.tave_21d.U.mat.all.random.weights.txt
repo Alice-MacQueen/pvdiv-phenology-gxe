@@ -1,0 +1,6 @@
+"null" 0.236624034788721
+"flowering.all.tave_21d.U.mat" 0.0342184521693317
+"flowering.identity" 0.700793490631993
+"flowering.singleton.TX3" 0.0118059779061725
+"flowering.singleton.TX1" 0.00679209421791865
+"flowering.singleton.OK" 0.00976595028586313

@@ -1,0 +1,9 @@
+"null" 0.000221567581633332
+"flowering.singleton.OK" 0
+"flowering.identity" 0.855481793191918
+"flowering.simple_het_3" 0.0203605660365971
+"flowering.all.tave_1d.U.mat" 0.0304024298408814
+"flowering.equal_effects" 0.00762635893150748
+"flowering.simple_het_1" 0.0611554129800694
+"flowering.all.dyln_change_sec_14d_prior.U.mat" 0.0210447634473712
+"flowering.all.strong.tPCA" 0.00370710799002206

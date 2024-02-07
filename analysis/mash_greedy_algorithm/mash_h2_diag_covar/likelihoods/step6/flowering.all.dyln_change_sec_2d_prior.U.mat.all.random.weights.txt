@@ -1,0 +1,7 @@
+"null" 0.000141624505481068
+"flowering.all.dyln_change_sec_2d_prior.U.mat" 0.00482354845685291
+"flowering.identity" 0.910250122092251
+"flowering.simple_het_1" 0.0597571484379515
+"flowering.all.tave_2d.U.mat" 0.00798934391591616
+"flowering.simple_het_3" 0.00523005698670158
+"flowering.all.dyln_change_sec_14d_prior.U.mat" 0.0118081556048461

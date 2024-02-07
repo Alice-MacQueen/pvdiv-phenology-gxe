@@ -1,0 +1,10 @@
+"null" 0.00456240199751019
+"greenup.all.crain_2d.U.mat" 0.00399424401669938
+"greenup.identity" 0.774804158339876
+"greenup.simple_het_2" 0
+"greenup.all.dyln_change_sec_14d_prior.U.mat" 0.0277852676013499
+"greenup.all.dyln_gr50.U.mat" 0.0134150594233804
+"greenup.simple_het_1" 0.120014439205856
+"greenup.simple_het_3" 0.0510446278326023
+"greenup.singleton.TX3" 0.00197824170806094
+"greenup.singleton.NE" 0.00240155987466525

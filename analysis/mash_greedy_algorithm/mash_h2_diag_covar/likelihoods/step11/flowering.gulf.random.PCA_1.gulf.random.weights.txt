@@ -1,0 +1,12 @@
+"null" 0.0136974640081989
+"flowering.gulf.random.PCA_1" 2.85003456968335e-05
+"flowering.identity" 0.663778373449285
+"flowering.simple_het_1" 0.304356243695289
+"flowering.singleton.TX1" 0.00227866896254951
+"flowering.singleton.MO" 0.00220934119137695
+"flowering.singleton.MI" 0.00235157002492438
+"flowering.singleton.SD" 0.00207935666105052
+"flowering.singleton.TX3" 0.00356444940511161
+"flowering.singleton.NE" 0.00183927210487341
+"flowering.singleton.TX2" 0.00221133320999112
+"flowering.singleton.OK" 0.00160542694165218

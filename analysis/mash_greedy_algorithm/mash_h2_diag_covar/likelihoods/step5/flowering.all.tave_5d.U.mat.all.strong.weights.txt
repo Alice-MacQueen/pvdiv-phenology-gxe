@@ -1,0 +1,6 @@
+"null" 0.000222398561805565
+"flowering.all.tave_5d.U.mat" 0.00100525070587139
+"flowering.identity" 0.923015167392366
+"flowering.simple_het_3" 0.0332463510100169
+"flowering.all.tave_1d.U.mat" 0.0347996196172569
+"flowering.equal_effects" 0.00771121271268341

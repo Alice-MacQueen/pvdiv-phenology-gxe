@@ -1,0 +1,8 @@
+"null" 0.37661395711861
+"flowering.midwest.cgdd_12c_14d.U.mat" 0
+"flowering.identity" 0.325724221632772
+"flowering.simple_het_1" 0.295635071918534
+"flowering.singleton.MI" 0.000880956087031517
+"flowering.singleton.TX2" 0.00027644025083855
+"flowering.singleton.MO" 0.000200323196944483
+"flowering.singleton.TX3" 0.000669029795269665

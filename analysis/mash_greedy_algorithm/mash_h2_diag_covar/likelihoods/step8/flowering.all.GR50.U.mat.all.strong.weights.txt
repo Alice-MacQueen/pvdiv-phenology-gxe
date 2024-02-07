@@ -1,0 +1,9 @@
+"null" 0.000221567607136496
+"flowering.all.GR50.U.mat" 0
+"flowering.identity" 0.855482321375806
+"flowering.simple_het_3" 0.0203605625235167
+"flowering.all.tave_1d.U.mat" 0.0304024137957795
+"flowering.equal_effects" 0.00762635975694729
+"flowering.simple_het_1" 0.0611547995437585
+"flowering.all.dyln_change_sec_14d_prior.U.mat" 0.0210448454311817
+"flowering.all.strong.tPCA" 0.00370712996587399

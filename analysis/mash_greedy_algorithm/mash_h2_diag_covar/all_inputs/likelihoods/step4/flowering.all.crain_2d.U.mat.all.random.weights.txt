@@ -1,0 +1,5 @@
+"null" 0.239915946222864
+"flowering.all.crain_2d.U.mat" 0.00159023334449756
+"flowering.identity" 0.741204824681685
+"flowering.singleton.TX3" 0.0111290365777008
+"flowering.singleton.TX1" 0.0061599591732518

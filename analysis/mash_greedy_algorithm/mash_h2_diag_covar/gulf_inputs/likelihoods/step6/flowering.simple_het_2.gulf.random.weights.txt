@@ -1,0 +1,7 @@
+"null" 0.43458963046875
+"flowering.simple_het_2" 0
+"flowering.identity" 0.385025418827361
+"flowering.simple_het_1" 0.165360148579097
+"flowering.singleton.MI" 0.00473773264538088
+"flowering.singleton.TX3" 0.00534782282341724
+"flowering.singleton.SD" 0.00493924665599438

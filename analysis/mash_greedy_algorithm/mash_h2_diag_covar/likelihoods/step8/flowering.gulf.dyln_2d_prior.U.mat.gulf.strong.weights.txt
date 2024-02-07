@@ -1,0 +1,9 @@
+"null" 0.013157900904146
+"flowering.gulf.dyln_2d_prior.U.mat" 0
+"flowering.identity" 0.762041729528626
+"flowering.simple_het_1" 0.214679834747094
+"flowering.singleton.NE" 0.00239846836784428
+"flowering.singleton.SD" 0.001666965364896
+"flowering.singleton.MI" 0.00199308424275252
+"flowering.singleton.TX3" 0.00231156367641627
+"flowering.singleton.TX1" 0.0017504531682243

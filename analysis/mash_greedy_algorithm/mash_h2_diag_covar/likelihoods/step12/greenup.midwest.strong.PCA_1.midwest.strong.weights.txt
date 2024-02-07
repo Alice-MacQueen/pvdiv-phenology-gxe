@@ -1,0 +1,13 @@
+"null" 0.0381093213185289
+"greenup.midwest.strong.PCA_1" 0
+"greenup.identity" 0.339600797809178
+"greenup.simple_het_1" 0.244378138317354
+"greenup.singleton.OK" 0.0433045648104677
+"greenup.singleton.MI" 0.0536489785723839
+"greenup.singleton.TX3" 0.0443301540304455
+"greenup.singleton.NE" 0.0454713255989477
+"greenup.singleton.TX2" 0.0426775699102968
+"greenup.singleton.TX1" 0.0418620305673217
+"greenup.singleton.MO" 0.0442478703586633
+"greenup.singleton.SD" 0.0456108294661574
+"greenup.midwest.cgdd_12c_6d.U.mat" 0.0167584192402548

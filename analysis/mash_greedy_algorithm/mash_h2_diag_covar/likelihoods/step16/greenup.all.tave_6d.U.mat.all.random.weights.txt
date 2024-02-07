@@ -1,0 +1,17 @@
+"null" 0.00963142516018342
+"greenup.all.tave_6d.U.mat" 0.00118133660861345
+"greenup.identity" 0.85354029158146
+"greenup.simple_het_1" 0.0769307945058424
+"greenup.all.dyln_gr50.U.mat" 0.00927666771118774
+"greenup.simple_het_3" 0.00833231193704133
+"greenup.all.dyln_change_sec_14d_prior.U.mat" 0.0120587315099391
+"greenup.all.crain_2d.U.mat" 0.00264229899910812
+"greenup.singleton.OK" 0.000435362597594233
+"greenup.all.cgdd_12c_7d.U.mat" 0.00770780539163892
+"greenup.singleton.MI" 0.000510994618736912
+"greenup.singleton.TX1" 0.000542206488312355
+"greenup.singleton.TX3" 0.00062353109112537
+"greenup.all.random.PCA_2" 0.00077059003919123
+"greenup.singleton.NE" 0.000429065516044877
+"greenup.all.crain_4d.U.mat" 0.00234744665917132
+"greenup.all.cgdd_12c_5d.U.mat" 0.0130391395848094
