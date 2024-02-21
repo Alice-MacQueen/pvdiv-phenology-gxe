@@ -40,6 +40,13 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{luacolor}
+  \usepackage[soul]{lua-ul}
+\else
+  \usepackage{soul}
+  
+\fi
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
@@ -457,48 +464,23 @@ vegetative and reproductive timing using
 We next looked for evidence of GxWeather by jointly re-estimating
 genetic effects across all eight common gardens using the mash model,
 which allows effects to covary between gardens in many ways
-(Figure~\ref{fig-map} D, SI Appendix, Datasets 1-6). To do this, we used
-GWAS on site-specific BLUPs for the timing of vegetative growth and
-flowering to determine preliminary single nucleotide polymorphism (SNP)
-effect estimates for both traits at each garden. We then jointly modeled
-genetic effect estimates, and the mixture of ways these effects might
-covary, across all eight common gardens, using a two-part procedure. We
-first modeled genetic effects with different combinations of covariance
-structures, using a subset of randomly selected SNPs used in the GWAS
-and their corresponding effect size estimates. In these models
-(hereafter referred to as ``random''), we then specified a variety of
-potential covariance structures among genetic effect size estimates from
-each garden (as expanded on below) and used a greedy algorithm to
-iteratively select and add covariance structures that significantly
-improved the log likelihood of the \emph{mash} model. Given the high
-correlation between some of the covariance patterns we tested, this
-approach allowed us to select only the subset of patterns of covariance
-that significantly improved the fit of the jointly inferred structure of
-genetic effect estimates present in the data. We then selected the set
-of SNPs and corresponding effect size estimates that had the largest
-effect estimates in univariate GWAS (hereafter ``strong'' effects) and
-jointly re-estimated these effect size estimates at all eight sites
-using the set of significant covariance matrices that most improved the
-model fit on the random effects.
-
-We specified three categories of covariance structures across gardens:
-``canonical'' covariance, with simple patterns of effect size covariance
-introduced in the initial \emph{mash} manuscript; ``data-driven''
-covariances derived from common patterns of SNP effects observed in the
-data, and ``GxWeather'' covariance, estimated from the covariance of
-empirical weather patterns at each garden at specific times before the
-phenological event (Table 1, SI Appendix, Section S2). For example,
-GxWeather covariance between gardens in MI and MO, for rainfall in the
-seven days prior to flowering, captures the covariance in the amount of
-rainfall genotypes A, B, and C receive in the seven days prior to their
-three flowering dates in MI and their three flowering dates in MO. If
-these six rainfall values are similar, covariance will be near one; if
-they are uncorrelated, covariance will be near zero; if there is
-sufficient rank changing in rainfall amounts between gardens for these
-genotypes, this covariance will be near negative one. We specified
-multiple covariance structures for the canonical, data-driven, and
-GxWeather categories, each of which represented a specific pattern of
-covariance in genetic effect size estimates that could be included in
+(Figure~\ref{fig-map} D, SI Appendix, Datasets 1-6). We specified three
+categories of covariance structures across gardens: ``canonical''
+covariance, with simple patterns of effect size covariance introduced in
+the initial \emph{mash} manuscript; ``data-driven'' covariances derived
+from common patterns of SNP effects observed in the data, and
+``GxWeather'' covariance, estimated from the covariance of empirical
+weather patterns at each garden at specific times before the
+phenological event (Table 1, SI Appendix, Section S2). For example, the
+more similar that the amount of rainfall prior to flowering is for
+genotypes A and B between gardens in MI and MO, the nearer these
+covariances will be to one. If rainfalls are uncorrelated, covariance
+will be near zero; if there is rank changing (e.g.~high rainfall before
+flowering of A at MO but not MI, and high rainfall before flowering for
+B at MI but not MO), this covariance will be near negative one. We
+specified multiple covariance structures for the canonical, data-driven,
+and GxWeather categories, each of which represented a specific pattern
+of covariance in genetic effect size estimates that could be included in
 the model.
 
 The GxWeather covariance structures allow hypothesis testing of specific
@@ -507,20 +489,20 @@ growth. Say that a SNP in FLC controls flowering in a
 photoperiod-dependent manner. In that case, the joint estimate of
 effects for that SNP could have a high mixture proportion, or mass, on a
 covariance matrix created using a photoperiod-based environmental cue,
-such as day length two days prior to flowering. In our data, we would
-infer that the effect of that SNP on flowering was caused by a response
-to the environmental cue used to construct the GxWeather covariance
-structure with the largest mass. Overall, loadings of genetic effects on
-these GxWeather matrices in the model, along with the posterior effect
-size estimates provide information on genome-wide patterns of
-SNP-environment interaction.
+such as day length at some interval prior to flowering. In our data, we
+would infer that the effect of that SNP on flowering was caused by a
+response to the environmental cue used to construct the GxWeather
+covariance structure with the largest mass. Overall, loadings of genetic
+effects on these GxWeather matrices in the model, along with the
+posterior effect size estimates, provide information on genome-wide
+patterns of SNP-environment interaction.
 
 The phenotypic correlations for the timing of vegetative growth had
 moderate negative correlations between the Texas and North gardens,
 particularly in the Gulf subpopulation and Both subpopulations
 (Figure~\ref{fig-map} B). If these phenotypic correlations have a
 genetic component, then they may be controlled by SNP effects that
-differed in sign across these regions (effects with antagonistic
+differ in sign across these regions (effects with antagonistic
 pleiotropy), SNP effects that are large in one garden or region and
 non-significant in others (effects with amplification), or a combination
 of these patterns. Five GxWeather covariance structures were selected by
@@ -580,32 +562,35 @@ antagonistic pleiotropy, or a sign change between conditions, carry an
 equal statistical burden to those for effects with the same sign. We
 also summarized the pairwise patterns of effect sign and magnitude
 within and between the Texas and North regions, within the natural
-ranges of the Gulf and Midwest subpopulations (@fig-effects).
+ranges of the Gulf and Midwest subpopulations
+(Figure~\ref{fig-effects}).
 
 For greenup date for the Gulf subpopulation, hundreds to thousands of
 pairwise effects exhibited antagonistic pleiotropy, or a difference in
-effect sign, between pairs of Texas and North gardens (@fig-effects A).
-78.7\% of pairwise comparisons between North and Texas gardens had a
-difference in sign, while only 28.6\% and 0.2\% of North-North or
-Texas-Texas comparisons had a difference in sign, respectively
-(@fig-effects). The majority of pairwise effects for greenup for the
-Midwest (\textgreater55\%) and Both (\textgreater85\%) subpopulations
-were the same sign, and effects frequently differed in magnitude between
-the MO and OK garden and other gardens (@fig-effects X).
+effect sign, between pairs of Texas and North gardens
+(Figure~\ref{fig-effects} A). 78.7\% of pairwise comparisons between
+North and Texas gardens had a difference in sign, while only 28.6\% and
+0.2\% of North-North or Texas-Texas comparisons had a difference in
+sign, respectively (Figure~\ref{fig-effects}). The majority of pairwise
+effects for greenup for the Midwest (\textgreater55\%) and Both
+(\textgreater85\%) subpopulations were the same sign, and effects
+frequently differed in magnitude between the MO and OK garden and other
+gardens (Figure~\ref{fig-effects} X).
 
 For flowering date for the Gulf subpopulation, less than 2\% of pairwise
 effects exhibited antagonistic pleiotropy, or a difference in effect
-sign, within or between regions (@fig-effects). More effects differed in
-magnitude between the Texas and North regions than within these regions
-(42.7\% vs \textless20\%; @fig-effects X). The Midwest population had
-relatively few significant effects for flowering, but a large proportion
-of these differed in sign between Texas and North regions (42.7\%) or
-within the North region (65.4\%). Finally, in Both subpopulations, less
-than 20\% of pairwise effects differed in sign (@fig-effects). Most
-differences in sign were between TX1, the southernmost garden, and all
-other gardens (@fig-effects B). Similarly, more effects that differed in
-magnitude included gardens in the Texas region (52.3-55.9\%), and most
-effect pairs in the North region were not distinguishable (91.5\%).
+sign, within or between regions (Figure~\ref{fig-effects}). More effects
+differed in magnitude between the Texas and North regions than within
+these regions (42.7\% vs \textless20\%; Figure~\ref{fig-effects} X). The
+Midwest population had relatively few significant effects for flowering,
+but a large proportion of these differed in sign between Texas and North
+regions (42.7\%) or within the North region (65.4\%). Finally, in Both
+subpopulations, less than 20\% of pairwise effects differed in sign
+(Figure~\ref{fig-effects}). Most differences in sign were between TX1,
+the southernmost garden, and all other gardens (Figure~\ref{fig-effects}
+B). Similarly, more effects that differed in magnitude included gardens
+in the Texas region (52.3-55.9\%), and most effect pairs in the North
+region were not distinguishable (91.5\%).
 
 \subsubsection{Confirmation of effects on phenology using an independent
 mapping
@@ -613,28 +598,29 @@ population}\label{confirmation-of-effects-on-phenology-using-an-independent-mapp
 
 We sought additional experimental support for our joint re-estimates of
 SNP effects using an independent pseudo-F2 mapping population created
-from Gulf \& Midwest individuals and grown at the same sites (@fig-qtl
-A,B). We conducted quantitative trait loci (QTL) mapping of flowering as
-functions of four environmental cues that we also used as covariance
-matrices in mash, and identified eight QTL for flowering date, six QTL
-for flowering GDD, ten QTL for flowering day length, and eight QTL
-flowering day length change, all of which showed QTL by environment
-interactions (SI Appendix, Fig. S3). All QTL for flowering overlapped
-one or more homologs from rice or \emph{A. thaliana} with functionally
-validated roles in flowering (SI Appendix, Dataset 7). All flowering QTL
+from Gulf \& Midwest individuals and grown at the same sites
+(Figure~\ref{fig-qtl} A,B). We conducted quantitative trait loci (QTL)
+mapping of flowering as functions of five environmental cues that we
+also used as covariance matrices in mash, and identified eight QTL for
+flowering date, eight QTL for flowering as a function of day length
+change two days prior, one QTL for the start of vegetative growth, and
+two QTL for vegetative growth as a function of daylength change one day
+prior, all of which showed QTL by environment interactions (SI Appendix,
+Fig. S3). All QTL for flowering overlapped one or more homologs from
+rice or \emph{A. thaliana} with functionally validated roles in
+flowering (SI Appendix, Dataset 7). All flowering and green-up QTL
 intervals contained at least one SNP significant in at least one mash
 run at a log10-transformed Bayes Factor \textgreater{} 2, or in the 1\%
 tail of significance, whichever was stricter (SI Appendix, Dataset 8).
 We also looked for enrichments of mash SNPs in the 1\% tail of
 significance (the `mash 1\% tail') within each QTL interval. At the 5\%
-level, five QTL had enrichments of SNPs in the mash 1\% tail. Overall,
-there were eleven significant enrichments (p \textless{} 0.05,
-hypergeometric test) of SNPs in the mash 1\% tail in the QTL intervals.
-Our QTL intervals had more enrichments of SNPs in the mash 1\% tail than
-were found for all but eleven of these sets of random genomic intervals
-(@fig-qtl C, p = 0.011). Thus, we were able to experimentally support
-our joint re-estimates of SNP effects with a QTL mapping experiment
-using a separate mapping population.
+level, three QTL had enrichments of SNPs in the mash 1\% tail. Overall,
+there were five significant enrichments (p \textless{} 0.05,
+hypergeometric test) of SNPs in the mash 1\% tail in the QTL intervals;
+however, this number of enrichments was found in many random genomic
+intervals also (Figure~\ref{fig-qtl} C). Thus, we were able to
+experimentally support some of our re-estimates of SNP effects with a
+QTL mapping experiment using a separate mapping population.
 
 \section{Discussion}\label{discussion}
 
@@ -657,9 +643,9 @@ subpopulations revealed substantial antagonistic pleiotropy in effects
 between the Texas and North gardens (@fig-effects A). This result
 supports theoretical models that local adaptation should involve
 antagonistic pleiotropy at the level of individual loci (22--25), and is
-the first experimental work using QTL mapping and GWAS across common
-gardens to find antagonistic pleiotropy to be common in small genomic
-regions (12, 37, 38).
+the first experimental work using GWAS across common gardens to find
+antagonistic pleiotropy to be common in small genomic regions (12, 37,
+38).
 
 Our analysis of the timing of flowering showed that the Gulf and Midwest
 subpopulations have distinct GxWeather: flowering timing in the Midwest
@@ -668,10 +654,10 @@ timing covaries with a day length change signal two days before
 flowering occurs. In contrast, the Gulf subpopulation does not have
 variation in flowering based on a photoperiod cue. Instead, the Gulf
 subpopulation has variation in flowering that covaries with the rainfall
-that occurs in the week prior to flowering. The genomic regions
+that occurs in the week prior to flowering. Three genomic regions
 affecting flowering that we re-estimated across all eight sites were
 also supported by QTL from an independent mapping population at these
-sites (@fig-qtl C).
+sites (@fig-qtl A).
 
 Identifying the environmental cues that are predictive of, or even
 correlated with, plant phenotypic responses remains a major challenge to
@@ -679,20 +665,21 @@ studies interrogating gene action across many natural environments. The
 GxWeather photoperiod and cumulative rainfall cues we identify here are
 functions of the genotypes measured and capture only a minority of SNP
 effects on flowering. We know still less about the overwintering
-parameters that cause variation in the start of vegetative. Though we
-could assign SNP effects to a GxWeather covariance structure in the Gulf
-subpopulation, we could not do this for the Midwest subpopulation. More
-generally, it is difficult to predict the time scales over which
-individuals may integrate environmental cues, particularly in perennial
-species which may integrate these cues over longer time scales. If this
-integration time itself varies between individuals, we cannot select a
-covariance structure that reflects this, though these structures would
-likely be highly correlated with GxWeather structures we did include.
-Mash offers an opportunity to specify multiple environmental cues and
-compete them to explain patterns of genetic effects, allowing us to
-detect how important these cues are genome-wide, and how strongly each
-cue influences each SNP. This is a key development to further improve
-our understanding of genetic variation in GxE.
+parameters that cause variation in the start of vegetative growth.
+Though we could assign SNP effects to a GxWeather covariance structure
+in the Gulf subpopulation, we could not do this for the Midwest
+subpopulation. More generally, it is difficult to predict the time
+scales over which individuals may integrate environmental cues,
+particularly in perennial species which may integrate these cues over
+longer time scales. If this integration time itself varies between
+individuals, we cannot select a covariance structure that reflects this,
+though these structures would likely be highly correlated with GxWeather
+structures we did include. Mash offers an opportunity to specify
+multiple environmental cues and compete them to explain patterns of
+genetic effects, allowing us to detect how important these cues are
+genome-wide, and how strongly each cue influences each SNP. This is a
+key development to further improve our understanding of genetic
+variation in GxE.
 
 \section{Figures and Tables}\label{figures-and-tables}
 
@@ -778,22 +765,22 @@ phenotype and (e) flowering date phenotype.}
 
 }
 
-\caption{\label{fig-effects}Comparisons of pairs of jointly re-estimated
-effects across eight gardens, for effects with lfsr \textless{} 0.05.
-AHM is considering moving this figure to the supplement and
-substantially simplifying the figure in the main text, perhaps just
-showing total effects in Texas, the North, and maybe Oklahoma.
-Essentially making Table 2 into a new, simplified figure. Effect
-patterns for re-estimated SNP effects that are significant at pairs of
-sites by the local false sign rate test (lfsr), for (a) greenup date and
-(b) flowering date, within and between two genetic subpopulations.
-Common gardens are arranged in latitudinal order along the x- and
-y-axis. Effects in the first and fourth rows differ in sign at these
-pairs of gardens (p \textless{} 0.05, lfsr). Effects in the second,
-third, fifth and sixth rows are identical in sign (p \textless{} 0.05,
-lfsr). Effects in the second and fifth rows additionally differ in
-magnitude by a factor of \textgreater0.4, while effects in the third and
-sixth row were not distinguishable by magnitude nor sign of the effect.}
+\caption{\label{fig-effects}AHM is considering moving this figure to the
+supplement and substantially simplifying the figure in the main text,
+perhaps just showing total effects in Texas, the North, and maybe
+Oklahoma. Comparisons of pairs of jointly re-estimated effects across
+eight gardens, for effects with lfsr \textless{} 0.05. Essentially
+making Table 2 into a new, simplified figure. Effect patterns for
+re-estimated SNP effects that are significant at pairs of sites by the
+local false sign rate test (lfsr), for (a) greenup date and (b)
+flowering date, within and between two genetic subpopulations. Common
+gardens are arranged in latitudinal order along the x- and y-axis.
+Effects in the first and fourth rows differ in sign at these pairs of
+gardens (p \textless{} 0.05, lfsr). Effects in the second, third, fifth
+and sixth rows are identical in sign (p \textless{} 0.05, lfsr). Effects
+in the second and fifth rows additionally differ in magnitude by a
+factor of \textgreater0.4, while effects in the third and sixth row were
+not distinguishable by magnitude nor sign of the effect.}
 
 \end{figure}%
 
@@ -856,15 +843,34 @@ flowering}\label{mapping-major-patterns-of-genotype-by-environment-effects-on-gr
 To evaluate the prevalence and kinds of covariance patterns of SNP
 effects across our common gardens, we used multivariate adaptive
 shrinkage (\emph{mash}) on SNP effect estimates from the diversity panel
-(35). Mash is a statistical method that allows estimation and comparison
-of many effects jointly across many different conditions; it improves on
-previous methods by allowing multiple, arbitrary correlations in effect
-sizes among conditions (SI Appendix, Section S5). To obtain SNP effect
-estimates, we first conducted univariate genome-wide association at each
-common garden for green-up and flowering date. We then analyzed SNP
-effects for the top 19K relatively unlinked (r\textsuperscript{2}
-\textless{} 0.2) SNPs per condition using mash, as in (32). Details on
-these models can be found in (SI Appendix, Section S6).
+(35). To do this, we first conducted univarate genome-wide association
+(GWAS) on site-specific best linear unbiased predictors (BLUPs) for the
+timing of vegetative growth and flowering, using the switchgrassGWAS
+package and the methods in (39). We used the effect estimates for single
+nucleotide polymorphisms (SNPs) from these GWAS as preliminary effect
+estimates for both traits at each garden. We then jointly modeled
+genetic effect estimates, and the mixture of ways these effects might
+covary, across all eight common gardens, using a two-part procedure. We
+first modeled genetic effects with different combinations of covariance
+structures, using the effect size estimates from a subset of \ul{19K}
+relatively unlinked (r\textsuperscript{2} \textless{} 0.2), randomly
+selected SNPs used in the GWAS. In these models (hereafter referred to
+as ``random''), we then specified a variety of potential covariance
+structures among genetic effect size estimates from each garden (as
+expanded on below) and used a greedy algorithm to iteratively select and
+add covariance structures that significantly improved the log likelihood
+of the \emph{mash} model. Given the high correlation between some of the
+covariance patterns we tested, this approach allowed us to select only
+the subset of patterns of covariance that significantly improved the fit
+of the jointly inferred structure of genetic effect estimates present in
+the data. We then selected 19K relatively unlinked (r\textsuperscript{2}
+\textless{} 0.2) SNPs from each univariate GWAS that had the largest
+effect estimates in each GWAS (hereafter ``strong'' effects), which gave
+a set of \ul{\textbf{48K - 80K}} SNPs, and jointly re-estimated these
+effect size estimates at all eight sites using the set of significant
+covariance matrices that most improved the model fit on the random
+effects. Notably, the majority of these ``strong'' effects were not
+significant in univariate GWAS.
 
 We generated hypothesis-based covariance matrices derived from
 correlations in environmental cues in the green-up or flowering date
@@ -1195,6 +1201,13 @@ genomics of local adaptation. \emph{Nature Reviews Genetics}
 interactions underlie adaptive divergence in switchgrass across a large
 latitudinal gradient. \emph{Proceedings of the National Academy of
 Sciences} \textbf{116}, 12933--12941 (2019).}
+
+\bibitem[\citeproctext]{ref-lovell2021}
+\CSLLeftMargin{39. }%
+\CSLRightInline{J. T. Lovell, \emph{et al.},
+\href{https://doi.org/10.1038/s41586-020-03127-1}{Genomic mechanisms of
+climate adaptation in polyploid bioenergy switchgrass}. \emph{Nature},
+1--7 (2021).}
 
 \end{CSLReferences}
 
