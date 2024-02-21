@@ -1,9 +1,23 @@
 ---
-title: "Analysis v1.2 mash"
+title: "Analysis for Revision 2"
 author: "Alice MacQueen"
-date: "2023-08-01"
-output: html_document
+format: 
+  html:
+    code-fold: true
+    code-annotations: hover
+    execute: 
+      echo: false
+      cache: true
+editor: visual
+toc: true
+number-sections: true
 ---
+
+::: callout-important
+## Analysis Version 1.2
+
+As of 2024-02-07, this file was a copy of the Rmd file of the same name. After 2024-02-07, this Quarto document will be modified and kept up to date for this analysis version.
+:::
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -18,37 +32,51 @@ library(zoo)
 library(rrBLUP)
 ```
 
-# Installation reminders for any reinstalls
+::: callout-tip
+## Install reminders for reinstalls
+
 On debian: `apt install libgsl-dev` to install the GNU Scientific Library, zB.
 
 For mashr: Sometimes install.packages("RcppGSL") is also needed.
-#
+:::
 
-Sam used a greedy mash algorithm to find the best set of covariance matrices to include, using 19K randomly associated variants.
+## Overview
 
-Now use the best set of covariance matrices on 19K strongly associated variants.
+Sam developed a greedy mash algorithm to find the best set of covariance matrices to include. Alice used this algorithm on 19K randomly associated variants using a large set of covariance matrices with h\^2 on their diagonals.
 
-Step 0. Set up.
-  0a. Look at phenotype distribution & heritability; run GWAS to get univariate SNP effect estimates & standard errors. Already done.
-  0b. Make hypothesis covariance matrices based on weather data from 2018 - 2020. For cumulative weather variables, use a range of days, 1 - 20, say. Come back and add more if 20 is chosen by greedy mash.
-Step 1. Run greedy mash to find best set of covariance matrices that explain SNP effect variation across environments, using 19K 'randomly associated variants'. Go back to 0b. if high number of day covar matrices tend to be chosen by greedy mash.
-Step 2. Use covariances from (1) to run mash on 19K 'strongly associated variants'. 
-3. Look at loadings on covariance matrices and meanings of covariance matrices as the writeup (Figure 2, 3; Table 1). Look at amount of antagonistic pleiotropy vs same sign significant effects.
-4. Repeat the QTL analysis... with Li.
+Then, Alice used the best set of covariance matrices on 19K strongly associated variants.
 
-How much of a lift is it to re-run the greedy mash algorithm? If we, or if reviewers are thinking about this in a Jiaming Yu sense, I think the next logical question to ask is 'Why these covariance matrices'? The overly honest answer for the current set is that there were computational limits to running mash with so many covariance matrices, so I chose a few arbitrary time points for each weather variable we thought might be a environmental driver. But now we have introduced a method to choose between highly correlated covariance matrices, perhaps we could do better. 
-2. 
+Outline of the current analysis:
 
+1.  Set up. Look at phenotype distribution & heritability; run GWAS to get univariate SNP effect estimates & standard errors. Done elsewhere.
 
-# ----
-# Generate weather variables
+2.  Make hypothesis covariance matrices based on weather data from 2018 - 2020. For cumulative weather variables, use a range of days: every day for the first week, and every week until 28 days. Come back and add more if 28 is chosen by greedy mash.
 
-# Covar 1-28d weather
-As of 2023-09-11, want to remake these per reviewer revision to have h^2 on the diagonal instead of the CV. Need to estimate h^2 for these new covar matrices, probably using rrBLUP.
+3.  Run greedy mash to find best set of covariance matrices that explain SNP effect variation across environments, using 19K 'randomly associated variants'. Go back to (1) if high number of day covar matrices tend to be chosen by greedy mash.
 
+4.  Use covariances from (3) to run mash on 19K 'strongly associated variants'.
 
-## load phe & wea data
+5.  Look at loadings on covariance matrices and meanings of covariance matrices as the writeup (Figure 2, 3; Table 1). Look at amount of antagonistic pleiotropy vs same sign significant effects.
+
+6.  Have Li repeat the QTL analysis and incorporate her results.
+
+------------------------------------------------------------------------
+
+## Step 1: GWAS
+
+## Step 2: Covariance matrices
+
+### Generate weather variables
+
+### Covar 1-28d weather
+
+As of 2023-09-11, want to remake these per reviewer revision to have h\^2 on the diagonal instead of the CV. Estimate h\^2 for these new covar matrices using rrBLUP.
+
+### load phe & wea data
+
 ```{r}
+#| eval: false
+
 phe_ten_sites <- readRDS(here("data", "Phenotypes_2018_to_2021_10_sites.rds"))
 sites <- readRDS("~/Github/pvdiv-phenology-gxe/data/sites.rds")
 jday_phe <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
@@ -72,7 +100,8 @@ phe_2019 <- jday_phe %>%
 ```
 
 ```{r}
-
+#| eval: false
+#| 
 wea_ten_sites <- wea_ten_sites %>%
   mutate(JDAY = yday(Working_date),
          DYLN = day.length.hrs(day = JDAY, latitude = Latitude),
@@ -304,11 +333,15 @@ wea_ten_sites <- wea_ten_sites %>%
 ```
 
 ```{r}
+#| eval: false
 wea_ten_sites
 ```
 
 # Define phenotypes
+
 ```{r}
+#| eval: false
+#| 
 Tbase <- 12
 
 phe_gr_fl <- phe_2019 %>%
@@ -348,26 +381,25 @@ fl_ten_sites <- phe_gr_fl %>%
 ```
 
 ## save weather-based phenotypes
+
 ```{r}
+#| eval: false
 gr_ten_sites %>%
   saveRDS(file = here("data", "Weather_related_phe_GR50_2019.rds"))
 fl_ten_sites %>%
   saveRDS(file = here("data", "Weather_related_phe_FL50_2019.rds"))
 ```
+
 # --- can start here
+
 # Covar csv for greedy mash algorithm
 
-Make & save hypothesis matrices in a hypothesis_matrices directory in data. 
-Then run the greedy mash algorithm again.
+Make & save hypothesis matrices in a hypothesis_matrices directory in data. Then run the greedy mash algorithm again.
 
-phe_hyp <- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", 
-             "tave_5d", "tave_10d", "tave_18d")
-phe_hyp <- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", 
-             "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
-
-
+phe_hyp \<- c("cgdd_12c_10d", "cgdd_12c_18d", "cgdd_12c_5d", "tave_5d", "tave_10d", "tave_18d") phe_hyp \<- c("FL50", "GR50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl", "crain_gr2fl", "crain_1d", "crain_3d", "crain_5d")
 
 ### load weather phenotypes
+
 ```{r}
 gr_ten_sites <- readRDS(file = here("data", 
                                     "Weather_related_phe_GR50_2019.rds"))
@@ -381,12 +413,17 @@ colnames(gr_ten_sites)[8:50]
 ```
 
 ## Calculate heritability for diagonal
+
 I don't have access to ASREML any more, so need a different package to do this.
 
 ### sketch out how h2 is calculated in rrBLUP
 
 Use the kinship matrix I've already calculated (using the van Raden method, using switchgrassGWAS::pvdiv_kinship()) using the SNPs as the K matrix.
+
 ```{r}
+#| eval: false
+
+
 library(rrBLUP)
 k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
 fl_ten_sites
@@ -406,13 +443,16 @@ mod2 <- mixed.solve(y = phe_one$crain_1d, K = k_one)
 h2 <- mod2$Vu/(mod2$Vu + mod2$Ve)
 ```
 
-Another error: "Error in mash(data, covmats) : 
-  All U_scaled matrices should be positive semi-definite
+Another error: "Error in mash(data, covmats) : All U_scaled matrices should be positive semi-definite
 
 So I should adjust these to make sure all are positive semi-definite, too, in addition to replacing the diagonals with h2.
 
 ### Loop to calculate covar for flowering
+
 ```{r}
+#| eval: false
+
+
 metadata <- read_rds(here("data", "metadata.rds"))
 subpop_v2 <- list(all = c("Gulf", "Midwest"), midwest = "Midwest",
                   gulf = "Gulf")
@@ -509,11 +549,14 @@ for (i in seq_along(U_hyp_2019)) {
 
 
 ```
-Another error: "Error in mash(data, covmats) : 
-  All U_scaled matrices should be positive semi-definite
+
+Another error: "Error in mash(data, covmats) : All U_scaled matrices should be positive semi-definite
 
 ### Loop to calculate covar for greenup
+
 ```{r}
+#| eval: false
+#| 
 gr_ten_sites <- gr_ten_sites %>%
   left_join(select(metadata, PLANT_ID, SUBPOP)) %>%
   rename(Year = YEAR)
@@ -588,8 +631,11 @@ for (i in seq_along(U_hyp_2019)) {
 ### Midwest covar fewer sites
 
 #### flowering: 6 sites
+
 MI, MO, SD, TX1, TX2, TX3
+
 ```{r flowering midwest}
+#| eval: false
 
 phe_hyp <- colnames(fl_ten_sites)[c(5,9:51)]
 i=2
@@ -720,12 +766,13 @@ for (mat in matnames) {
 
 ```
 
-
-
-
 #### greenup: 7 sites
+
 MI, MO, NE, OK, TX1, TX2, TX3
+
 ```{r}
+#| eval: false
+
 phe_hyp <- colnames(gr_ten_sites)[8:50]
 i=1
 k=2
@@ -789,6 +836,7 @@ for (i in seq_along(U_hyp_2019)) {
 ```
 
 ```{r}
+#| eval: false
 workingdir <- here("analysis", "mash_greedy_algorithm", 
                                    "mash_h2_diag_covar", "midwest_greenup")
 pheno = "greenup"
@@ -840,8 +888,9 @@ for (mat in matnames) {
 ```
 
 #### Visualize correlation matrices
-```{r}
 
+```{r}
+#| eval: false
 i=7
 switchgrassGWAS::mash_plot_pairwise_sharing(corrmatrix = U_hyp_2019[[i]],
                                             reorder = FALSE)
@@ -853,18 +902,14 @@ names(U_hyp_2019)[[i+2]]
 ```
 
 # ---------------
+
+## Step 3: Greedy Mash
+
 # Info to run greedy mash algo
 
-data/mash_switchgrass_models/mash/all_matrices/matrices hosts all covar mat (?)
-analysis/mash_greedy_algorithm/mash_switchgrass_models/mash/all_matrices/matrices has more? covar mat?
-Can cp from these matrices dir to mash_h2_diag_covar/matrices the following regex, which run.mash.greedy.search.py looks for:
+data/mash_switchgrass_models/mash/all_matrices/matrices hosts all covar mat (?) analysis/mash_greedy_algorithm/mash_switchgrass_models/mash/all_matrices/matrices has more? covar mat? Can cp from these matrices dir to mash_h2_diag_covar/matrices the following regex, which run.mash.greedy.search.py looks for:
 
- '.singleton.*'
-'.identity.*'
-'.simple_het_*.*'
- '.equal_effects.*'
-'.*PCA*'
-
+'.singleton.*' '.identity.*' '.simple_het\_*.*' '.equal_effects.*' '.*PCA\*'
 
 Set up new analysis/mash_greedy_algorithm/mash_1_to_28d_covar/ or subdirectory to have all the subdir necessary to run `run.mash.greedy.search.py` python script. I think these may have to be pre-generated for the script to work, and I'll make sure they're empty to keep there from being I/O issues I haven't tested for.
 
@@ -875,26 +920,19 @@ Make sure random and strong Bhat and Shat in combined_mash_effects and combined_
 When I change to my inputs for effects & stderrs, I will need to adjust midwest covar & effects appropriately to reflect only 6 (flowering) and 7 (greenup) rows & columns used; the other GWAS were dropped as too low power or due to substantial phenotype data loss, & including them would give misleading results.
 
 ### Next steps
-Redo Midwest: Remake Midwest covar matrices, including hypothesis, singleton, identity, simple het, equal effects, and data-driven matrices. Make mash_greedy.R variants for changed input dir & for different Midwest column numbers. 
-Run two new run.mash.greedy.search.py commands:
-python run.mash.greedy.search.py -p greenup -c midwest -e random
-python run.mash.greedy.search.py -p flowering -c midwest -e random
 
-Try Gulf & All with my known inputs:
-python run.mash.greedy.search.py -p greenup -c gulf -e random
-python run.mash.greedy.search.py -p greenup -c all -e random
-python run.mash.greedy.search.py -p flowering -c gulf -e random
-python run.mash.greedy.search.py -p flowering -c all -e random
+Redo Midwest: Remake Midwest covar matrices, including hypothesis, singleton, identity, simple het, equal effects, and data-driven matrices. Make mash_greedy.R variants for changed input dir & for different Midwest column numbers. Run two new run.mash.greedy.search.py commands: python run.mash.greedy.search.py -p greenup -c midwest -e random python run.mash.greedy.search.py -p flowering -c midwest -e random
 
+Try Gulf & All with my known inputs: python run.mash.greedy.search.py -p greenup -c gulf -e random python run.mash.greedy.search.py -p greenup -c all -e random python run.mash.greedy.search.py -p flowering -c gulf -e random python run.mash.greedy.search.py -p flowering -c all -e random
 
-Write inputs to mash_h2_diag_covar/All_inputs, Gulf_inputs, and Midwest_inputs, from the original mash work. Especially important for Midwest which has some poor GWAS at dropped sites.
-The inputs Sam used have no column or rownames and look to be tab delimited.
+Write inputs to mash_h2_diag_covar/All_inputs, Gulf_inputs, and Midwest_inputs, from the original mash work. Especially important for Midwest which has some poor GWAS at dropped sites. The inputs Sam used have no column or rownames and look to be tab delimited.
 
-aka combined_mash_effects/greenup.all.betas.random.txt 
-and combined_mash_stderrs/flowering.gulf.betas.strong.txt
+aka combined_mash_effects/greenup.all.betas.random.txt and combined_mash_stderrs/flowering.gulf.betas.strong.txt
 
 I only really need the random ones here, run mash again on the strong effects below.
+
 ```{r}
+#| eval: false
 popkey = list(all = "Gulf_and_Midwest", midwest = "Midwest", gulf = "Gulf")
 phekey = list(greenup = "GR50", flowering = "FL50")
 # i=2; j=1
@@ -944,6 +982,7 @@ for (i in seq_along(popkey)) {
 ```
 
 ```{r}
+#| eval: false
 for (i in 1:35) {
   if (!dir.exists(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar", "midwest_inputs", "likelihoods", paste0("step", i)))) {
     dir.create(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar", "midwest_inputs", "likelihoods", paste0("step", i)))
@@ -951,7 +990,7 @@ for (i in 1:35) {
 }
 ```
 
-Run the pod.greedy.sh scripts from their dir, or run the python commands in those scripts. 
+Run the pod.greedy.sh scripts from their dir, or run the python commands in those scripts.
 
 Look at the results in the likelihood_paths files for the following data:
 
@@ -963,15 +1002,17 @@ Only keep covariance matrices if they significantly improve the mash model likel
 
 Using the random set of SNPs. Then, look at the mash results generated using these covariance matrices using a strong set of SNPs.
 
-
-
 Given that the greedy algorithm, run on Sam's random inputs, however he generated or found those, gives many more covar matrices especially from Uhyp, I wonder if some repetition of this analysis would be valuable, before blowing these results all out of proportion in a paper. Either different random sets of effects, or effects from different years of data. Think on this. I definitely want to use my known inputs, not Sam's, as mine have a traceable history (or anyways more traceable).
 
-
 # -----------------------------
-# Run mash
+
+# Step 4: Run mash
 
 ```{r}
+#| eval: false
+#| 
+#| 
+
 library(tidyverse)
 library(bigsnpr)
 library(switchgrassGWAS)
@@ -1112,18 +1153,16 @@ for (i in 1:6) {  # change this for different scripts
 }
 ```
 
-
-
 # ----------------
 
 Reasoning from Analysis_v0.6 script for dropping sites from the Midwest:
 
-Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50.
-Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.
+Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50. Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.
 
-# Remake mash figures
+# Step 5: Redo writeup & figures
 
 ## Load mash objects
+
 ```{r}
 source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
@@ -1132,7 +1171,6 @@ numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
 suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
               "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
 ```
-
 
 ```{r}
 m_gulf_gr_hyp <- readRDS(file.path(mashdir,  
@@ -1170,8 +1208,8 @@ m_gam_fl_hyp <- readRDS(file.path(mashdir,
 
 ```
 
-
 ## Figure 2
+
 ```{r}
 get_cov_type <- function(m, summarise = FALSE, subpop = FALSE){
   cov_df <- mash_plot_covar(m)
@@ -1230,6 +1268,7 @@ cov_gamg$ggobject +
 cov_gamf$ggobject + 
   ggtitle("Gulf and Midwest flowering", subtitle = "0% SNP mass")
 ```
+
 ### covar
 
 ```{r get covar matrices picked by greedy mash}
@@ -1315,7 +1354,6 @@ get_greedy_Ulist <- function(i) {
 
 #}
 ```
-
 
 ```{r pick covar matrices to plot fig 2}
 plot_covar_Ulist_fig2 <- function(df, mf = FALSE, mg = FALSE) {
@@ -1412,12 +1450,10 @@ pa11 <- plot_covar_Ulist_fig2(Ulist_gf[[8]]) +
   labs(subtitle = names(Ulist_gf)[8])
 ```
 
-
 ```{r build panels of barplots for fig 2}
 cov_gr1 <- mash_plot_Ulist(m_gulf_gr_hyp, range = 2, limits = TRUE)
 legend <- get_legend(cov_gr1) 
-fig_eqeff <- cov_gr1$greenup.simple_het_2_df %>%
-  get_covar_fig2() +
+fig_eqeff <- plot_covar_Ulist_fig2(Ulist_mg[[2]], mg = TRUE) +
   labs(subtitle = "simple heterozygousity")
 
 df_2a <- get_cov_type(m_gulf_gr_hyp, summarise = TRUE) %>%
@@ -1528,9 +1564,9 @@ f2c <- df_2fl_a %>%
 
 ```
 
-
-
 ```{r build figure 2}
+
+
 ggdraw() +
   draw_plot(pa01, x = -0.02, y = 0.4, width = 0.1, height = 0.18) +
   draw_plot(pa02, x = -0.02, y = 0.6, width = 0.1, height = 0.18) +
@@ -1551,10 +1587,14 @@ ggdraw() +
   draw_plot(f2c, x = 0.3, y = 0, width = 0.55, height = 0.47) +
   draw_plot(f2d, x = 0.85, y = 0, width = 0.15, height = 0.47)
 
-save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_2_Covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 6, base_width = 8.5, )
+
 ```
 
+```{r}
+#| eval: false
 
+save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_2_Covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 6, base_width = 8.5)
+```
 
 ## Table 1
 
@@ -1581,6 +1621,7 @@ names(gxe_gg)
 ```
 
 Change these to look at S_AP, S_DS, S_2_no; S_1_row and S_1_col separately
+
 ```{r}
 
 one_gxe_summary <- function(df, n_cond = 8, n_sep = 2) {
@@ -1715,8 +1756,6 @@ pvdiv_plot_cor <- function(corrmatrix, upper = NULL, legend = FALSE){
   labs(subtitle = " ")
 ```
 
-
-
 ```{r}
 p3legend <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, legend = TRUE, upper = 4333) + 
   labs(title = "Gulf", subtitle = "Sign difference")
@@ -1783,19 +1822,447 @@ ggdraw() +
   draw_plot(p3f3, x = 0.66, y = 0/6, width = 1/3, height = .18) +
   draw_plot(legend, x = 0.37, y = .38, width = 1/3, height = .18)
 
+```
+
+```{r}
+#| eval: false
 
 save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_3_Effect_Types_by_Site.svg", plot = last_plot(), base_height = 10, base_width = 5.5)
 ```
 
-
-
 ## Figure 4
 
+Comparison with QTL for the four-way mapping cross for green up (GR50), flowering (FL50), three functions of weather variables for green-up (from Figure 2; Both: Temp Ave, 1d; Both: Daylength change (s) 1d prior; Gulf: Daylength (14d prior), and two functions of weather variables for flowering (from Figure 2: Midwest: day length change (s) 2d prior; Gulf: cumulative rainfall, 7d).
 
+Li ran the QTL analysis 2024-02-14. Here Alice combines the QTL with the mash SNP effects to build the analysis for Figure 4.
 
-# Specific SNPs
+It's an open question how to combine these into an informative main text figure.
+
+The full QTL Lod plots for flowering & greenup phenotypes should go in the SI. Here, try plotting just the significant chromosomes, with a QTL above the permutation threshold.
+
+#### Figure 4A 
+
+LOD QTL 
+
+Adapted from Analysis_v0.7_QTL_interval_lod_plot.Rmd
+
+Make sure to Load mash objects at start of Step 5
 
 ```{r}
-pw_
+library(qtl)
+library(qtl2)
+# library(plyr)
+# library(tidyverse)
+library(qtl2convert)
+#library(cowplot)
+```
+
+```{r}
+workingdir <- "~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/"
+load(file.path(workingdir, 'cross_reduced_marker_FL50_phenotypes_Alice_7_SITES.RData'))
+load(file.path(workingdir, 'scan1Results_FL50_phenotypes_Alice_7_SITES.RData'))
+
+map  =  lapply(pull.map(cross), function(x) x[1,])
+###get the threshold value for each model and output the QTL intervals
+threshold_full = summary(s1permfull,alpha = 0.05)
+threshold_reduced = summary(s1permreduced,alpha = 0.05)
+```
+
+```{r}
+###  g x e
+gxe = s1full - s1reduced
+gxe_perm = threshold_full - threshold_reduced ###or gxe_perm = summary(gxe, alpha=0.05)
+
+###get the peak for full model and gxe model
+peaks_full = find_peaks(s1full, map, threshold = threshold_full, drop = 1.5, peakdrop = 5)
+peaks_gxe = find_peaks(gxe, map, threshold = gxe_perm, drop = 1.5)
+
+flank_marker_full = peaks_full %>% mutate(flank_lo = find_marker(map, chr, ci_lo), flank_hi=find_marker(map, chr, ci_hi))
+# write.csv(flank_marker_full,'QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv') ###change the name you want
+
+flank_marker_gxe = peaks_gxe %>% mutate(flank_lo = find_marker(map, chr, ci_lo), flank_hi=find_marker(map, chr, ci_hi))
+# write.csv(flank_marker_gxe,'QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_gxe_model.csv')
+
+###########
+```
+
+```{r}
+get_post_weights <- function(m){
+  log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+      as.data.frame() %>%
+      rownames_to_column(var = "value") %>%
+      dplyr::mutate(value = as.integer(.data$value)) %>%
+      as_tibble() %>%
+      left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+      dplyr::rename(log10BayesFactor = .data$V1) %>%
+      dplyr::select(-.data$value)
+  
+  pw_df <- as_tibble(m$posterior_weights)
+  pw_df <- switchgrassGWAS:::get_marker_df(m = m) %>%
+    bind_cols(pw_df)
+  
+  ggman_df <- pw_df %>%
+    #left_join(m_meta) %>%
+    tidyr::separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
+             extra = "merge", convert = TRUE) %>%
+    left_join(log10bf_df, by = "Marker") %>%
+    dplyr::arrange(.data$Chr, .data$Pos) 
+  return(ggman_df)
+}
+
+pw_gg <- get_post_weights(m_gulf_gr_hyp)
+pw_gf <- get_post_weights(m_gulf_fl_hyp) %>%
+  mutate(Subpop = "Gulf")
+
+pw_mg <- get_post_weights(m_midw_gr_hyp)
+pw_mf <- get_post_weights(m_midw_fl_hyp) %>%
+  mutate(Subpop = "Midwest")
+
+pw_gamg <- get_post_weights(m_gam_gr_hyp)
+pw_gamf <- get_post_weights(m_gam_fl_hyp) %>%
+  mutate(Subpop = "Both")
+```
+
+Decide on cutoff to use for rug plots and enrichment analysis: SNPs sig in 1% tail or BF>2, whichever is stricter
+
+1% tail is stricter in all cases except Midwest flowering, where BF>2 is stricter, equivalent to a 0.49% tail (0.995119 quantile).
+
+What is the Bayes Factor at the 99th quantile? If it's not above 2, what is the quantile where the BF > 2?
+```{r}
+quantile(pw_gf$log10BayesFactor, 0.99)  # Gulf: Use 2.56 BF
+quantile(pw_mf$log10BayesFactor, 0.99)  # Midwest: Use 2 BF
+quantile(pw_gamf$log10BayesFactor, 0.99)  # GAM: Use 2.65 BF
+quantile(pw_mf$log10BayesFactor, 0.995119)
+
+quantile(pw_gg$log10BayesFactor, 0.99)  # Gulf: Use 2.0989 BF
+quantile(pw_mg$log10BayesFactor, 0.99)  # Midwest: Use 4.6831 BF
+quantile(pw_gamg$log10BayesFactor, 0.99)  # GAM: Use 3.0865 BF
+```
+
+
+```{r}
+rug_gf <- pw_gf %>%
+  filter(log10BayesFactor > 2.559618) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+rug_gamf <- pw_gamf %>%
+  filter(log10BayesFactor > 2.64938) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+rug_mf <- pw_mf %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+
+rug_gg <- pw_gg %>%
+  filter(log10BayesFactor > 2.0989) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+rug_gamg <- pw_gamg %>%
+  filter(log10BayesFactor > 3.0865) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+rug_mg <- pw_mg %>%
+  filter(log10BayesFactor > 4.6831) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+```
+
+
+```{r}
+threshold_df <- threshold_full %>% 
+  as_tibble(rownames = "Threshold") %>%
+  pivot_longer(GR50:crain_7d, names_to = "Phenotype", values_to = "LOD") %>%
+  mutate(Phe = case_when(Phenotype %in% c("GR50", "tave_1d", "dyln_14d_prior", "dyln_change_sec") ~ "greenup",
+                         Phenotype %in% c("FL50", "dyln_change_sec_2d_prior", "crain_7d") ~ "flowering", 
+                         TRUE ~ NA_character_)) 
+
+s1full %>%
+  as_tibble(rownames = "Marker") %>%
+  pivot_longer(GR50:crain_7d, names_to = "Phenotype", values_to = "LOD") %>%
+  filter(Phenotype %in% c("FL50", "dyln_change_sec_2d_prior", "crain_7d")) %>% 
+  separate(Marker, into = c("Chr", "Pos"), sep = "_", remove = FALSE, convert = TRUE) %>%
+  filter(!grepl("loc", Chr)) %>%
+  ggplot(aes(x = Pos, y = LOD)) + 
+  geom_line(aes(color = Phenotype)) +
+  geom_rug(data = rug_gamf, sides = "t", alpha = 0.1) + 
+  geom_rug(data = rug_gf, sides = "b", alpha = 0.2) + 
+  geom_rug(data = rug_mf, outside = TRUE, sides = "b", alpha = 0.2) + 
+  geom_hline(data = filter(threshold_df, 
+                           Phenotype %in% c("FL50", "dyln_change_sec_2d_prior", "crain_7d")),
+             aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
+  facet_wrap(~Chr, nrow = 1, scales = "free_x") +
+  switchgrassGWAS::theme_oeco + 
+  scale_color_manual(values = c("#000099", "#CC0066", "darkgrey", "#000666")) + 
+  scale_linetype_manual(values = c(4,4,4,4,4)) +
+  theme(legend.position = "top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 10, face="bold"),
+        strip.text = element_text(size = 10, face="bold"),
+        axis.title = element_text(size = 10,face="bold"),
+        axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
+        ) + 
+  xlab("Position (Mb)") + ylab("LOD score") +
+  scale_x_continuous(breaks = c(0, 20, 40, 60, 80)) + 
+  coord_cartesian(clip = "off")
+save_plot(filename = "../manuscript/revision2/Figure_4_FL50_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+
+s1full %>%
+  as_tibble(rownames = "Marker") %>%
+  pivot_longer(GR50:crain_7d, names_to = "Phenotype", values_to = "LOD") %>%
+  filter(Phenotype %in% c("GR50", "tave_1d", "dyln_14d_prior", "dyln_change_sec")) %>% 
+  separate(Marker, into = c("Chr", "Pos"), sep = "_", remove = FALSE, convert = TRUE) %>%
+  filter(!grepl("loc", Chr)) %>%
+  ggplot(aes(x = Pos, y = LOD)) + 
+  geom_line(aes(color = Phenotype)) +
+  geom_rug(data = rug_gamg, sides = "t", alpha = 0.1) + 
+  geom_rug(data = rug_gg, sides = "b", alpha = 0.2) + 
+  geom_rug(data = rug_mg, outside = TRUE, sides = "b", alpha = 0.2) + 
+  geom_hline(data = filter(threshold_df, 
+                           Phenotype %in% c("GR50", "tave_1d", "dyln_14d_prior", 
+                                            "dyln_change_sec")), 
+             aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
+  facet_wrap(~Chr, nrow = 1, scales = "free_x") +
+  switchgrassGWAS::theme_oeco + 
+  scale_color_manual(values = c("#006600", "#FFCC00",  "grey", "darkorange", "#000666")) + 
+  scale_linetype_manual(values = c(4,4,4,4,4,4)) +
+  theme(legend.position = "top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 10, face="bold"),
+        strip.text = element_text(size = 10, face="bold"),
+        axis.title = element_text(size = 10,face="bold"),
+        axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
+        ) + 
+  xlab("Position (Mb)") + ylab("LOD score") +
+  scale_x_continuous(breaks = c(0, 20, 40, 60, 80)) + 
+  coord_cartesian(clip = "off")
+save_plot(filename = "../manuscript/revision2/Figure_4_GR50_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+```
+
+#### Figure 4B
+
+Same SVG line drawing that was used previously. Description of the two mapping panels used.
+
+#### Figure 4C
+
+Enrichment analysis
+
+Adapted from Analysis_v0.6_QTL_GxE_and_mash_comparison.Rmd
+
+Prepare the QTL dataframe
+```{r}
+qtldf <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv")
+
+qtldf <- qtldf %>%
+  separate(flank_lo, into = c("CHR", "Pos_Mb_lo"), sep = "_", convert = TRUE) %>%
+  separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
+  mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
+         Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
+  dplyr::select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  arrange(CHR, Pos_Mb_lo)
+
+qtlplot <- qtldf %>%
+  mutate(phe = case_when(lodcolumn == "FL50" ~ "flowering",
+                              lodcolumn == "dyln_change_sec_2d_prior" ~ "daylength change (s) 2d prior",
+                              lodcolumn == "dyln_change_sec" ~ "daylength change (s) 1d prior",
+                              lodcolumn == "GR50" ~ "greenup",
+                              lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
+  #filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
+  mutate(POS_lo = Pos_Mb_lo * 1000000,
+         POS_hi = Pos_Mb_hi * 1000000)
+
+qtlplot$phe <- factor(qtlplot$phe, 
+                      levels = c("flowering", "daylength change (s) 2d prior",
+                                 "GDD, GR to FL", "Daylength",
+                                          "daylength change (s)",
+                                          "Rainfall, 1 day",
+                                                  #"Rainfall, 2d sum",
+                                                  "Rainfall, 3d sum",
+                                                  "Rainfall, 5d sum"#,
+                                                  #"Rainfall, 7d sum"
+                                                  ))
+
+qtlplot_fl <- qtlplot %>% 
+  filter(lodcolumn %in% c("FL50", "dyln_change_sec_2d_prior")) 
+qtlplot_gr <- qtlplot %>% 
+  filter(lodcolumn %in% c("GR50", "dyln_change_sec")) 
+```
+Function to compute hypergeometric test for each row in a QTL df
+```{r}
+
+get_QTL_enrichment <- function(m, qtl_df, quantile = 0.99){
+  pw_df_all <- get_post_weights(m)
+  # do not filter for unique LOD intervals for the random QTL intervals 
+  # do this by not having lod in the random QTL intervals
+  if("lod" %in% colnames(qtl_df)) {
+    qtl_df <- qtl_df %>%
+      arrange(desc(lod)) %>%
+      mutate(pos = as.integer(pos)) %>%
+      group_by(CHR, pos) %>%
+      dplyr::slice(1) %>%
+      arrange(CHR, pos)
+  }
+  
+  BFthresh <- quantile(pw_df_all$log10BayesFactor, quantile)
+  pw_df <- pw_df_all %>%
+    filter(log10BayesFactor > BFthresh) %>%
+    dplyr::select(Chr:Pos, log10BayesFactor, everything())
+  
+  for(i in 1:nrow(qtl_df)){  # from 1 to 16
+  ## In block & > 2
+  QTLandBF <- pw_df %>%
+    filter(Chr %in% qtl_df$CHR[i] & between(Pos, qtl_df$POS_lo[i],
+                                             qtl_df$POS_hi[i])) %>% 
+    tally()
+  ## BF>2
+  inBF <- pw_df %>%
+    tally()
+  ## BF not > 2 (all minus BF > 2, all is below)
+  allwrtBF <- pw_df_all %>%
+    tally()
+  ## All in block
+  inQTL <- pw_df_all %>%
+    filter(Chr %in% qtl_df$CHR[i] & between(Pos, qtl_df$POS_lo[i],
+                                             qtl_df$POS_hi[i])) %>%
+    tally()
+  notinBF <- (allwrtBF$n[1]-inBF$n[1])
+  pval <- phyper(QTLandBF$n[1], inBF$n[1], allwrtBF$n[1]-inBF$n[1], 
+                 inQTL$n[1], lower.tail = FALSE)
+  
+  if(i == 1){
+  outputdf <- tibble(Chr = qtl_df$CHR[i], Pos_lo = qtl_df$POS_lo[i], 
+                     Pos_hi = qtl_df$POS_hi[i], inQTLandBF = QTLandBF$n[1], 
+                     inBF = inBF$n[1], notinBF = notinBF, 
+                     inQTL = inQTL$n[1], pvalue = pval)
+  } else {
+    outputdf <- outputdf %>%
+      add_row(Chr = qtl_df$CHR[i], Pos_lo = qtl_df$POS_lo[i], 
+              Pos_hi = qtl_df$POS_hi[i],inQTLandBF = QTLandBF$n[1], 
+              inBF = inBF$n[1], notinBF = notinBF, 
+              inQTL = inQTL$n[1], 
+              pvalue = pval)
+    }
+  }
+  return(outputdf)
+}
+
+```
+
+```{r}
+enrich_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = qtlplot_fl, 0.99) %>%
+  mutate(subpop = "Gulf", phenotype = "flowering")
+enrich_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = qtlplot_fl, 0.995119) %>%
+  mutate(subpop = "Midwest", phenotype = "flowering")
+enrich_gamf <- get_QTL_enrichment(m_gam_fl_hyp, qtl_df = qtlplot_fl, 0.99) %>%
+  mutate(subpop = "Both", phenotype = "flowering")
+
+
+enrich_df <- enrich_gf %>%
+  full_join(enrich_mf) %>%
+  full_join(enrich_gamf) %>%
+  arrange(Chr, Pos_lo)
+enrich_df <- enrich_df %>%
+  left_join(qtlplot_fl, by = c("Chr" = "CHR", "Pos_lo" = "POS_lo", "Pos_hi" = "POS_hi")) %>%
+  dplyr::select(Chr, Pos_lo, Pos_hi, inQTLandBF:subpop, lod, lodcolumn, pos) %>%
+  unique() %>%
+  arrange(Chr, Pos_lo, lodcolumn)
+
+enrich_df %>%
+  filter(pvalue < 0.05)
+  
+# t.test(enrich_df[enrich_df$pvalue < 0.05,]$lod, enrich_df[enrich_df$pvalue >= 0.05,]$lod) 
+qtlplot_fl %>% group_by(CHR, POS_lo) %>% tally()
+# 10 unique QTL by Pos lo/hi. 5 of 10 have enriched mash hits.
+```
+
+```{r}
+enrich_gg <- get_QTL_enrichment(m_gulf_gr_hyp, qtl_df = qtlplot_gr, 0.99) %>%
+  mutate(subpop = "Gulf", phenotype = "greenup")
+enrich_mg <- get_QTL_enrichment(m_midw_gr_hyp, qtl_df = qtlplot_gr, 0.99) %>%
+  mutate(subpop = "Midwest", phenotype = "greenup")
+enrich_gamg <- get_QTL_enrichment(m_gam_gr_hyp, qtl_df = qtlplot_gr, 0.99) %>%
+  mutate(subpop = "Both", phenotype = "greenup")
+
+enrich_gr <- enrich_gg %>%
+  full_join(enrich_mg) %>%
+  full_join(enrich_gamg) %>%
+  arrange(Chr, Pos_lo)
+enrich_gr <- enrich_gr %>%
+  left_join(qtlplot_gr, by = c("Chr" = "CHR", "Pos_lo" = "POS_lo", "Pos_hi" = "POS_hi")) %>%
+  dplyr::select(Chr, Pos_lo, Pos_hi, inQTLandBF:subpop, lod, lodcolumn, pos) %>%
+  unique() %>%
+  arrange(Chr, Pos_lo, lodcolumn)
+
+enrich_gr  # 0 of 3 unique QTL have enriched mash hits for green-up.
+
+```
+
+```{r}
+#| eval: false
+
+
+pw_3f_all <- pw_gf %>%
+  full_join(pw_mf) %>%
+  full_join(pw_gamf) %>%
+  arrange(Chr, Pos) 
+
+sig_random <- c()
+chr_size_mash <- pw_3f_all %>%
+  ungroup() %>%
+  group_by(Chr) %>%
+  dplyr::summarise(Pos_lo = min(Pos),
+                   Pos_hi = max(Pos))
+j = 1
+for(j in 1:1000){
+  qtl_size <- qtlplot_fl %>%
+    dplyr::select(CHR, POS_lo, POS_hi) %>%
+    dplyr::distinct() %>%   # don't doublecount completely overlapping QTL
+    #(does doublecount partially overlapping QTL, however.)
+    group_by(CHR, POS_lo) %>%
+    dplyr::mutate(Size = POS_hi - POS_lo) %>%
+    dplyr::select(CHR, POS_lo, Size)
+
+  rchr <- chr_size_mash$Chr[sample(1:18, nrow(qtl_size), replace = TRUE)]
+  rposlo <- c()
+  for(i in 1:length(rchr)){
+    rposlo[i] <- sample(chr_size_mash$Pos_lo[which(chr_size_mash$Chr == rchr[i])]:chr_size_mash$Pos_hi[which(chr_size_mash$Chr == rchr[i])], 1)
+  }
+  
+  random_qtl <- tibble(CHR = rchr, POS_lo = rposlo, Size = qtl_size$Size) %>%
+    mutate(POS_hi = POS_lo + Size) %>%
+    arrange(CHR, POS_lo)
+
+  random_gf <- get_QTL_enrichment(m = m_gulf_fl_hyp, qtl_df = random_qtl, 0.99) %>%
+    mutate(subpop = "Gulf", phenotype = "flowering")
+  random_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = random_qtl, 0.995119) %>%
+    mutate(subpop = "Midwest", phenotype = "flowering")
+  random_gamf <- get_QTL_enrichment(m_gam_fl_hyp, qtl_df = random_qtl, 0.99) %>%
+    mutate(subpop = "Both", phenotype = "flowering")
+  
+  random_df <- random_gf %>%
+    full_join(random_mf) %>%
+    full_join(random_gamf) %>%
+    arrange(Chr, Pos_lo)
+
+  sig_random[j] <- nrow(filter(random_df, pvalue < 0.05))
+}
+saveRDS(sig_random, file = "../data/Random_QTL_df_FL50_significant_enrichments_of_mash_1per_tail_or_mash_BF2_tail_SNPs_1000runs.rds")
+
+
+```
+
+```{r}
+sig_random <- readRDS(file = "../data/Random_QTL_df_FL50_significant_enrichments_of_mash_1per_tail_or_mash_BF2_tail_SNPs_1000runs.rds")
+
+
+tibble(`mash 1% tail significant enrichments` = sig_random) %>%
+  ggplot(aes(x = `mash 1% tail significant enrichments` )) +
+  switchgrassGWAS::theme_oeco +
+  geom_histogram(binwidth = 1) + 
+  xlim(c(1, 24)) + ylab("") +
+  geom_vline(xintercept = 5, linetype = 2, color = "red")
+save_plot(filename = "../manuscript/revision2/Figure_4_QTL_overlaps_random_QTL_enrichments_with_mash_1000runs.png", plot = last_plot(), base_height = 1.8, base_asp = 1.8)
 ```
 

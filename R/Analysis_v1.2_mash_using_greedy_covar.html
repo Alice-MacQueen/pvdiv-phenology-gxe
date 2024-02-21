@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Alice MacQueen">
+
+<title>Analysis for Revision 2</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="Analysis_v1.2_mash_using_greedy_covar_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Analysis_v1.2_mash_using_greedy_covar_files/libs/quarto-html/quarto.js"></script>
+<script src="Analysis_v1.2_mash_using_greedy_covar_files/libs/quarto-html/popper.min.js"></script>
+<script src="Analysis_v1.2_mash_using_greedy_covar_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Analysis_v1.2_mash_using_greedy_covar_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Analysis_v1.2_mash_using_greedy_covar_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Analysis_v1.2_mash_using_greedy_covar_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Analysis_v1.2_mash_using_greedy_covar_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Analysis_v1.2_mash_using_greedy_covar_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Analysis_v1.2_mash_using_greedy_covar_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview"><span class="header-section-number">0.1</span> Overview</a></li>
+  <li><a href="#step-1-gwas" id="toc-step-1-gwas" class="nav-link" data-scroll-target="#step-1-gwas"><span class="header-section-number">0.2</span> Step 1: GWAS</a></li>
+  <li><a href="#step-2-covariance-matrices" id="toc-step-2-covariance-matrices" class="nav-link" data-scroll-target="#step-2-covariance-matrices"><span class="header-section-number">0.3</span> Step 2: Covariance matrices</a>
+  <ul class="collapse">
+  <li><a href="#generate-weather-variables" id="toc-generate-weather-variables" class="nav-link" data-scroll-target="#generate-weather-variables"><span class="header-section-number">0.3.1</span> Generate weather variables</a></li>
+  <li><a href="#covar-1-28d-weather" id="toc-covar-1-28d-weather" class="nav-link" data-scroll-target="#covar-1-28d-weather"><span class="header-section-number">0.3.2</span> Covar 1-28d weather</a></li>
+  <li><a href="#load-phe-wea-data" id="toc-load-phe-wea-data" class="nav-link" data-scroll-target="#load-phe-wea-data"><span class="header-section-number">0.3.3</span> load phe &amp; wea data</a></li>
+  </ul></li>
+  <li><a href="#define-phenotypes" id="toc-define-phenotypes" class="nav-link" data-scroll-target="#define-phenotypes"><span class="header-section-number">1</span> Define phenotypes</a>
+  <ul class="collapse">
+  <li><a href="#save-weather-based-phenotypes" id="toc-save-weather-based-phenotypes" class="nav-link" data-scroll-target="#save-weather-based-phenotypes"><span class="header-section-number">1.1</span> save weather-based phenotypes</a></li>
+  </ul></li>
+  <li><a href="#can-start-here" id="toc-can-start-here" class="nav-link" data-scroll-target="#can-start-here"><span class="header-section-number">2</span> — can start here</a></li>
+  <li><a href="#covar-csv-for-greedy-mash-algorithm" id="toc-covar-csv-for-greedy-mash-algorithm" class="nav-link" data-scroll-target="#covar-csv-for-greedy-mash-algorithm"><span class="header-section-number">3</span> Covar csv for greedy mash algorithm</a>
+  <ul class="collapse">
+  <li><a href="#load-weather-phenotypes" id="toc-load-weather-phenotypes" class="nav-link" data-scroll-target="#load-weather-phenotypes"><span class="header-section-number">3.0.1</span> load weather phenotypes</a></li>
+  <li><a href="#calculate-heritability-for-diagonal" id="toc-calculate-heritability-for-diagonal" class="nav-link" data-scroll-target="#calculate-heritability-for-diagonal"><span class="header-section-number">3.1</span> Calculate heritability for diagonal</a>
+  <ul class="collapse">
+  <li><a href="#sketch-out-how-h2-is-calculated-in-rrblup" id="toc-sketch-out-how-h2-is-calculated-in-rrblup" class="nav-link" data-scroll-target="#sketch-out-how-h2-is-calculated-in-rrblup"><span class="header-section-number">3.1.1</span> sketch out how h2 is calculated in rrBLUP</a></li>
+  <li><a href="#loop-to-calculate-covar-for-flowering" id="toc-loop-to-calculate-covar-for-flowering" class="nav-link" data-scroll-target="#loop-to-calculate-covar-for-flowering"><span class="header-section-number">3.1.2</span> Loop to calculate covar for flowering</a></li>
+  <li><a href="#loop-to-calculate-covar-for-greenup" id="toc-loop-to-calculate-covar-for-greenup" class="nav-link" data-scroll-target="#loop-to-calculate-covar-for-greenup"><span class="header-section-number">3.1.3</span> Loop to calculate covar for greenup</a></li>
+  <li><a href="#midwest-covar-fewer-sites" id="toc-midwest-covar-fewer-sites" class="nav-link" data-scroll-target="#midwest-covar-fewer-sites"><span class="header-section-number">3.1.4</span> Midwest covar fewer sites</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"><span class="header-section-number">4</span> —————</a>
+  <ul class="collapse">
+  <li><a href="#step-3-greedy-mash" id="toc-step-3-greedy-mash" class="nav-link" data-scroll-target="#step-3-greedy-mash"><span class="header-section-number">4.1</span> Step 3: Greedy Mash</a></li>
+  </ul></li>
+  <li><a href="#info-to-run-greedy-mash-algo" id="toc-info-to-run-greedy-mash-algo" class="nav-link" data-scroll-target="#info-to-run-greedy-mash-algo"><span class="header-section-number">5</span> Info to run greedy mash algo</a>
+  <ul class="collapse">
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">5.0.1</span> Next steps</a></li>
+  </ul></li>
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1"><span class="header-section-number">6</span> —————————–</a></li>
+  <li><a href="#step-4-run-mash" id="toc-step-4-run-mash" class="nav-link" data-scroll-target="#step-4-run-mash"><span class="header-section-number">7</span> Step 4: Run mash</a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2"><span class="header-section-number">8</span> —————-</a></li>
+  <li><a href="#step-5-redo-writeup-figures" id="toc-step-5-redo-writeup-figures" class="nav-link" data-scroll-target="#step-5-redo-writeup-figures"><span class="header-section-number">9</span> Step 5: Redo writeup &amp; figures</a>
+  <ul class="collapse">
+  <li><a href="#load-mash-objects" id="toc-load-mash-objects" class="nav-link" data-scroll-target="#load-mash-objects"><span class="header-section-number">9.1</span> Load mash objects</a></li>
+  <li><a href="#figure-2" id="toc-figure-2" class="nav-link" data-scroll-target="#figure-2"><span class="header-section-number">9.2</span> Figure 2</a>
+  <ul class="collapse">
+  <li><a href="#covar" id="toc-covar" class="nav-link" data-scroll-target="#covar"><span class="header-section-number">9.2.1</span> covar</a></li>
+  </ul></li>
+  <li><a href="#table-1" id="toc-table-1" class="nav-link" data-scroll-target="#table-1"><span class="header-section-number">9.3</span> Table 1</a></li>
+  <li><a href="#figure-3" id="toc-figure-3" class="nav-link" data-scroll-target="#figure-3"><span class="header-section-number">9.4</span> Figure 3</a></li>
+  <li><a href="#figure-4" id="toc-figure-4" class="nav-link" data-scroll-target="#figure-4"><span class="header-section-number">9.5</span> Figure 4</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Analysis for Revision 2</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Alice MacQueen </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Analysis Version 1.2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>As of 2024-02-07, this file was a copy of the Rmd file of the same name. After 2024-02-07, this Quarto document will be modified and kept up to date for this analysis version.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Install reminders for reinstalls
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>On debian: <code>apt install libgsl-dev</code> to install the GNU Scientific Library, zB.</p>
+<p>For mashr: Sometimes install.packages(“RcppGSL”) is also needed.</p>
+</div>
+</div>
+<section id="overview" class="level2" data-number="0.1">
+<h2 data-number="0.1" class="anchored" data-anchor-id="overview"><span class="header-section-number">0.1</span> Overview</h2>
+<p>Sam developed a greedy mash algorithm to find the best set of covariance matrices to include. Alice used this algorithm on 19K randomly associated variants using a large set of covariance matrices with h^2 on their diagonals.</p>
+<p>Then, Alice used the best set of covariance matrices on 19K strongly associated variants.</p>
+<p>Outline of the current analysis:</p>
+<ol type="1">
+<li><p>Set up. Look at phenotype distribution &amp; heritability; run GWAS to get univariate SNP effect estimates &amp; standard errors. Done elsewhere.</p></li>
+<li><p>Make hypothesis covariance matrices based on weather data from 2018 - 2020. For cumulative weather variables, use a range of days: every day for the first week, and every week until 28 days. Come back and add more if 28 is chosen by greedy mash.</p></li>
+<li><p>Run greedy mash to find best set of covariance matrices that explain SNP effect variation across environments, using 19K ‘randomly associated variants’. Go back to (1) if high number of day covar matrices tend to be chosen by greedy mash.</p></li>
+<li><p>Use covariances from (3) to run mash on 19K ‘strongly associated variants’.</p></li>
+<li><p>Look at loadings on covariance matrices and meanings of covariance matrices as the writeup (Figure 2, 3; Table 1). Look at amount of antagonistic pleiotropy vs same sign significant effects.</p></li>
+<li><p>Have Li repeat the QTL analysis and incorporate her results.</p></li>
+</ol>
+<hr>
+</section>
+<section id="step-1-gwas" class="level2" data-number="0.2">
+<h2 data-number="0.2" class="anchored" data-anchor-id="step-1-gwas"><span class="header-section-number">0.2</span> Step 1: GWAS</h2>
+</section>
+<section id="step-2-covariance-matrices" class="level2" data-number="0.3">
+<h2 data-number="0.3" class="anchored" data-anchor-id="step-2-covariance-matrices"><span class="header-section-number">0.3</span> Step 2: Covariance matrices</h2>
+<section id="generate-weather-variables" class="level3" data-number="0.3.1">
+<h3 data-number="0.3.1" class="anchored" data-anchor-id="generate-weather-variables"><span class="header-section-number">0.3.1</span> Generate weather variables</h3>
+</section>
+<section id="covar-1-28d-weather" class="level3" data-number="0.3.2">
+<h3 data-number="0.3.2" class="anchored" data-anchor-id="covar-1-28d-weather"><span class="header-section-number">0.3.2</span> Covar 1-28d weather</h3>
+<p>As of 2023-09-11, want to remake these per reviewer revision to have h^2 on the diagonal instead of the CV. Estimate h^2 for these new covar matrices using rrBLUP.</p>
+</section>
+<section id="load-phe-wea-data" class="level3" data-number="0.3.3">
+<h3 data-number="0.3.3" class="anchored" data-anchor-id="load-phe-wea-data"><span class="header-section-number">0.3.3</span> load phe &amp; wea data</h3>
+</section>
+</section>
+<section id="define-phenotypes" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Define phenotypes</h1>
+<section id="save-weather-based-phenotypes" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="save-weather-based-phenotypes"><span class="header-section-number">1.1</span> save weather-based phenotypes</h2>
+</section>
+</section>
+<section id="can-start-here" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> — can start here</h1>
+</section>
+<section id="covar-csv-for-greedy-mash-algorithm" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Covar csv for greedy mash algorithm</h1>
+<p>Make &amp; save hypothesis matrices in a hypothesis_matrices directory in data. Then run the greedy mash algorithm again.</p>
+<p>phe_hyp &lt;- c(“cgdd_12c_10d”, “cgdd_12c_18d”, “cgdd_12c_5d”, “tave_5d”, “tave_10d”, “tave_18d”) phe_hyp &lt;- c(“FL50”, “GR50”, “dyln_fl50”, “dyln_change_sec”, “cgdd_12c_gr2fl”, “crain_gr2fl”, “crain_1d”, “crain_3d”, “crain_5d”)</p>
+<section id="load-weather-phenotypes" class="level3" data-number="3.0.1">
+<h3 data-number="3.0.1" class="anchored" data-anchor-id="load-weather-phenotypes"><span class="header-section-number">3.0.1</span> load weather phenotypes</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "crain_1d"                  "tave_1d"                  
+ [3] "cgdd_12c_1d"               "dyln_gr50"                
+ [5] "crain_2d"                  "crain_3d"                 
+ [7] "crain_4d"                  "crain_5d"                 
+ [9] "crain_6d"                  "crain_7d"                 
+[11] "dyln_change_sec"           "dyln_change_sec_2d_prior" 
+[13] "dyln_change_sec_3d_prior"  "dyln_change_sec_4d_prior" 
+[15] "dyln_change_sec_5d_prior"  "dyln_change_sec_6d_prior" 
+[17] "dyln_change_sec_7d_prior"  "dyln_change_sec_14d_prior"
+[19] "dyln_2d_prior"             "dyln_3d_prior"            
+[21] "dyln_4d_prior"             "dyln_5d_prior"            
+[23] "dyln_6d_prior"             "dyln_7d_prior"            
+[25] "dyln_14d_prior"            "cgdd_12c_2d"              
+[27] "tave_2d"                   "cgdd_12c_3d"              
+[29] "tave_3d"                   "cgdd_12c_4d"              
+[31] "tave_4d"                   "cgdd_12c_5d"              
+[33] "tave_5d"                   "cgdd_12c_6d"              
+[35] "tave_6d"                   "cgdd_12c_7d"              
+[37] "tave_7d"                   "cgdd_12c_14d"             
+[39] "tave_14d"                  "cgdd_12c_21d"             
+[41] "tave_21d"                  "cgdd_12c_28d"             
+[43] "tave_28d"                 </code></pre>
+</div>
+</div>
+</section>
+<section id="calculate-heritability-for-diagonal" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="calculate-heritability-for-diagonal"><span class="header-section-number">3.1</span> Calculate heritability for diagonal</h2>
+<p>I don’t have access to ASREML any more, so need a different package to do this.</p>
+<section id="sketch-out-how-h2-is-calculated-in-rrblup" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="sketch-out-how-h2-is-calculated-in-rrblup"><span class="header-section-number">3.1.1</span> sketch out how h2 is calculated in rrBLUP</h3>
+<p>Use the kinship matrix I’ve already calculated (using the van Raden method, using switchgrassGWAS::pvdiv_kinship()) using the SNPs as the K matrix.</p>
+<p>Another error: “Error in mash(data, covmats) : All U_scaled matrices should be positive semi-definite</p>
+<p>So I should adjust these to make sure all are positive semi-definite, too, in addition to replacing the diagonals with h2.</p>
+</section>
+<section id="loop-to-calculate-covar-for-flowering" class="level3" data-number="3.1.2">
+<h3 data-number="3.1.2" class="anchored" data-anchor-id="loop-to-calculate-covar-for-flowering"><span class="header-section-number">3.1.2</span> Loop to calculate covar for flowering</h3>
+<p>Another error: “Error in mash(data, covmats) : All U_scaled matrices should be positive semi-definite</p>
+</section>
+<section id="loop-to-calculate-covar-for-greenup" class="level3" data-number="3.1.3">
+<h3 data-number="3.1.3" class="anchored" data-anchor-id="loop-to-calculate-covar-for-greenup"><span class="header-section-number">3.1.3</span> Loop to calculate covar for greenup</h3>
+</section>
+<section id="midwest-covar-fewer-sites" class="level3" data-number="3.1.4">
+<h3 data-number="3.1.4" class="anchored" data-anchor-id="midwest-covar-fewer-sites"><span class="header-section-number">3.1.4</span> Midwest covar fewer sites</h3>
+<section id="flowering-6-sites" class="level4" data-number="3.1.4.1">
+<h4 data-number="3.1.4.1" class="anchored" data-anchor-id="flowering-6-sites"><span class="header-section-number">3.1.4.1</span> flowering: 6 sites</h4>
+<p>MI, MO, SD, TX1, TX2, TX3</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>$identity
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    0    0    0    0    0
+[2,]    0    1    0    0    0    0
+[3,]    0    0    1    0    0    0
+[4,]    0    0    0    1    0    0
+[5,]    0    0    0    0    1    0
+[6,]    0    0    0    0    0    1
+
+$singletons_1
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    0    0    0    0    0
+[2,]    0    0    0    0    0    0
+[3,]    0    0    0    0    0    0
+[4,]    0    0    0    0    0    0
+[5,]    0    0    0    0    0    0
+[6,]    0    0    0    0    0    0
+
+$singletons_2
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    0    0    0    0    0    0
+[2,]    0    1    0    0    0    0
+[3,]    0    0    0    0    0    0
+[4,]    0    0    0    0    0    0
+[5,]    0    0    0    0    0    0
+[6,]    0    0    0    0    0    0
+
+$singletons_3
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    0    0    0    0    0    0
+[2,]    0    0    0    0    0    0
+[3,]    0    0    1    0    0    0
+[4,]    0    0    0    0    0    0
+[5,]    0    0    0    0    0    0
+[6,]    0    0    0    0    0    0
+
+$singletons_4
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    0    0    0    0    0    0
+[2,]    0    0    0    0    0    0
+[3,]    0    0    0    0    0    0
+[4,]    0    0    0    1    0    0
+[5,]    0    0    0    0    0    0
+[6,]    0    0    0    0    0    0
+
+$singletons_5
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    0    0    0    0    0    0
+[2,]    0    0    0    0    0    0
+[3,]    0    0    0    0    0    0
+[4,]    0    0    0    0    0    0
+[5,]    0    0    0    0    1    0
+[6,]    0    0    0    0    0    0
+
+$singletons_6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    0    0    0    0    0    0
+[2,]    0    0    0    0    0    0
+[3,]    0    0    0    0    0    0
+[4,]    0    0    0    0    0    0
+[5,]    0    0    0    0    0    0
+[6,]    0    0    0    0    0    1
+
+$equal_effects
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    1    1    1    1    1
+[2,]    1    1    1    1    1    1
+[3,]    1    1    1    1    1    1
+[4,]    1    1    1    1    1    1
+[5,]    1    1    1    1    1    1
+[6,]    1    1    1    1    1    1
+
+$simple_het_1
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,] 1.00 0.25 0.25 0.25 0.25 0.25
+[2,] 0.25 1.00 0.25 0.25 0.25 0.25
+[3,] 0.25 0.25 1.00 0.25 0.25 0.25
+[4,] 0.25 0.25 0.25 1.00 0.25 0.25
+[5,] 0.25 0.25 0.25 0.25 1.00 0.25
+[6,] 0.25 0.25 0.25 0.25 0.25 1.00
+
+$simple_het_2
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]  1.0  0.5  0.5  0.5  0.5  0.5
+[2,]  0.5  1.0  0.5  0.5  0.5  0.5
+[3,]  0.5  0.5  1.0  0.5  0.5  0.5
+[4,]  0.5  0.5  0.5  1.0  0.5  0.5
+[5,]  0.5  0.5  0.5  0.5  1.0  0.5
+[6,]  0.5  0.5  0.5  0.5  0.5  1.0
+
+$simple_het_3
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,] 1.00 0.75 0.75 0.75 0.75 0.75
+[2,] 0.75 1.00 0.75 0.75 0.75 0.75
+[3,] 0.75 0.75 1.00 0.75 0.75 0.75
+[4,] 0.75 0.75 0.75 1.00 0.75 0.75
+[5,] 0.75 0.75 0.75 0.75 1.00 0.75
+[6,] 0.75 0.75 0.75 0.75 0.75 1.00</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "singletons_1"
+[1] "singletons_2"
+[1] "singletons_3"
+[1] "singletons_4"
+[1] "singletons_5"
+[1] "singletons_6"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            MI         MO         SD       TX1        TX2        TX3
+MI  0.07481805 0.07090836 0.06876004 0.2103161 0.07390181 0.09884354
+MO  0.07090836 0.06720297 0.06516691 0.1993258 0.07004000 0.09367837
+SD  0.06876004 0.06516691 0.06319254 0.1932868 0.06791799 0.09084018
+TX1 0.21031606 0.19932580 0.19328679 0.5912056 0.20774050 0.27785252
+TX2 0.07390181 0.07004000 0.06791799 0.2077405 0.07299680 0.09763308
+TX3 0.09884354 0.09367837 0.09084018 0.2778525 0.09763308 0.13058406
+             MI          MO           SD          TX1         TX2         TX3
+MI   0.30747854  0.18471043  0.063168902  0.042081690 -0.14609136 -0.38950441
+MO   0.18471043  0.11096040  0.037947217  0.025279575 -0.08776091 -0.23398552
+SD   0.06316890  0.03794722  0.012977524  0.008645332 -0.03001325 -0.08002043
+TX1  0.04208169  0.02527957  0.008645332  0.005759324 -0.01999415 -0.05330780
+TX2 -0.14609136 -0.08776091 -0.030013250 -0.019994147  0.06941195  0.18506406
+TX3 -0.38950441 -0.23398552 -0.080020431 -0.053307796  0.18506406  0.49341226
+              MI           MO            SD          TX1          TX2
+MI   0.078964827  0.147521736 -2.313153e-03 -0.157489727  0.150853772
+MO   0.147521736  0.275599446 -4.321422e-03 -0.294221603  0.281824340
+SD  -0.002313153 -0.004321422  6.776024e-05  0.004613419 -0.004419028
+TX1 -0.157489727 -0.294221603  4.613419e-03  0.314102052 -0.300867111
+TX2  0.150853772  0.281824340 -4.419028e-03 -0.300867111  0.288189834
+TX3  0.058322339  0.108957532 -1.708463e-03 -0.116319754  0.111418528
+             TX3
+MI   0.058322339
+MO   0.108957532
+SD  -0.001708463
+TX1 -0.116319754
+TX2  0.111418528
+TX3  0.043076080
+             MI          MO          SD         TX1         TX2         TX3
+MI   0.12149322  0.02225847  0.05539208 -0.07694099 -0.24124032  0.19761601
+MO   0.02225847  0.00407792  0.01014825 -0.01409617 -0.04419704  0.03620474
+SD   0.05539208  0.01014825  0.02525476 -0.03507950 -0.10998805  0.09009854
+TX1 -0.07694099 -0.01409617 -0.03507950  0.04872631  0.15277617 -0.12514913
+TX2 -0.24124032 -0.04419704 -0.10998805  0.15277617  0.47901350 -0.39239185
+TX3  0.19761601  0.03620474  0.09009854 -0.12514913 -0.39239185  0.32143429
+             MI          MO           SD          TX1          TX2          TX3
+MI   0.39959577 -0.45021905 -0.059704880 -0.043024409  0.177078583  0.021194345
+MO  -0.45021905  0.50725560  0.067268666  0.048475009 -0.199512000 -0.023879377
+SD  -0.05970488  0.06726867  0.008920697  0.006428414 -0.026457876 -0.003166715
+TX1 -0.04302441  0.04847501  0.006428414  0.004632431 -0.019066021 -0.002281992
+TX2  0.17707858 -0.19951200 -0.026457876 -0.019066021  0.078471362  0.009392153
+TX3  0.02119435 -0.02387938 -0.003166715 -0.002281992  0.009392153  0.001124137
+               MI            MO            SD           TX1           TX2
+MI   7.644265e-04 -9.191739e-06  1.008060e-04 -1.209532e-05  1.145312e-05
+MO  -9.191739e-06  7.486225e-04  1.386320e-04 -2.239193e-05  2.086497e-05
+SD   1.008060e-04  1.386320e-04  8.782129e-05  1.446956e-04 -7.748493e-05
+TX1 -1.209532e-05 -2.239193e-05  1.446956e-04  7.699535e-04  2.102128e-05
+TX2  1.145312e-05  2.086497e-05 -7.748493e-05  2.102128e-05  7.698026e-04
+TX3 -1.206422e-05 -1.359682e-05  7.649330e-05 -6.513030e-06  1.539089e-05
+              TX3
+MI  -1.206422e-05
+MO  -1.359682e-05
+SD   7.649330e-05
+TX1 -6.513030e-06
+TX2  1.539089e-05
+TX3  7.777578e-04</code></pre>
+</div>
+</div>
+</section>
+<section id="greenup-7-sites" class="level4" data-number="3.1.4.2">
+<h4 data-number="3.1.4.2" class="anchored" data-anchor-id="greenup-7-sites"><span class="header-section-number">3.1.4.2</span> greenup: 7 sites</h4>
+<p>MI, MO, NE, OK, TX1, TX2, TX3</p>
+</section>
+<section id="visualize-correlation-matrices" class="level4" data-number="3.1.4.3">
+<h4 data-number="3.1.4.3" class="anchored" data-anchor-id="visualize-correlation-matrices"><span class="header-section-number">3.1.4.3</span> Visualize correlation matrices</h4>
+</section>
+</section>
+</section>
+</section>
+<section id="section" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> —————</h1>
+<section id="step-3-greedy-mash" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="step-3-greedy-mash"><span class="header-section-number">4.1</span> Step 3: Greedy Mash</h2>
+</section>
+</section>
+<section id="info-to-run-greedy-mash-algo" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Info to run greedy mash algo</h1>
+<p>data/mash_switchgrass_models/mash/all_matrices/matrices hosts all covar mat (?) analysis/mash_greedy_algorithm/mash_switchgrass_models/mash/all_matrices/matrices has more? covar mat? Can cp from these matrices dir to mash_h2_diag_covar/matrices the following regex, which run.mash.greedy.search.py looks for:</p>
+<p>‘.singleton.<em>’ ’.identity.</em>’ ‘.simple_het_<em>.</em>’ ‘.equal_effects.<em>’ ’.</em>PCA*’</p>
+<p>Set up new analysis/mash_greedy_algorithm/mash_1_to_28d_covar/ or subdirectory to have all the subdir necessary to run <code>run.mash.greedy.search.py</code> python script. I think these may have to be pre-generated for the script to work, and I’ll make sure they’re empty to keep there from being I/O issues I haven’t tested for.</p>
+<p>Make sure all matrices are present in matrices/ subdir and named &amp; output appropriately for recognition</p>
+<p>Make sure random and strong Bhat and Shat in combined_mash_effects and combined_mash_stderrs are appropriate - perhaps ultimately replace these with my inputs in mash/Subpop/inputs; perhaps use what’s here as tests first</p>
+<p>When I change to my inputs for effects &amp; stderrs, I will need to adjust midwest covar &amp; effects appropriately to reflect only 6 (flowering) and 7 (greenup) rows &amp; columns used; the other GWAS were dropped as too low power or due to substantial phenotype data loss, &amp; including them would give misleading results.</p>
+<section id="next-steps" class="level3" data-number="5.0.1">
+<h3 data-number="5.0.1" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">5.0.1</span> Next steps</h3>
+<p>Redo Midwest: Remake Midwest covar matrices, including hypothesis, singleton, identity, simple het, equal effects, and data-driven matrices. Make mash_greedy.R variants for changed input dir &amp; for different Midwest column numbers. Run two new run.mash.greedy.search.py commands: python run.mash.greedy.search.py -p greenup -c midwest -e random python run.mash.greedy.search.py -p flowering -c midwest -e random</p>
+<p>Try Gulf &amp; All with my known inputs: python run.mash.greedy.search.py -p greenup -c gulf -e random python run.mash.greedy.search.py -p greenup -c all -e random python run.mash.greedy.search.py -p flowering -c gulf -e random python run.mash.greedy.search.py -p flowering -c all -e random</p>
+<p>Write inputs to mash_h2_diag_covar/All_inputs, Gulf_inputs, and Midwest_inputs, from the original mash work. Especially important for Midwest which has some poor GWAS at dropped sites. The inputs Sam used have no column or rownames and look to be tab delimited.</p>
+<p>aka combined_mash_effects/greenup.all.betas.random.txt and combined_mash_stderrs/flowering.gulf.betas.strong.txt</p>
+<p>I only really need the random ones here, run mash again on the strong effects below.</p>
+<p>Run the pod.greedy.sh scripts from their dir, or run the python commands in those scripts.</p>
+<p>Look at the results in the likelihood_paths files for the following data:</p>
+<p>Using a set of covariance matrices with h2 on the diagonal, made positive semi-definite, and for multiple weather variable averages, 1-7d, 14,21,and28d averages before the greenup or flowering event.</p>
+<p>Using the effects and standard errors that I used for my previous mash analysis. However I originally selected them, plus the reduced number of sites for the Midwest plants.</p>
+<p>Only keep covariance matrices if they significantly improve the mash model likelihoods when added. This way, we know they improve the mash model and that they are distinct enough from others matrices that we added.</p>
+<p>Using the random set of SNPs. Then, look at the mash results generated using these covariance matrices using a strong set of SNPs.</p>
+<p>Given that the greedy algorithm, run on Sam’s random inputs, however he generated or found those, gives many more covar matrices especially from Uhyp, I wonder if some repetition of this analysis would be valuable, before blowing these results all out of proportion in a paper. Either different random sets of effects, or effects from different years of data. Think on this. I definitely want to use my known inputs, not Sam’s, as mine have a traceable history (or anyways more traceable).</p>
+</section>
+</section>
+<section id="section-1" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> —————————–</h1>
+</section>
+<section id="step-4-run-mash" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Step 4: Run mash</h1>
+</section>
+<section id="section-2" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> —————-</h1>
+<p>Reasoning from Analysis_v0.6 script for dropping sites from the Midwest:</p>
+<p>Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50. Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.</p>
+</section>
+<section id="step-5-redo-writeup-figures" class="level1" data-number="9">
+<h1 data-number="9"><span class="header-section-number">9</span> Step 5: Redo writeup &amp; figures</h1>
+<section id="load-mash-objects" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="load-mash-objects"><span class="header-section-number">9.1</span> Load mash objects</h2>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: gridExtra</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'gridExtra'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:dplyr':
+
+    combine</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `size` argument of `element_line()` is deprecated as of ggplot2
+3.4.0.
+
+Warning: Please use the `linewidth` argument instead.</code></pre>
+</div>
+</div>
+</section>
+<section id="figure-2" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="figure-2"><span class="header-section-number">9.2</span> Figure 2</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  Type          Mass
+  &lt;chr&gt;        &lt;dbl&gt;
+1 canonical    0.355
+2 data-driven  0    
+3 hypothesized 0.645</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  Type          Mass
+  &lt;chr&gt;        &lt;dbl&gt;
+1 canonical    0.670
+2 hypothesized 0.330</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11 × 3
+   `Covariance Matrix`                                 Mass Type        
+   &lt;fct&gt;                                              &lt;dbl&gt; &lt;chr&gt;       
+ 1 no_effects                                     0.568     canonical   
+ 2 greenup.singleton.TX3                          0.00938   canonical   
+ 3 greenup.singleton.TX2                          0.000135  canonical   
+ 4 greenup.singleton.TX1                          0.0718    canonical   
+ 5 greenup.singleton.OK                           0         canonical   
+ 6 greenup.singleton.NE                           0.0143    canonical   
+ 7 greenup.singleton.MO                           0.0209    canonical   
+ 8 greenup.singleton.MI                           0.0000217 canonical   
+ 9 greenup.simple_het_1                           0.315     canonical   
+10 greenup.midwest.dyln_change_sec_7d_prior.U.mat 0         hypothesized
+11 greenup.identity                               0         canonical   </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  Type          Mass
+  &lt;chr&gt;        &lt;dbl&gt;
+1 canonical    0.774
+2 hypothesized 0.226</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 13 × 3
+   `Covariance Matrix`                     Mass Type        
+   &lt;fct&gt;                                  &lt;dbl&gt; &lt;chr&gt;       
+ 1 no_effects                        0.0419     canonical   
+ 2 greenup.singleton.TX3             0.0140     canonical   
+ 3 greenup.singleton.TX2             0.000791   canonical   
+ 4 greenup.singleton.TX1             0.000726   canonical   
+ 5 greenup.singleton.SD              0.00752    canonical   
+ 6 greenup.singleton.OK              0.199      canonical   
+ 7 greenup.singleton.NE              0.0000468  canonical   
+ 8 greenup.singleton.MO              0.255      canonical   
+ 9 greenup.singleton.MI              0.00000594 canonical   
+10 greenup.simple_het_1              0.155      canonical   
+11 greenup.identity                  0          canonical   
+12 greenup.all.tave_1d.U.mat         0.219      hypothesized
+13 greenup.all.dyln_change_sec.U.mat 0.108      hypothesized</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  Type          Mass
+  &lt;chr&gt;        &lt;dbl&gt;
+1 canonical        1
+2 hypothesized     0</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="covar" class="level3" data-number="9.2.1">
+<h3 data-number="9.2.1" class="anchored" data-anchor-id="covar"><span class="header-section-number">9.2.1</span> covar</h3>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 63 Columns: 2── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (1): matrix
+dbl (1): likelihood
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 63 Columns: 2── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (1): matrix
+dbl (1): likelihood
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 61 Columns: 2── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (1): matrix
+dbl (1): likelihood
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 62 Columns: 2── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (1): matrix
+dbl (1): likelihood
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 61 Columns: 2── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (1): matrix
+dbl (1): likelihood
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"MI"` instead of `.data$MI`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"MO"` instead of `.data$MO`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"NE"` instead of `.data$NE`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"OK"` instead of `.data$OK`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"TX1"` instead of `.data$TX1`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"TX2"` instead of `.data$TX2`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"TX3"` instead of `.data$TX3`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 61 Columns: 2── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (1): matrix
+dbl (1): likelihood
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"SD"` instead of `.data$SD`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>New names:New names:New names:New names:New names:New names:New names:</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 9
+  ...1      MI      MO     NE       OK    SD      TX1     TX2    TX3
+  &lt;chr&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+1 MI    0.506  0.243   0.0638  0.0618  0.122  0.130    0.139  0.133 
+2 MO    0.243  0.355   0.168   0.00832 0.310  0.123    0.121  0.124 
+3 NE    0.0638 0.168   0.440   0.126   0.217  0.0523   0.0795 0.120 
+4 OK    0.0618 0.00832 0.126   0.534   0.118 -0.00104 -0.0338 0.117 
+5 SD    0.122  0.310   0.217   0.118   0.384  0.150    0.127  0.104 
+6 TX1   0.130  0.123   0.0523 -0.00104 0.150  0.174    0.142  0.108 
+7 TX2   0.139  0.121   0.0795 -0.0338  0.127  0.142    0.229  0.0395
+8 TX3   0.133  0.124   0.120   0.117   0.104  0.108    0.0395 0.203 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 8
+  ...1       MI       MO       NE     OK     TX1     TX2      TX3
+  &lt;chr&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;
+1 MI     1.00    0.133    0.0343   0.579 -0.0146 -0.193   0.101  
+2 MO     0.133   1.00     0.0897   0.155 -0.192  -0.117   0.00420
+3 NE     0.0343  0.0897   1.00     0.304  0.270  -0.0439  0.00523
+4 OK     0.579   0.155    0.304    1.00  -0.536  -0.378  -0.138  
+5 TX1   -0.0146 -0.192    0.270   -0.536  1.00    0.550  -0.0739 
+6 TX2   -0.193  -0.117   -0.0439  -0.378  0.550   1.00    0.369  
+7 TX3    0.101   0.00420  0.00523 -0.138 -0.0739  0.369   1.00   </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"...1"` instead of `.data$...1`</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in as_grob.default(plot): Cannot convert object of class list into a
+grob.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"...1"` instead of `.data$...1`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(Type, Mass, subpop, phenotype)`Joining with `by
+= join_by(Type, Mass, subpop, phenotype)`Joining with `by = join_by(Type,
+Mass, subpop, phenotype)`Joining with `by = join_by(Type, Mass, subpop,
+phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
+phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
+phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
+phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
+phenotype)`</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/build%20figure%202-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="table-1" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="table-1"><span class="header-section-number">9.3</span> Table 1</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "S_all_pairwise" "S_CN"           "S_2_no"         "S_AP"          
+[5] "S_DS"           "NS_pairwise"    "S_1_row"        "S_1_col"       </code></pre>
+</div>
+</div>
+<p>Change these to look at S_AP, S_DS, S_2_no; S_1_row and S_1_col separately</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  Region_comparison     n
+  &lt;chr&gt;             &lt;dbl&gt;
+1 North_North         153
+2 North_Texas         788
+3 Texas_Texas         235</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$gxe_counts
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign               2080       18775          11
+2 Magnitude          3913        4374         362
+3 None               1284         699        5775
+
+$gxe_fractions
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign              0.286       0.787       0.002
+2 Magnitude         0.538       0.183       0.059
+3 None              0.176       0.029       0.939</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>$gxe_counts
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign               2080       18775          11
+2 Magnitude          3913        4374         362
+3 None               1284         699        5775
+
+$gxe_fractions
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign              0.286       0.787       0.002
+2 Magnitude         0.538       0.183       0.059
+3 None              0.176       0.029       0.939</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$gxe_counts
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign               1112        1554          17
+2 Magnitude          6452       10177         237
+3 None                  5          13           0
+
+$gxe_fractions
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign              0.147       0.132       0.067
+2 Magnitude         0.852       0.867       0.933
+3 None              0.001       0.001       0    </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$gxe_counts
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign               7529        9346         132
+2 Magnitude         11989       12080         452
+3 None                805         495         156
+
+$gxe_fractions
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign               0.37       0.426       0.178
+2 Magnitude          0.59       0.551       0.611
+3 None               0.04       0.023       0.211</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "flowering"</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$gxe_counts
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign                270         467          69
+2 Magnitude          2864       10434         622
+3 None              11296       13557        2981
+
+$gxe_fractions
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign              0.019       0.019       0.019
+2 Magnitude         0.198       0.427       0.169
+3 None              0.783       0.554       0.812</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$gxe_counts
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign                153         788         235
+2 Magnitude            37         971         740
+3 None                 44          88          18
+
+$gxe_fractions
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign              0.654       0.427       0.237
+2 Magnitude         0.158       0.526       0.745
+3 None              0.188       0.048       0.018</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$gxe_counts
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign                 21        1480         812
+2 Magnitude           470        9293        2126
+3 None               5272        5844        1127
+
+$gxe_fractions
+# A tibble: 3 × 4
+  Type_of_GxE North_North North_Texas Texas_Texas
+  &lt;chr&gt;             &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;
+1 Sign              0.004       0.089       0.2  
+2 Magnitude         0.082       0.559       0.523
+3 None              0.915       0.352       0.277</code></pre>
+</div>
+</div>
+</section>
+<section id="figure-3" class="level2" data-number="9.4">
+<h2 data-number="9.4" class="anchored" data-anchor-id="figure-3"><span class="header-section-number">9.4</span> Figure 3</h2>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"rowU"` instead of `.data$rowU`</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-58-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/build%20figure%203-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="figure-4" class="level2" data-number="9.5">
+<h2 data-number="9.5" class="anchored" data-anchor-id="figure-4"><span class="header-section-number">9.5</span> Figure 4</h2>
+<p>Comparison with QTL for the four-way mapping cross for green up (GR50), flowering (FL50), three functions of weather variables for green-up (from Figure 2; Both: Temp Ave, 1d; Both: Daylength change (s) 1d prior; Gulf: Daylength (14d prior), and two functions of weather variables for flowering (from Figure 2: Midwest: day length change (s) 2d prior; Gulf: cumulative rainfall, 7d).</p>
+<p>Li ran the QTL analysis 2024-02-14. Here Alice combines the QTL with the mash SNP effects to build the analysis for Figure 4.</p>
+<p>It’s an open question how to combine these into an informative main text figure.</p>
+<p>The full QTL Lod plots for flowering &amp; greenup phenotypes should go in the SI. Here, try plotting just the significant chromosomes, with a QTL above the permutation threshold.</p>
+<section id="figure-4a" class="level4" data-number="9.5.0.1">
+<h4 data-number="9.5.0.1" class="anchored" data-anchor-id="figure-4a"><span class="header-section-number">9.5.0.1</span> Figure 4A</h4>
+<p>LOD QTL</p>
+<p>Adapted from Analysis_v0.7_QTL_interval_lod_plot.Rmd</p>
+<p>Make sure to Load mash objects at start of Step 5</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'qtl2'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:qtl':
+
+    clean</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:readr':
+
+    read_csv</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>------------------------------------------------------------------------------</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>You have loaded plyr after dplyr - this is likely to cause problems.
+If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+library(plyr); library(dplyr)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>------------------------------------------------------------------------------</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'plyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:here':
+
+    here</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:dplyr':
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following object is masked from 'package:purrr':
+
+    compact</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"V1"` instead of `.data$V1`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"value"` instead of `.data$value`</code></pre>
+</div>
+</div>
+<p>Decide on cutoff to use for rug plots and enrichment analysis: SNPs sig in 1% tail or BF&gt;2, whichever is stricter</p>
+<p>1% tail is stricter in all cases except Midwest flowering, where BF&gt;2 is stricter, equivalent to a 0.49% tail (0.995119 quantile).</p>
+<p>What is the Bayes Factor at the 99th quantile? If it’s not above 2, what is the quantile where the BF &gt; 2?</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>     99% 
+2.559618 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     99% 
+1.338243 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    99% 
+2.64938 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>99.5119% 
+2.000008 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     99% 
+2.098955 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     99% 
+4.683127 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     99% 
+3.086515 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 177 rows [58, 59,
+60, 154, 155, 156, 202, 203, 204, 253, 254, 255, 355, 356, 357, 403, 404, 405,
+427, 428, ...].</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Don't know how to automatically pick scale for object of type &lt;scan1/matrix&gt;.
+Defaulting to continuous.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-76-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Don't know how to automatically pick scale for object of type &lt;scan1/matrix&gt;.
+Defaulting to continuous.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 236 rows [77, 78,
+79, 80, 205, 206, 207, 208, 269, 270, 271, 272, 337, 338, 339, 340, 473, 474,
+475, 476, ...].</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Don't know how to automatically pick scale for object of type &lt;scan1/matrix&gt;.
+Defaulting to continuous.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-76-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Don't know how to automatically pick scale for object of type &lt;scan1/matrix&gt;.
+Defaulting to continuous.</code></pre>
+</div>
+</div>
+</section>
+<section id="figure-4b" class="level4" data-number="9.5.0.2">
+<h4 data-number="9.5.0.2" class="anchored" data-anchor-id="figure-4b"><span class="header-section-number">9.5.0.2</span> Figure 4B</h4>
+<p>Same SVG line drawing that was used previously. Description of the two mapping panels used.</p>
+</section>
+<section id="figure-4c" class="level4" data-number="9.5.0.3">
+<h4 data-number="9.5.0.3" class="anchored" data-anchor-id="figure-4c"><span class="header-section-number">9.5.0.3</span> Figure 4C</h4>
+<p>Enrichment analysis</p>
+<p>Adapted from Analysis_v0.6_QTL_GxE_and_mash_comparison.Rmd</p>
+<p>Prepare the QTL dataframe</p>
+<p>Function to compute hypergeometric test for each row in a QTL df</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"V1"` instead of `.data$V1`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
+1.2.0.
+
+Warning: Please use `"value"` instead of `.data$value`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(Chr, Pos_lo, Pos_hi, inQTLandBF, inBF, notinBF,
+inQTL, pvalue, subpop, phenotype)`Joining with `by = join_by(Chr, Pos_lo,
+Pos_hi, inQTLandBF, inBF, notinBF, inQTL, pvalue, subpop, phenotype)`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in left_join(., qtlplot_fl, by = c(Chr = "CHR", Pos_lo = "POS_lo", :
+Detected an unexpected many-to-many relationship between `x` and `y`.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 12
+  Chr      Pos_lo   Pos_hi inQTLandBF  inBF notinBF inQTL    pvalue subpop lod  
+  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;      &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;
+1 Chr02K 63660000 65440000          3   310   63057   182 0.0126    Midwe… 20.3…
+2 Chr02K 63660000 65440000          3   310   63057   182 0.0126    Midwe… 21.2…
+3 Chr05N 63830000 65980000          4   505   49985   162 0.0239    Gulf   33.3…
+4 Chr05N 63830000 65980000          4   358   35377   108 0.00472   Both   33.3…
+5 Chr08N 13470000 34420000         18   505   49985   684 0.0000759 Gulf   18.1…
+# ℹ 2 more variables: lodcolumn &lt;chr&gt;, pos &lt;chr&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+# Groups:   CHR [7]
+   CHR      POS_lo     n
+   &lt;chr&gt;     &lt;dbl&gt; &lt;int&gt;
+ 1 Chr02K 63660000     2
+ 2 Chr02N 58070000     2
+ 3 Chr03K 17930000     2
+ 4 Chr04K  2280000     2
+ 5 Chr05N  2040000     2
+ 6 Chr05N 58920000     1
+ 7 Chr05N 63830000     1
+ 8 Chr08N  9510000     1
+ 9 Chr08N 13470000     1
+10 Chr09K 13100000     2</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(Chr, Pos_lo, Pos_hi, inQTLandBF, inBF, notinBF,
+inQTL, pvalue, subpop, phenotype)`Joining with `by = join_by(Chr, Pos_lo,
+Pos_hi, inQTLandBF, inBF, notinBF, inQTL, pvalue, subpop, phenotype)`</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 12
+  Chr      Pos_lo   Pos_hi inQTLandBF  inBF notinBF inQTL pvalue subpop  lod    
+  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;      &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+1 Chr05N 63830000 65260000          0   460   45471    66  0.486 Gulf    22.537…
+2 Chr05N 63830000 65260000          1   491   48539    74  0.170 Midwest 22.537…
+3 Chr05N 63830000 65260000          1   448   44317    83  0.202 Both    22.537…
+4 Chr08K 38790000 41430000          0   460   45471   107  0.660 Gulf    18.972…
+5 Chr08K 38790000 41430000          1   491   48539   116  0.324 Midwest 18.972…
+6 Chr08K 38790000 41430000          1   448   44317    91  0.231 Both    18.972…
+7 Chr09N 15150000 19550000          2   460   45471   206  0.341 Gulf    19.383…
+8 Chr09N 15150000 19550000          0   491   48539   183  0.842 Midwest 19.383…
+9 Chr09N 15150000 19550000          3   448   44317   198  0.138 Both    19.383…
+# ℹ 2 more variables: lodcolumn &lt;chr&gt;, pos &lt;chr&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 24 rows containing non-finite values (`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 2 rows containing missing values (`geom_bar()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-88-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 24 rows containing non-finite values (`stat_bin()`).
+
+Warning: Removed 2 rows containing missing values (`geom_bar()`).</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      const annoteTargets = window.document.querySelectorAll('.code-annotation-anchor');
+      for (let i=0; i<annoteTargets.length; i++) {
+        const annoteTarget = annoteTargets[i];
+        const targetCell = annoteTarget.getAttribute("data-target-cell");
+        const targetAnnotation = annoteTarget.getAttribute("data-target-annotation");
+        const contentFn = () => {
+          const content = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          if (content) {
+            const tipContent = content.cloneNode(true);
+            tipContent.classList.add("code-annotation-tip-content");
+            return tipContent.outerHTML;
+          }
+        }
+        const config = {
+          allowHTML: true,
+          content: contentFn,
+          onShow: (instance) => {
+            selectCodeLines(instance.reference);
+            instance.reference.classList.add('code-annotation-active');
+            window.tippy.hideAll();
+          },
+          onHide: (instance) => {
+            unselectCodeLines();
+            instance.reference.classList.remove('code-annotation-active');
+          },
+          maxWidth: 300,
+          delay: [50, 0],
+          duration: [200, 0],
+          offset: [5, 10],
+          arrow: true,
+          appendTo: function(el) {
+            return el.parentElement.parentElement.parentElement;
+          },
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'quarto',
+          placement: 'right',
+          popperOptions: {
+            modifiers: [
+            {
+              name: 'flip',
+              options: {
+                flipVariations: false, // true by default
+                allowedAutoPlacements: ['right'],
+                fallbackPlacements: ['right', 'top', 'top-start', 'top-end', 'bottom', 'bottom-start', 'bottom-end', 'left'],
+              },
+            },
+            {
+              name: 'preventOverflow',
+              options: {
+                mainAxis: false,
+                altAxis: false
+              }
+            }
+            ]        
+          }      
+        };
+        window.tippy(annoteTarget, config); 
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

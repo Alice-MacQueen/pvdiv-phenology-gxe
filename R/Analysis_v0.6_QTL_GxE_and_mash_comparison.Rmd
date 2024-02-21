@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(cowplot)
 library(here)
+library(data.table)
 ```
 
 # TRIAL script
@@ -72,21 +73,21 @@ qtldf <- qtldf %>%
   separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
   mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
          Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
-  select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  dplyr::select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
   arrange(CHR, Pos_Mb_lo)
 
 qtlplot <- qtldf %>%
-  mutate(phe = case_when(lodcolumn == "FL50" ~ "50% flowering",
-                              lodcolumn == "dyln_fl50" ~ "Daylength",
-                              lodcolumn == "dyln_change_sec" ~ "daylength change (s)",
-                              lodcolumn == "CGDD_12C" ~ "GDD, GR to FL",
+  mutate(phe = case_when(lodcolumn == "FL50" ~ "flowering",
+                              lodcolumn == "dyln_change_sec_2d_prior" ~ "daylength change (s) 2d prior",
+                              lodcolumn == "dyln_change_sec" ~ "daylength change (s) 1d prior",
+                              lodcolumn == "GR50" ~ "greenup",
                               lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
   #filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
   mutate(POS_lo = Pos_Mb_lo * 1000000,
          POS_hi = Pos_Mb_hi * 1000000)
 
 qtlplot$phe <- factor(qtlplot$phe, 
-                      levels = c("50% flowering", "Rainfall, GR to FL",
+                      levels = c("flowering", "daylength change (s) 2d prior",
                                  "GDD, GR to FL", "Daylength",
                                           "daylength change (s)",
                                           "Rainfall, 1 day",
@@ -148,31 +149,69 @@ pw_gamf <- get_post_weights(m_gam_fl_hyp) %>%
 # Get any mash overlaps for QTL intervals
 ```{r}
 pw_3f <- pw_gf %>%
-  full_join(pw_mf) %>%
-  full_join(pw_gamf) %>%
+  filter(log10BayesFactor > 2.56) %>%
+  full_join(filter(pw_mf, log10BayesFactor > 2)) %>%
+  full_join(filter(pw_gamf, log10BayesFactor > 2.65)) %>%
   arrange(Chr, Pos) %>%
-  filter(log10BayesFactor > 3) %>%
-  select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
+  #filter(log10BayesFactor > 3) %>%
+  dplyr::select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
 
 pw_3f_all <- pw_gf %>%
   full_join(pw_mf) %>%
   full_join(pw_gamf) %>%
   arrange(Chr, Pos) %>%
-  select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
+  dplyr::select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
 
 qtlplot
 summary(pw_3f$log10BayesFactor)
-quantile(pw_gf$log10BayesFactor, 0.96196895)
-quantile(pw_gf$log10BayesFactor, 0.96196895)
-quantile(pw_gamf$log10BayesFactor, 0.8006157)
+quantile(pw_gf$log10BayesFactor, 0.99)  # Gulf: Use 2.56
+quantile(pw_mf$log10BayesFactor, 0.99)  # Midwest: Use 2
+quantile(pw_gamf$log10BayesFactor, 0.99)  # GAM: Use 2.65
+quantile(pw_mf$log10BayesFactor, 0.995119)
+
+quantile(pw_gg$log10BayesFactor, 0.99)  # Gulf: Use 2.0989
+quantile(pw_mg$log10BayesFactor, 0.99)  # Midwest: Use 4.6831
+quantile(pw_gamg$log10BayesFactor, 0.99)  # GAM: Use 3.0865
+
 1-0.96196895
 1-0.8006157
 2/464  # GT 0.5%? No 0.0043%
 22/418 # GT 3.8031? Yes 5.26%
 42/255 # GT 19.93843%? No 16.47%
+
+pw_3g <- pw_gg %>%
+  filter(log10BayesFactor > 2.0989) %>%
+  full_join(filter(pw_mg, log10BayesFactor > 4.6831)) %>%
+  full_join(filter(pw_gamg, log10BayesFactor > 3.0865)) %>%
+  arrange(Chr, Pos) %>%
+  #filter(log10BayesFactor > 3) %>%
+  dplyr::select(Chr:Pos, log10BayesFactor, subpop, phenotype, everything())
 ```
+## SNPs sig in 1% tail or BF>2, whichever is stricter:
+```{r}
+pw_3f %>%
+  arrange(desc(log10BayesFactor)) %>%
+  pivot_longer(cols = null:flowering.simple_het_1.13, names_to = "Covar Matrix", values_to = "Posterior Weight") %>%
+  filter(`Posterior Weight` > 0.01) %>%
+  arrange(desc("Posterior Weight"))
+
+pw_3g %>%
+  arrange(desc(log10BayesFactor)) %>%
+  pivot_longer(cols = null:greenup.singleton.MO.15, names_to = "Covar Matrix", values_to = "Posterior Weight") %>%
+  filter(`Posterior Weight` > 0.01) %>%
+  arrange(desc("Posterior Weight"))
+```
+3,4,6 >99% on gulf.crain_7d
+
+1,2,8 on singleton.TX3 9.3e-01
+5 on flowering.si
 
 ```{r}
+qtlplot_fl <- qtlplot %>% 
+  filter(lodcolumn %in% c("FL50", "dyln_change_sec_2d_prior")) 
+qtlplot_gr <- qtlplot %>% 
+  filter(lodcolumn %in% c("GR50", "dyln_change_sec")) 
+
 i=1  # from 1 to 16
 ## In block & > 2
 QTLandBF <- pw_3f %>%
@@ -279,11 +318,19 @@ qtl_df <- qtlplot
 
 get_QTL_enrichment <- function(m, qtl_df, quantile = 0.95){
   pw_df_all <- get_post_weights(m)
+  if("lod" %in% colnames(qtl_df)) {
+    qtl_df <- qtl_df %>%
+      arrange(desc(lod)) %>%
+      mutate(pos = as.integer(pos)) %>%
+      group_by(CHR, pos) %>%
+      dplyr::slice(1) %>%
+      arrange(CHR, pos)
+  }
   
   BFthresh <- quantile(pw_df_all$log10BayesFactor, quantile)
   pw_df <- pw_df_all %>%
-  filter(log10BayesFactor > BFthresh) %>%
-  select(Chr:Pos, log10BayesFactor, everything())
+    filter(log10BayesFactor > BFthresh) %>%
+    dplyr::select(Chr:Pos, log10BayesFactor, everything())
   
   for(i in 1:nrow(qtl_df)){  # from 1 to 16
   ## In block & > 2
@@ -316,17 +363,12 @@ get_QTL_enrichment <- function(m, qtl_df, quantile = 0.95){
   return(outputdf)
 }
 
-qtlplot <- qtlplot %>%
-  arrange(desc(lod)) %>%
-  mutate(pos = as.integer(pos)) %>%
-  group_by(CHR, pos) %>%
-  slice(1) %>%
-  arrange(CHR, pos)
-enrich_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = qtlplot, 0.99) %>%
+
+enrich_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = qtlplot_fl, 0.99) %>%
   mutate(subpop = "Gulf", phenotype = "flowering")
-enrich_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = qtlplot, 0.99) %>%
+enrich_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = qtlplot_fl, 0.99) %>%
   mutate(subpop = "Midwest", phenotype = "flowering")
-enrich_gamf <- get_QTL_enrichment(m_gam_fl_hyp, qtl_df = qtlplot, 0.99) %>%
+enrich_gamf <- get_QTL_enrichment(m_gam_fl_hyp, qtl_df = qtlplot_fl, 0.99) %>%
   mutate(subpop = "Both", phenotype = "flowering")
 
 enrich_df <- enrich_gf %>%
@@ -334,8 +376,8 @@ enrich_df <- enrich_gf %>%
   full_join(enrich_gamf) %>%
   arrange(Chr, Pos_lo)
 enrich_df <- enrich_df %>%
-  left_join(qtlplot, by = c("Chr" = "CHR", "Pos_lo" = "POS_lo", "Pos_hi" = "POS_hi")) %>%
-  select(Chr, Pos_lo, Pos_hi, inQTLandBF:subpop, lod, lodcolumn, pos) %>%
+  left_join(qtlplot_fl, by = c("Chr" = "CHR", "Pos_lo" = "POS_lo", "Pos_hi" = "POS_hi")) %>%
+  dplyr::select(Chr, Pos_lo, Pos_hi, inQTLandBF:subpop, lod, lodcolumn, pos) %>%
   unique() %>%
   arrange(Chr, Pos_lo, lodcolumn)
 
@@ -343,7 +385,7 @@ enrich_df %>%
   filter(pvalue < 0.05)
   
 t.test(enrich_df[enrich_df$pvalue < 0.05,]$lod, enrich_df[enrich_df$pvalue >= 0.05,]$lod) 
-qtlplot %>% group_by(CHR, POS_lo) %>% tally() # 21-24 unique QTL by Pos lo/hi. 23 by QTL maximum. 12 of 24 have enriched mash hits.
+qtlplot_fl %>% group_by(CHR, POS_lo) %>% tally() # 21-24 unique QTL by Pos lo/hi. 23 by QTL maximum. 12 of 24 have enriched mash hits.
 
 ```
 
@@ -386,9 +428,9 @@ chr_size_mash <- pw_3f_all %>%
                    Pos_hi = max(Pos))
 
 for(j in 1:1000){
-  qtl_size <- qtlplot %>%
-    select(CHR, POS_lo, POS_hi) %>%
-    unique() %>%   # don't doublecount completely overlapping QTL
+  qtl_size <- qtlplot_fl %>%
+    dplyr::select(CHR, POS_lo, POS_hi) %>%
+    dplyr::distinct() %>%   # don't doublecount completely overlapping QTL
     #(does doublecount partially overlapping QTL, however.)
     group_by(CHR, POS_lo) %>%
     dplyr::mutate(Size = POS_hi - POS_lo) %>%
@@ -404,7 +446,7 @@ for(j in 1:1000){
     mutate(POS_hi = POS_lo + Size) %>%
     arrange(CHR, POS_lo)
 
-  random_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = random_qtl, 0.99) %>%
+  random_gf <- get_QTL_enrichment(m = m_gulf_fl_hyp, qtl_df = random_qtl, 0.99) %>%
     mutate(subpop = "Gulf", phenotype = "flowering")
   random_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = random_qtl, 0.99) %>%
     mutate(subpop = "Midwest", phenotype = "flowering")
@@ -430,5 +472,34 @@ save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_QTL_overlap
 tibble(sig_r = sig_random) %>%
   arrange(desc(sig_r))
 11/1000
+```
+
+### Same process for greenup
+
+```{r}
+
+enrich_gg <- get_QTL_enrichment(m_gulf_gr_hyp, qtl_df = qtlplot_gr, 0.95) %>%
+  mutate(subpop = "Gulf", phenotype = "greenup")
+enrich_mg <- get_QTL_enrichment(m_midw_gr_hyp, qtl_df = qtlplot_gr, 0.9959) %>%
+  mutate(subpop = "Midwest", phenotype = "greenup")
+enrich_gamg <- get_QTL_enrichment(m_gam_gr_hyp, qtl_df = qtlplot_gr, 0.95) %>%
+  mutate(subpop = "Both", phenotype = "greenup")
+
+enrich_gr <- enrich_gg %>%
+  full_join(enrich_mg) %>%
+  full_join(enrich_gamg) %>%
+  arrange(Chr, Pos_lo)
+enrich_gr <- enrich_gr %>%
+  left_join(qtlplot_gr, by = c("Chr" = "CHR", "Pos_lo" = "POS_lo", "Pos_hi" = "POS_hi")) %>%
+  dplyr::select(Chr, Pos_lo, Pos_hi, inQTLandBF:subpop, lod, lodcolumn, pos) %>%
+  unique() %>%
+  arrange(Chr, Pos_lo, lodcolumn)
+
+enrich_gr %>%
+  filter(pvalue < 0.05)
+  
+t.test(enrich_gr[enrich_gr$pvalue < 0.05,]$lod, enrich_gr[enrich_gr$pvalue >= 0.05,]$lod) 
+qtlplot_gr %>% group_by(CHR, POS_lo) %>% tally() # 21-24 unique QTL by Pos lo/hi. 23 by QTL maximum. 12 of 24 have enriched mash hits.
+
 ```
 

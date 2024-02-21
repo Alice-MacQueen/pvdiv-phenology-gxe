@@ -19,7 +19,8 @@ library(AnnotationDbi)
 ```{r prep QTL_Eff df}
 ###QTL Effect plot
 ###load the original cross and reduce the markers from 4700 to 1185
-load('../phenology-fourway/5-QTLmappingForAlice/sexAveraged.cross.rda', verbose = T)
+#load('../phenology-fourway/5-QTLmappingForAlice/sexAveraged.cross.rda', verbose = T)
+load(file.path(workingdir, 'cross_reduced_marker_FL50_phenotypes_Alice_7_SITES.RData'))
 map  =  lapply(pull.map(cross), function(x) x[1,])
 # reduced_markers  =  unlist(
 #   lapply(
@@ -43,9 +44,13 @@ ID <- ID %>% mutate_at(vars('ID'), list(as.character)) %>% mutate_at(vars('ID'),
 phenology = read.csv('../phenology-fourway/5-QTLmappingForAlice/FL50_phenotypes_Alice.csv', header = TRUE)
 colnames(phenology)[1:2] = c('ID','Covariate')
 str(phenology) ###make sure your phenology traits are numeric, if not, change them into numeric
-phenos <- phenology %>% mutate_at(vars('ID'), list(as.character)) %>%
-  mutate_at(vars('ID'), list(as.numeric))%>% group_by(Covariate,ID ) %>%
-  summarize_all(mean, na.rm=T) %>% ungroup()%>% as.data.frame()
+phenos <- phenology %>% 
+  mutate_at(vars('ID'), list(as.character)) %>%
+  mutate_at(vars('ID'), list(as.numeric)) %>% 
+  group_by(Covariate,ID ) %>%
+  summarize_all(mean, na.rm=T) %>% 
+  ungroup() %>% 
+  as.data.frame()
 ```
 
 ```{r setup QTL effects for all traits}

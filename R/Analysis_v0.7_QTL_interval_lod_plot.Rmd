@@ -21,7 +21,7 @@ setwd("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/")
 ```{r}
 workingdir <- "~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/"
 load(file.path(workingdir, 'cross_reduced_marker_FL50_phenotypes_Alice_7_SITES.RData'))
-load(file.path(workingdir, 'scan1Results_FL50_phenotypes_Alice_7_SITES.RData.RData'))
+load(file.path(workingdir, 'scan1Results_FL50_phenotypes_Alice_7_SITES.RData'))
 
 map  =  lapply(pull.map(cross), function(x) x[1,])
 ###get the threshold value for each model and output the QTL intervals
@@ -47,22 +47,38 @@ flank_marker_gxe = peaks_gxe %>% mutate(flank_lo = find_marker(map, chr, ci_lo),
 ###########
 ```
 
+    flowering_cumulative_rainfall_7d    blue            1
+    flowering_daylength_change_s_2d     pink            4  
+    flowering                           purple          5  
+    
+    greenup_daylength_14d               green           2
+    greenup_daylength_change_s_1d       yellow          3
+    greenup                             grey            6
+    greenup_temp_ave_1d                 darkorange      7
+
 ```{r}
-threshold_df <- threshold_full %>% as_tibble(rownames = "Threshold") %>%
-  pivot_longer(GR50:dyln_change_sec, names_to = "Phenotype", values_to = "LOD")
+threshold_df <- threshold_full %>% 
+  as_tibble(rownames = "Threshold") %>%
+  pivot_longer(GR50:crain_7d, names_to = "Phenotype", values_to = "LOD") %>%
+  mutate(Phe = case_when(Phenotype %in% c("GR50", "tave_1d", "dyln_14d_prior", "dyln_change_sec") ~ "greenup",
+                         Phenotype %in% c("FL50", "dyln_change_sec_2d_prior", "crain_7d") ~ "flowering", 
+                         TRUE ~ NA_character_)) 
 
 s1full %>%
   as_tibble(rownames = "Marker") %>%
-  pivot_longer(GR50:dyln_change_sec, names_to = "Phenotype", values_to = "LOD") %>%
+  pivot_longer(GR50:crain_7d, names_to = "Phenotype", values_to = "LOD") %>%
+  mutate(Phe = case_when(Phenotype %in% c("GR50", "tave_1d", "dyln_14d_prior", "dyln_change_sec") ~ "greenup",
+                         Phenotype %in% c("FL50", "dyln_change_sec_2d_prior", "crain_7d") ~ "flowering", 
+                         TRUE ~ NA_character_)) %>% 
   separate(Marker, into = c("Chr", "Pos"), sep = "_", remove = FALSE, convert = TRUE) %>%
   filter(!grepl("loc", Chr)) %>%
   ggplot(aes(x = Pos, y = LOD)) + 
   geom_line(aes(color = Phenotype)) +
   geom_hline(data = threshold_df, aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
-  facet_wrap(~Chr, nrow = 1, scales = "free_x") +
+  facet_grid(Phe~Chr, scales = "free_x") +
   switchgrassGWAS::theme_oeco + 
-  scale_color_manual(values = c("#CC0066", "#FFCC00", "#006600", "#6600FF", "grey")) + 
-  scale_linetype_manual(values = c(4,5,4,4,4)) +
+  scale_color_manual(values = c("#000099", "#006600", "#FFCC00", "#CC0066", "#6600FF", "grey", "darkorange", "#000666")) + 
+  scale_linetype_manual(values = c(4,4,4,4,4,4,4)) +
   theme(legend.position = "top",
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -74,7 +90,7 @@ s1full %>%
   xlab("Position (Mb)") + ylab("LOD score") +
   scale_x_continuous(breaks = c(0, 20, 40, 60, 80))
 
-save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_QTL_by_lod_score.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+save_plot(filename = "../manuscript/revision2/Figure_4_QTL_by_lod_score.svg", base_height = 5, base_width = 13.5, plot = last_plot())
 ```
 
 # Rug plot of mash hits
@@ -146,13 +162,27 @@ test_rug <- pw_gf %>%
   filter(log10BayesFactor > 2) %>% 
   mutate(Pos = Pos/1000000, 
          LOD = -0.5)
+
+test_rug4 <- pw_gg %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+test_rug5 <- pw_gamg %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
+test_rug6 <- pw_mg %>%
+  filter(log10BayesFactor > 2) %>% 
+  mutate(Pos = Pos/1000000, 
+         LOD = -0.5)
 ```
 
 
 ```{r}
 s1full %>%
   as_tibble(rownames = "Marker") %>%
-  pivot_longer(GR50:dyln_change_sec, names_to = "Phenotype", values_to = "LOD") %>%
+  pivot_longer(GR50:crain_7d, names_to = "Phenotype", values_to = "LOD") %>%
+  filter(Phenotype %in% c("FL50", "dyln_change_sec_2d_prior", "crain_7d")) %>% 
   separate(Marker, into = c("Chr", "Pos"), sep = "_", remove = FALSE, convert = TRUE) %>%
   filter(!grepl("loc", Chr)) %>%
   ggplot(aes(x = Pos, y = LOD)) + 
@@ -160,11 +190,13 @@ s1full %>%
   geom_rug(data = test_rug2, sides = "t", alpha = 0.1) + 
   geom_rug(data = test_rug1, sides = "b", alpha = 0.2) + 
   geom_rug(data = test_rug3, outside = TRUE, sides = "b", alpha = 0.2) + 
-  geom_hline(data = threshold_df, aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
+  geom_hline(data = filter(threshold_df, 
+                           Phenotype %in% c("FL50", "dyln_change_sec_2d_prior", "crain_7d")),
+             aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
   facet_wrap(~Chr, nrow = 1, scales = "free_x") +
   switchgrassGWAS::theme_oeco + 
-  scale_color_manual(values = c("#CC0066", "#FFCC00", "#006600", "#6600FF", "grey")) + 
-  scale_linetype_manual(values = c(4,5,4,4,4)) +
+  scale_color_manual(values = c("#000099", "#CC0066", "darkgrey", "#000666")) + 
+  scale_linetype_manual(values = c(4,4,4,4,4)) +
   theme(legend.position = "top",
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
@@ -172,12 +204,43 @@ s1full %>%
         strip.text = element_text(size = 10, face="bold"),
         axis.title = element_text(size = 10,face="bold"),
         axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
-        panel.spacing.x = unit(-0., 'cm')
         ) + 
   xlab("Position (Mb)") + ylab("LOD score") +
   scale_x_continuous(breaks = c(0, 20, 40, 60, 80)) + 
   coord_cartesian(clip = "off")
-save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_4_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+save_plot(filename = "../manuscript/revision2/Figure_4_FL50_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
+
+s1full %>%
+  as_tibble(rownames = "Marker") %>%
+  pivot_longer(GR50:crain_7d, names_to = "Phenotype", values_to = "LOD") %>%
+  filter(Phenotype %in% c("GR50", "tave_1d", "dyln_14d_prior", "dyln_change_sec")) %>% 
+  separate(Marker, into = c("Chr", "Pos"), sep = "_", remove = FALSE, convert = TRUE) %>%
+  filter(!grepl("loc", Chr)) %>%
+  ggplot(aes(x = Pos, y = LOD)) + 
+  geom_line(aes(color = Phenotype)) +
+  geom_rug(data = test_rug5, sides = "t", alpha = 0.1) + 
+  geom_rug(data = test_rug4, sides = "b", alpha = 0.2) + 
+  geom_rug(data = test_rug6, outside = TRUE, sides = "b", alpha = 0.2) + 
+  geom_hline(data = filter(threshold_df, 
+                           Phenotype %in% c("GR50", "tave_1d", "dyln_14d_prior", 
+                                            "dyln_change_sec")), 
+             aes(yintercept = LOD, color = Phenotype, linetype = Phenotype)) +
+  facet_wrap(~Chr, nrow = 1, scales = "free_x") +
+  switchgrassGWAS::theme_oeco + 
+  scale_color_manual(values = c("#006600", "#FFCC00",  "grey", "darkorange", "#000666")) + 
+  scale_linetype_manual(values = c(4,4,4,4,4,4)) +
+  theme(legend.position = "top",
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 10, face="bold"),
+        strip.text = element_text(size = 10, face="bold"),
+        axis.title = element_text(size = 10,face="bold"),
+        axis.text.x = element_text(size = 10, angle = 45, hjust = 1, vjust = 1),
+        ) + 
+  xlab("Position (Mb)") + ylab("LOD score") +
+  scale_x_continuous(breaks = c(0, 20, 40, 60, 80)) + 
+  coord_cartesian(clip = "off")
+save_plot(filename = "../manuscript/revision2/Figure_4_GR50_QTL_by_lod_score_w_rugs.svg", base_height = 3, base_width = 13.5, plot = last_plot())
 ```
 
 

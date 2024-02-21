@@ -255,7 +255,7 @@ Sciences, Stillwater, 74078}
 
 \significancestatement{The timing of plant seasonal development
 (phenology) has major impacts on fitness because of the steep fitness
-cost of plant-environment mismatches. We infer the mixture of ways
+cost of plant-environment mismatches. We infer the mixture of ways that
 genetic effects on phenological traits depend on plant environment,
 focusing on how effects covary with weather prior to the phenological
 event (GxWeather). Most effects do not have GxWeather, but a minority
@@ -296,21 +296,22 @@ prevalence of GxE primed by weather prior to the phenological event
 (GxWeather) should aid prediction and manipulation of phenological
 timings. Here, we map GxWeather effects on phenological timings in two
 highly divergent switchgrass (\emph{Panicum virgatum}) populations using
-repeated plantings of these populations at eight sites spanning the
-central United States. We distinguish GxWeather patterns covarying with
-interpretable weather-based cues from agnostic, site-based patterns.
-Most GxWeather effects belong to the latter category and do not covary
-with weather-based cues. However, 65\% of effects on the timing of
-vegetative growth in the Gulf population covary with daylength 14 days
-prior to green-up date. 33\% of effects on the timing of flowering in
-the Gulf population covary with cumulative rainfall in the seven days
-prior to flowering, while 22\% of effects on flowering timing in the
-Midwest population covary with day length change two days prior to
-flowering. An independent pseudo-F2 cross of Gulf and Midwest
-individuals at the same sites mapped 23 additive QTLs for flowering, all
-with significant associations and eleven with enrichment of highly
-significant associations in our model of GxWeather effects. We
-demonstrate that we can identify QTL with GxWeather and assign them to
+repeated plantings of cloned individuals from these populations at eight
+sites spanning the central United States. We distinguish GxWeather
+patterns covarying with interpretable weather-based cues from agnostic,
+site-based patterns. Most GxWeather effects belong to the latter
+category and do not covary with weather-based cues. However, 65\% of
+effects on the timing of vegetative growth in the Gulf population covary
+with daylength 14 days prior to green-up date. 33\% of effects on the
+timing of flowering in the Gulf population covary with cumulative
+rainfall in the seven days prior to flowering, while 22\% of effects on
+flowering timing in the Midwest population covary with day length change
+two days prior to flowering. An independent pseudo-F2 cross of Gulf and
+Midwest individuals at the same sites mapped 10 additive QTLs for
+flowering and three for vegetative growth timing, all with significant
+associations and three with enrichment of highly significant
+associations in our model of GxWeather effects. We demonstrate that we
+can identify genetic variation with GxWeather and assign these loci to
 specific weather-based cues or other patterns. Breeding for particular
 alleles at these loci could change flowering responsiveness to
 photoperiod and rainfall cues in switchgrass. More broadly, this
@@ -324,7 +325,7 @@ multiple environments.
 
 \thispagestyle{firststyle}
 \ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
-\firstpage[9]{2}
+\firstpage[8]{2}
 
 Plant phenological timings are major components of plant fitness
 affected by multiple external environmental cues (e.g.~degree of winter
@@ -341,9 +342,9 @@ environmental cues depends on both features of the environment, such as
 cue predictability and relevance, and the species' adaptive strategies
 (4). Species with wide natural distributions can have multiple distinct
 environmentally cued phenological responses: for example, populations of
-sunflower (Helianthus annuus) exhibit day-neutral, facultative short
-day, and facultative long-day flowering responses, which vary with their
-environments (5, 6). Distinct genetic responses in different
+sunflower (\emph{Helianthus annuus}) exhibit day-neutral, facultative
+short day, and facultative long-day flowering responses, which vary with
+their environments (5, 6). Distinct genetic responses in different
 environments are known as genotype by environment interactions, or GxE.
 
 Flowering time, or the transition from vegetative to reproductive
@@ -369,8 +370,10 @@ differ in sign (26--28). Thus, despite substantial interest in the
 frequencies of various forms of GxE, the prevalence of antagonistic
 pleiotropy relative to other forms of GxE remains unknown.
 
-Switchgrass (\emph{Panicum virgatum}) is considered a short-day plant
-with reproductive development strongly linked to day of the year (29).
+Previous research suggests that switchgrass phenological timings should
+have GxWeather and that these timings could differ by genetic
+subpopulation. Switchgrass is considered a short-day plant with
+reproductive development strongly linked to day of the year (29).
 However, as part of its wide environmental adaptation across the eastern
 half of North America, its photoperiodicity has been predicted to differ
 by plant latitude of origin (30, 31). We previously found divergent
@@ -383,8 +386,9 @@ composed of individuals from the well-studied upland switchgrass ecotype
 well-studied lowland ecotype and the phenotypically intermediate coastal
 ecotype (32).
 
-Here, we estimate the ways genetic effects on phenological timings
-depend on weather prior to the phenological event. To do this, we
+Here, we estimate GxWeather for two phenological timings in switchgrass
+by assigning patterns of genetic effects on phenology across gardens to
+many patterns of weather covariance at these gardens. To do this, we
 phenotype a diversity panel of hundreds of switchgrass genotypes from
 the Midwest and Gulf subpopulations for the timing of vegetative and
 reproductive development at eight common garden locations spanning 17
@@ -394,7 +398,7 @@ picture to date of the environmental variation this species encounters.
 We define multiple ways phenological timings might covary with weather
 (@tbl-covar) and additional ways phenological timings might vary by site
 (@SI-info), then jointly re-estimate genetic effects on these timings at
-all eight sites using the set of these covariance types that
+all eight sites using the set of these covariance matrices that
 significantly improved the modeled log-likelihood when included
 (@SI-info) (35). We use the Bayesian framework \emph{mash} (multivariate
 adaptive shrinkage), developed by (35), to refine effect size estimates
@@ -745,8 +749,24 @@ the univariate GWAS.}
 
 }
 
-\caption{\label{fig-covar}Caption for this figure\ldots{} blah blah
-blah.}
+\caption{\label{fig-covar}Example hypothesis-driven covariance matrices
+specified in mash and the posterior weights placed on all covariance
+matrices. (a) Left column: Five example hypothesized covariance matrices
+specified for the green-up date or flowering date phenotype; these
+matrices were created from environment-specific correlations across
+eight common gardens, and are described in Table XXX. Common gardens are
+arranged in latitudinal order within the matrices. Right column: Five
+example canonical covariance matrices. Canonical matrices (purple) have
+simple interpretations, such as equal effects across all common gardens,
+or effects specific to a single common garden. (b,d) Total posterior
+weight placed on each covariance matrix type specified for (b) green-up
+date and (d) flowering date mash models, within and between two genetic
+subpopulations. Hypothesized covariance matrices (green). Covariance
+matrices included in mash that had zero posterior weight in all three
+mash runs on the genetic subpopulations, such as the identity matrix,
+are not shown. (c,e) Total posterior weight placed on covariance
+matrices that were hypothesized or canonical, for the (c) green-up date
+phenotype and (e) flowering date phenotype.}
 
 \end{figure}%
 
@@ -763,7 +783,17 @@ effects across eight gardens, for effects with lfsr \textless{} 0.05.
 AHM is considering moving this figure to the supplement and
 substantially simplifying the figure in the main text, perhaps just
 showing total effects in Texas, the North, and maybe Oklahoma.
-Essentially making Table 2 into a new, simplified figure.}
+Essentially making Table 2 into a new, simplified figure. Effect
+patterns for re-estimated SNP effects that are significant at pairs of
+sites by the local false sign rate test (lfsr), for (a) greenup date and
+(b) flowering date, within and between two genetic subpopulations.
+Common gardens are arranged in latitudinal order along the x- and
+y-axis. Effects in the first and fourth rows differ in sign at these
+pairs of gardens (p \textless{} 0.05, lfsr). Effects in the second,
+third, fifth and sixth rows are identical in sign (p \textless{} 0.05,
+lfsr). Effects in the second and fifth rows additionally differ in
+magnitude by a factor of \textgreater0.4, while effects in the third and
+sixth row were not distinguishable by magnitude nor sign of the effect.}
 
 \end{figure}%
 

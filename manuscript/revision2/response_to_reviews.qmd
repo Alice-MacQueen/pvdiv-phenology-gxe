@@ -6,7 +6,7 @@ editor: visual
 
 **Reviewer comment**
 
-Mash: A lot of the results interpretation is based on interpreting the SNP loadings on the specified covariance matrices. This is a secondary use of mash (the primary being the refinement of effect sizes), and while they do interpret these somewhat in the mash paper, these loadings need to be interpreted with caution. If these covariance matrices are similar, mash will somewhat arbitrarily assign weight to any of the matrices because all lead to the same fit to the effect-size data. The mash algorithm doesn\'t give the full posterior distribution on the loadings so you can\'t check for posterior correlations there. It seems likely to me that the hypothesis-driven and data-driven covariance matrices are somewhat correlated here, and the correlations may differ between green-up and flowering because of the better correlation between the environmental metrics and flowering than green-up. In the mash paper, they used cross-validation with the likelihood in the testing set as the evaluation metric to compare models. It might be safer to try dropping specific covariance matrices and comparing the model performance in a held-out testing set to evaluate the importance of the hypothesis-derived covariance matrices.
+Mash: A lot of the results interpretation is based on interpreting the SNP loadings on the specified covariance matrices. This is a secondary use of mash (the primary being the refinement of effect sizes), and while they do interpret these somewhat in the mash paper, these loadings need to be interpreted with caution. If these covariance matrices are similar, mash will somewhat arbitrarily assign weight to any of the matrices because all lead to the same fit to the effect-size data. The mash algorithm doesn't give the full posterior distribution on the loadings so you can't check for posterior correlations there. It seems likely to me that the hypothesis-driven and data-driven covariance matrices are somewhat correlated here, and the correlations may differ between green-up and flowering because of the better correlation between the environmental metrics and flowering than green-up. In the mash paper, they used cross-validation with the likelihood in the testing set as the evaluation metric to compare models. It might be safer to try dropping specific covariance matrices and comparing the model performance in a held-out testing set to evaluate the importance of the hypothesis-derived covariance matrices.
 
 \
 
@@ -40,17 +40,19 @@ maximum_likelihoods = \[\]#a list to store the maximum likelihood at each iterat
 
 likelihood = -inf
 
-most_likely_matrix = \'\'
+most_likely_matrix = ''
 
 for matrix in matrices:
 
-	matrix_likelihood = mash(effects, std.errs, matrix)\[\'likelihood\'\] #obtain model likelihood
+```         
+matrix_likelihood = mash(effects, std.errs, matrix)\[\'likelihood\'\] #obtain model likelihood
 
-	if matrix_likelihood \> likelihood:
+if matrix_likelihood \> likelihood:
 
-		most_likely_matrix = matrix
+    most_likely_matrix = matrix
 
-		likelihood = matrix_likelihood
+    likelihood = matrix_likelihood
+```
 
 \
 
@@ -68,21 +70,25 @@ iteration = 2
 
 while lrt_pvalue \< 0.05:
 
-	likelihood = -inf
+```         
+likelihood = -inf
+```
 
-most_likely_matrix = \'\'
+most_likely_matrix = ''
 
-	for matrix in matrices:
+```         
+for matrix in matrices:
 
-		model_matrices = most_likely_matrices + matrix 
+    model_matrices = most_likely_matrices + matrix 
 
-		model_likelihood = mash(effects, std.errs, model_matrices)\[\'likelihood\'\]
+    model_likelihood = mash(effects, std.errs, model_matrices)\[\'likelihood\'\]
 
-	if matrix_likelihood \> likelihood:
+if matrix_likelihood \> likelihood:
 
-		most_likely_matrix = matrix
+    most_likely_matrix = matrix
 
-		likelihood = matrix_likelihood
+    likelihood = matrix_likelihood
+```
 
 \
 
@@ -106,7 +112,7 @@ lrt_pvalue = likelihood_ratio_test(likelihood, maximum_likelihoods\[iteration-1\
 
 **Methods**
 
-In order to better understand the behavior of the mash shrinkage algorithm in the presence of correlated covariance matrices, we implemented a \"greedy\" mash algorithm. Specifically, given n covariance matrices for each phenotype and corresponding effect sizes and standard errors across the k contexts of interest, we fit a set of mash models with each of the n matrices separately. We then identify the model with the maximum log likelihood estimates and select the corresponding matrix, leaving n-1 covariance matrices. We then fit a new set of mash models where the selected covariance matrix is paired with each of the remaining n-1 covariance matrices. The most likely pair of covariance matrices are then selected and the process is repeated for all possible n-2 matrix triplets. This process is repeated until one of two stop conditions are met: (i) all covariance matrices have been added to the mash model, resulting in a final model with all of the original n covariance matrices are included or (ii) a likelihood ratio test with one degree of freedom between the likelihood of the current model and the model from the previous iteration has a p-value \> 0.05. The result is a set of log likelihood estimates for each model and the stepwise \'path\' of covariance matrices that best explain the observed effect sizes and standard errors observed for the phenotype of interest. 
+In order to better understand the behavior of the mash shrinkage algorithm in the presence of correlated covariance matrices, we implemented a "greedy" mash algorithm. Specifically, given n covariance matrices for each phenotype and corresponding effect sizes and standard errors across the k contexts of interest, we fit a set of mash models with each of the n matrices separately. We then identify the model with the maximum log likelihood estimates and select the corresponding matrix, leaving n-1 covariance matrices. We then fit a new set of mash models where the selected covariance matrix is paired with each of the remaining n-1 covariance matrices. The most likely pair of covariance matrices are then selected and the process is repeated for all possible n-2 matrix triplets. This process is repeated until one of two stop conditions are met: (i) all covariance matrices have been added to the mash model, resulting in a final model with all of the original n covariance matrices are included or (ii) a likelihood ratio test with one degree of freedom between the likelihood of the current model and the model from the previous iteration has a p-value \> 0.05. The result is a set of log likelihood estimates for each model and the stepwise 'path' of covariance matrices that best explain the observed effect sizes and standard errors observed for the phenotype of interest. 
 
 \
 
