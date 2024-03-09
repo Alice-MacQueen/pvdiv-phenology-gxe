@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.549">
+<meta name="generator" content="quarto-1.4.550">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -467,26 +467,6 @@ TX3  7.777578e-04</code></pre>
 <h1 data-number="9"><span class="header-section-number">9</span> Step 5: Redo writeup &amp; figures</h1>
 <section id="load-mash-objects" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="load-mash-objects"><span class="header-section-number">9.1</span> Load mash objects</h2>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Loading required package: gridExtra</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'gridExtra'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:dplyr':
-
-    combine</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: The `size` argument of `element_line()` is deprecated as of ggplot2
-3.4.0.
-
-Warning: Please use the `linewidth` argument instead.</code></pre>
-</div>
-</div>
 </section>
 <section id="figure-2" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="figure-2"><span class="header-section-number">9.2</span> Figure 2</h2>
@@ -555,46 +535,54 @@ Warning: Please use the `linewidth` argument instead.</code></pre>
 2 hypothesized     0</code></pre>
 </div>
 </div>
+<p>New theme for ggplot2 v 3.5</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: A numeric `legend.position` argument in `theme()` was deprecated in ggplot2
+3.5.0.
+ℹ Please use the `legend.position.inside` argument of `theme()` instead.</code></pre>
+</div>
+</div>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-22-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-22-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-22-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-5.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-22-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-42-6.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-22-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -603,91 +591,153 @@ Warning: Please use the `linewidth` argument instead.</code></pre>
 <h3 data-number="9.2.1" class="anchored" data-anchor-id="covar"><span class="header-section-number">9.2.1</span> covar</h3>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
-<pre><code>Rows: 63 Columns: 2── Column specification ────────────────────────────────────────────────────────
+<pre><code>Rows: 63 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 chr (1): matrix
 dbl (1): likelihood
+
 ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 63 Columns: 2── Column specification ────────────────────────────────────────────────────────
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+Rows: 63 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 chr (1): matrix
 dbl (1): likelihood
+
 ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 61 Columns: 2── Column specification ────────────────────────────────────────────────────────
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+Rows: 61 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 chr (1): matrix
 dbl (1): likelihood
+
 ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 62 Columns: 2── Column specification ────────────────────────────────────────────────────────
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+Rows: 62 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 chr (1): matrix
 dbl (1): likelihood
+
 ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 61 Columns: 2── Column specification ────────────────────────────────────────────────────────
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+Rows: 61 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 chr (1): matrix
 dbl (1): likelihood
+
 ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:</code></pre>
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+New names:</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"MI"` instead of `.data$MI`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"MI"` instead of `.data$MI`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"MO"` instead of `.data$MO`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"MO"` instead of `.data$MO`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"NE"` instead of `.data$NE`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"NE"` instead of `.data$NE`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"OK"` instead of `.data$OK`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"OK"` instead of `.data$OK`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"TX1"` instead of `.data$TX1`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"TX1"` instead of `.data$TX1`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"TX2"` instead of `.data$TX2`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"TX2"` instead of `.data$TX2`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"TX3"` instead of `.data$TX3`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"TX3"` instead of `.data$TX3`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>New names:New names:New names:New names:New names:New names:New names:New names:New names:Rows: 61 Columns: 2── Column specification ────────────────────────────────────────────────────────
-Delimiter: ","
-chr (1): matrix
-dbl (1): likelihood
-ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.New names:</code></pre>
+<pre><code>New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+Rows: 61 Columns: 2
+── Column specification
+──────────────────────────────────────────────────────── Delimiter: "," chr
+(1): matrix dbl (1): likelihood
+ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+Specify the column types or set `show_col_types = FALSE` to quiet this message.
+New names:
+• `` -&gt; `...1`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"SD"` instead of `.data$SD`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"SD"` instead of `.data$SD`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>New names:New names:New names:New names:New names:New names:New names:</code></pre>
+<pre><code>New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+New names:
+• `` -&gt; `...1`</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 9
@@ -717,10 +767,8 @@ Warning: Please use `"SD"` instead of `.data$SD`</code></pre>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"...1"` instead of `.data$...1`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"...1"` instead of `.data$...1`</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -729,20 +777,23 @@ Warning: Please use `"...1"` instead of `.data$...1`</code></pre>
 grob.</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"...1"` instead of `.data$...1`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"...1"` instead of `.data$...1`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Joining with `by = join_by(Type, Mass, subpop, phenotype)`Joining with `by
-= join_by(Type, Mass, subpop, phenotype)`Joining with `by = join_by(Type,
-Mass, subpop, phenotype)`Joining with `by = join_by(Type, Mass, subpop,
-phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
-phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
-phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
-phenotype)`Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop,
-phenotype)`</code></pre>
+<pre><code>Joining with `by = join_by(Type, Mass, subpop, phenotype)`
+Joining with `by = join_by(Type, Mass, subpop, phenotype)`
+Joining with `by = join_by(Type, Mass, subpop, phenotype)`
+Joining with `by = join_by(Type, Mass, subpop, phenotype)`
+Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop, phenotype)`
+Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop, phenotype)`
+Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop, phenotype)`
+Joining with `by = join_by(`Covariance Matrix`, Mass, Type, subpop, phenotype)`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: A numeric `legend.position` argument in `theme()` was deprecated in ggplot2
+3.5.0.
+ℹ Please use the `legend.position.inside` argument of `theme()` instead.</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -904,17 +955,21 @@ $gxe_fractions
 <h2 data-number="9.4" class="anchored" data-anchor-id="figure-3"><span class="header-section-number">9.4</span> Figure 3</h2>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"rowU"` instead of `.data$rowU`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"rowU"` instead of `.data$rowU`</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-58-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in get_plot_component(plot, "guide-box"): Multiple components found;
+returning the first one. To return all, use `return_all = TRUE`.</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -940,63 +995,12 @@ Warning: Please use `"rowU"` instead of `.data$rowU`</code></pre>
 <p>Make sure to Load mash objects at start of Step 5</p>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'qtl2'</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"V1"` instead of `.data$V1`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:qtl':
-
-    clean</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:readr':
-
-    read_csv</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>------------------------------------------------------------------------------</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>You have loaded plyr after dplyr - this is likely to cause problems.
-If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
-library(plyr); library(dplyr)</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>------------------------------------------------------------------------------</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'plyr'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:here':
-
-    here</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:dplyr':
-
-    arrange, count, desc, failwith, id, mutate, rename, summarise,
-    summarize</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following object is masked from 'package:purrr':
-
-    compact</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"V1"` instead of `.data$V1`</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"value"` instead of `.data$value`</code></pre>
+<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect 1.2.0.
+ℹ Please use `"value"` instead of `.data$value`</code></pre>
 </div>
 </div>
 <p>Decide on cutoff to use for rug plots and enrichment analysis: SNPs sig in 1% tail or BF&gt;2, whichever is stricter</p>
@@ -1034,9 +1038,9 @@ Warning: Please use `"value"` instead of `.data$value`</code></pre>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 177 rows [58, 59,
-60, 154, 155, 156, 202, 203, 204, 253, 254, 255, 355, 356, 357, 403, 404, 405,
-427, 428, ...].</code></pre>
+<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 177 rows [58, 59, 60,
+154, 155, 156, 202, 203, 204, 253, 254, 255, 355, 356, 357, 403, 404, 405, 427,
+428, ...].</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Don't know how to automatically pick scale for object of type &lt;scan1/matrix&gt;.
@@ -1045,7 +1049,7 @@ Defaulting to continuous.</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-76-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-39-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1054,9 +1058,9 @@ Defaulting to continuous.</code></pre>
 Defaulting to continuous.</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 236 rows [77, 78,
-79, 80, 205, 206, 207, 208, 269, 270, 271, 272, 337, 338, 339, 340, 473, 474,
-475, 476, ...].</code></pre>
+<pre><code>Warning: Expected 2 pieces. Missing pieces filled with `NA` in 236 rows [77, 78, 79, 80,
+205, 206, 207, 208, 269, 270, 271, 272, 337, 338, 339, 340, 473, 474, 475, 476,
+...].</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Don't know how to automatically pick scale for object of type &lt;scan1/matrix&gt;.
@@ -1065,7 +1069,7 @@ Defaulting to continuous.</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-76-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-39-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1084,39 +1088,44 @@ Defaulting to continuous.</code></pre>
 <p>Enrichment analysis</p>
 <p>Adapted from Analysis_v0.6_QTL_GxE_and_mash_comparison.Rmd</p>
 <p>Prepare the QTL dataframe</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>New names:
+Rows: 19 Columns: 10
+── Column specification
+──────────────────────────────────────────────────────── Delimiter: "," chr
+(4): lodcolumn, chr, flank_lo, flank_hi dbl (6): ...1, lodindex, pos, lod,
+ci_lo, ci_hi
+ℹ Use `spec()` to retrieve the full column specification for this data. ℹ
+Specify the column types or set `show_col_types = FALSE` to quiet this message.
+• `` -&gt; `...1`</code></pre>
+</div>
+</div>
 <p>Function to compute hypergeometric test for each row in a QTL df</p>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"V1"` instead of `.data$V1`</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: Use of .data in tidyselect expressions was deprecated in tidyselect
-1.2.0.
-
-Warning: Please use `"value"` instead of `.data$value`</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(Chr, Pos_lo, Pos_hi, inQTLandBF, inBF, notinBF,
-inQTL, pvalue, subpop, phenotype)`Joining with `by = join_by(Chr, Pos_lo,
-Pos_hi, inQTLandBF, inBF, notinBF, inQTL, pvalue, subpop, phenotype)`</code></pre>
+inQTL, pvalue, subpop, phenotype)`
+Joining with `by = join_by(Chr, Pos_lo, Pos_hi, inQTLandBF, inBF, notinBF,
+inQTL, pvalue, subpop, phenotype)`</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning in left_join(., qtlplot_fl, by = c(Chr = "CHR", Pos_lo = "POS_lo", :
-Detected an unexpected many-to-many relationship between `x` and `y`.</code></pre>
+<pre><code>Warning in left_join(., qtlplot_fl, by = c(Chr = "CHR", Pos_lo = "POS_lo", : Detected an unexpected many-to-many relationship between `x` and `y`.
+ℹ Row 1 of `x` matches multiple rows in `y`.
+ℹ Row 1 of `y` matches multiple rows in `x`.
+ℹ If a many-to-many relationship is expected, set `relationship =
+  "many-to-many"` to silence this warning.</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 5 × 12
-  Chr      Pos_lo   Pos_hi inQTLandBF  inBF notinBF inQTL    pvalue subpop lod  
-  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;      &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;
-1 Chr02K 63660000 65440000          3   310   63057   182 0.0126    Midwe… 20.3…
-2 Chr02K 63660000 65440000          3   310   63057   182 0.0126    Midwe… 21.2…
-3 Chr05N 63830000 65980000          4   505   49985   162 0.0239    Gulf   33.3…
-4 Chr05N 63830000 65980000          4   358   35377   108 0.00472   Both   33.3…
-5 Chr08N 13470000 34420000         18   505   49985   684 0.0000759 Gulf   18.1…
-# ℹ 2 more variables: lodcolumn &lt;chr&gt;, pos &lt;chr&gt;</code></pre>
+  Chr      Pos_lo   Pos_hi inQTLandBF  inBF notinBF inQTL    pvalue subpop   lod
+  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;      &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt;     &lt;dbl&gt; &lt;chr&gt;  &lt;dbl&gt;
+1 Chr02K 63660000 65440000          3   310   63057   182 0.0126    Midwe…  21.3
+2 Chr02K 63660000 65440000          3   310   63057   182 0.0126    Midwe…  20.3
+3 Chr05N 63830000 65980000          4   505   49985   162 0.0239    Gulf    33.4
+4 Chr05N 63830000 65980000          4   358   35377   108 0.00472   Both    33.4
+5 Chr08N 13470000 34420000         18   505   49985   684 0.0000759 Gulf    18.1
+# ℹ 2 more variables: lodcolumn &lt;chr&gt;, pos &lt;dbl&gt;</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 3
@@ -1138,43 +1147,46 @@ Detected an unexpected many-to-many relationship between `x` and `y`.</code></pr
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(Chr, Pos_lo, Pos_hi, inQTLandBF, inBF, notinBF,
-inQTL, pvalue, subpop, phenotype)`Joining with `by = join_by(Chr, Pos_lo,
-Pos_hi, inQTLandBF, inBF, notinBF, inQTL, pvalue, subpop, phenotype)`</code></pre>
+inQTL, pvalue, subpop, phenotype)`
+Joining with `by = join_by(Chr, Pos_lo, Pos_hi, inQTLandBF, inBF, notinBF,
+inQTL, pvalue, subpop, phenotype)`</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 9 × 12
-  Chr      Pos_lo   Pos_hi inQTLandBF  inBF notinBF inQTL pvalue subpop  lod    
-  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;      &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
-1 Chr05N 63830000 65260000          0   460   45471    66  0.486 Gulf    22.537…
-2 Chr05N 63830000 65260000          1   491   48539    74  0.170 Midwest 22.537…
-3 Chr05N 63830000 65260000          1   448   44317    83  0.202 Both    22.537…
-4 Chr08K 38790000 41430000          0   460   45471   107  0.660 Gulf    18.972…
-5 Chr08K 38790000 41430000          1   491   48539   116  0.324 Midwest 18.972…
-6 Chr08K 38790000 41430000          1   448   44317    91  0.231 Both    18.972…
-7 Chr09N 15150000 19550000          2   460   45471   206  0.341 Gulf    19.383…
-8 Chr09N 15150000 19550000          0   491   48539   183  0.842 Midwest 19.383…
-9 Chr09N 15150000 19550000          3   448   44317   198  0.138 Both    19.383…
-# ℹ 2 more variables: lodcolumn &lt;chr&gt;, pos &lt;chr&gt;</code></pre>
+  Chr      Pos_lo   Pos_hi inQTLandBF  inBF notinBF inQTL pvalue subpop    lod
+  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;      &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;chr&gt;   &lt;dbl&gt;
+1 Chr05N 63830000 65260000          0   460   45471    66  0.486 Gulf     22.5
+2 Chr05N 63830000 65260000          1   491   48539    74  0.170 Midwest  22.5
+3 Chr05N 63830000 65260000          1   448   44317    83  0.202 Both     22.5
+4 Chr08K 38790000 41430000          0   460   45471   107  0.660 Gulf     19.0
+5 Chr08K 38790000 41430000          1   491   48539   116  0.324 Midwest  19.0
+6 Chr08K 38790000 41430000          1   448   44317    91  0.231 Both     19.0
+7 Chr09N 15150000 19550000          2   460   45471   206  0.341 Gulf     19.4
+8 Chr09N 15150000 19550000          0   491   48539   183  0.842 Midwest  19.4
+9 Chr09N 15150000 19550000          3   448   44317   198  0.138 Both     19.4
+# ℹ 2 more variables: lodcolumn &lt;chr&gt;, pos &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 24 rows containing non-finite values (`stat_bin()`).</code></pre>
+<pre><code>Warning: Removed 24 rows containing non-finite outside the scale range
+(`stat_bin()`).</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 2 rows containing missing values (`geom_bar()`).</code></pre>
+<pre><code>Warning: Removed 2 rows containing missing values or values outside the scale range
+(`geom_bar()`).</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-88-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Analysis_v1.2_mash_using_greedy_covar_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 24 rows containing non-finite values (`stat_bin()`).
-
-Warning: Removed 2 rows containing missing values (`geom_bar()`).</code></pre>
+<pre><code>Warning: Removed 24 rows containing non-finite outside the scale range (`stat_bin()`).
+Removed 2 rows containing missing values or values outside the scale range
+(`geom_bar()`).</code></pre>
 </div>
 </div>
 </section>
