@@ -6,6 +6,10 @@ pvdiv-phenology-gxe.Rproj
 .Rbuildignore
 large-files/
 
+# Quarto caches
+R/Analysis_v1.2_mash_using_greedy_covar_cache/
+R/Analysis_v1.2_mash_using_greedy_covar_files/
+
 # Sam's analysis he says he will upload, for the blame :)
 data/mash_switchgrass_models/
 
