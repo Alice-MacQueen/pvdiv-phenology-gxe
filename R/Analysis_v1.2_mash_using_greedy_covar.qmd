@@ -1383,7 +1383,7 @@ get_greedy_Ulist <- function(i) {
 ```
 
 ```{r pick covar matrices to plot fig 2}
-plot_covar_Ulist_fig2 <- function(df, mf = FALSE, mg = FALSE) {
+plot_covar_Ulist_fig2 <- function(df, mf = FALSE, mg = FALSE, legend = FALSE) {
   if (mg) {
     df <- df %>%
       select(`...1`, TX1, TX2, TX3, OK, MO, NE, MI) 
@@ -1418,11 +1418,13 @@ for (i in 1:nrow(U1)) {
     ggplot(aes(x = .data$rowU, y = .data$colU)) +
     switchgrassGWAS::theme_oeco +
     geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
-    scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
-                                  "white", "#27AD81FF", "#5DC863FF",
-                                  "#FDE725FF"),
+    scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+                                  "white", "#FE9B2DFF", "#DB3A07FF",
+                                  "#7A0403FF"),
                          limits = c(-1, 1)) +
-    theme_oeco +
+    theme_oeco 
+  if (legend == FALSE) {
+    plot_covar <- plot_covar +
     theme(legend.position = "none",
           axis.text = element_blank(),
           axis.ticks = element_blank(),
@@ -1430,8 +1432,21 @@ for (i in 1:nrow(U1)) {
           axis.line.y = element_blank(),
           axis.title.y.right = element_text()) +
     labs(x = "", y = "")
+  } else if (legend == TRUE) {
+      plot_covar <- plot_covar +
+    theme(legend.position = "right",
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.line.x = element_blank(),
+          axis.line.y = element_blank(),
+          axis.title.y.right = element_text()) +
+    labs(x = "", y = "")
+    }
+  
   return(plot_covar)
 }
+library(scales)
+show_col(viridis_pal(option = "H")(8))
 ```
 
 ```{r}
@@ -1558,7 +1573,7 @@ f2b <- df_2gr_b %>%
   filter(Mass > 1e-05) %>%
   ggplot(aes(x = subpop, y = Mass)) + 
   geom_bar(aes(fill = Type), stat = "identity") +
-  scale_fill_viridis_d(end = 0.9) +
+  scale_fill_viridis_d(end = 0.9, option = "H") +
   theme_oeco + 
   theme(axis.title.x=element_blank(),
         legend.position = "none",
@@ -1567,7 +1582,7 @@ f2d <- df_2fl_b %>%
   filter(Mass > 1e-05) %>%
   ggplot(aes(x = subpop, y = Mass)) + 
   geom_bar(aes(fill = Type), stat = "identity") +
-  scale_fill_viridis_d(end = 0.9) +
+  scale_fill_viridis_d(end = 0.9, option = "H") +
   theme_oeco + 
   theme(axis.title.x=element_blank(),
         legend.position = "none",
@@ -1577,7 +1592,7 @@ f2a <- df_2gr_a %>%
   ggplot(aes(x = `Covariance Matrix`, y = Mass)) + 
   geom_bar(aes(fill = Type), stat = "identity") +
   facet_wrap(~subpop) +
-  coord_flip() + scale_fill_viridis_d(end = 0.9) +
+  coord_flip() + scale_fill_viridis_d(end = 0.9, option = "H") +
   theme(legend.position = c(-0.4, 0.3),
         axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
         panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
@@ -1586,12 +1601,15 @@ f2c <- df_2fl_a %>%
   ggplot(aes(x = `Covariance Matrix`, y = Mass)) + 
   geom_bar(aes(fill = Type), stat = "identity") +
   facet_wrap(~subpop) +
-  coord_flip() + scale_fill_viridis_d(end = 0.9) +
+  coord_flip() + scale_fill_viridis_d(end = 0.9, option = "H") +
   theme(legend.position = "none",
         axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
         panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
 
 
+pa_legend <- plot_covar_Ulist_fig2(Ulist_gg$`Daylength (14d prior)`, legend = TRUE) + 
+  labs(subtitle = "Daylength (14d prior)")
+legend <- get_legend(pa_legend) 
 ```
 
 ```{r build figure 2}
@@ -1613,7 +1631,7 @@ ggdraw() +
   draw_plot(pa12, x = 0.13, y = 0, width = 0.1, height = 0.18) +
   draw_plot(pa13, x = 0.13, y = 0.8, width = 0.1, height = 0.18) +
   draw_plot(f2a, x = 0.3, y = 0.47, width = 0.55, height = 0.53) +
-  #draw_plot(legend, x = 0.15, y = 0.34, width = 0.1, height = 0.2) +
+  draw_plot(legend, x = 0.15, y = 0.34, width = 0.1, height = 0.2) +
   draw_plot(f2b, x = 0.85, y = 0.47, width = 0.15, height = 0.53) +
   draw_plot(f2c, x = 0.3, y = 0, width = 0.55, height = 0.47) +
   draw_plot(f2d, x = 0.85, y = 0, width = 0.15, height = 0.47)
@@ -1624,7 +1642,7 @@ ggdraw() +
 ```{r}
 #| eval: false
 
-save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_2_Covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 6, base_width = 8.5)
+save_plot(filename = "../manuscript/revision2/Figure_2_recolor_covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 5.5, base_width = 8)
 ```
 
 ## Table 1
@@ -1845,7 +1863,7 @@ pvdiv_plot_cor <- function(corrmatrix, upper = NULL, legend = FALSE){
     ggplot(aes(x = .data$rowU, y = .data$colU)) +
     switchgrassGWAS::theme_oeco +
     geom_tile(aes(fill = .data$covar)) +
-    scale_fill_viridis_c(option = "B", limits = c(0, upper)) +
+    scale_fill_viridis_c(option = "H", limits = c(0, upper)) +
     #geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +

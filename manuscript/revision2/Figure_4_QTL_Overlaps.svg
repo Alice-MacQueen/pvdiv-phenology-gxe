@@ -8,6 +8,9 @@
    id="svg3076"
    sodipodi:docname="Figure_4_QTL_Overlaps.svg"
    inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   inkscape:export-filename="Figure_4_QTL_Overlaps.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -22,15 +25,33 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="pt"
-     inkscape:zoom="1.299177"
-     inkscape:cx="385.62873"
-     inkscape:cy="699.67369"
-     inkscape:window-width="1472"
-     inkscape:window-height="920"
+     inkscape:zoom="0.70866852"
+     inkscape:cx="464.25091"
+     inkscape:cy="419.0958"
+     inkscape:window-width="1248"
+     inkscape:window-height="426"
      inkscape:window-x="1920"
-     inkscape:window-y="620"
+     inkscape:window-y="621"
      inkscape:window-maximized="0"
-     inkscape:current-layer="g3076" />
+     inkscape:current-layer="g3076"
+     showgrid="false">
+    <inkscape:grid
+       id="grid3079"
+       units="pt"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       dotted="false"
+       gridanglex="30"
+       gridanglez="30"
+       visible="false" />
+  </sodipodi:namedview>
   <defs
      id="defs1">
     <style
@@ -22217,5 +22238,27 @@
        textLength="64.50px"
        lengthAdjust="spacingAndGlyphs"
        id="text3076">Flowering Date</text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;fill:#000000;stroke-width:0.75"
+       x="5.1955967"
+       y="16.164078"
+       id="text3077"><tspan
+         sodipodi:role="line"
+         id="tspan3076"
+         style="font-weight:bold;stroke-width:0.75"
+         x="5.1955967"
+         y="16.164078">a</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:14px;fill:#000000;stroke-width:0.75"
+       x="5.5410194"
+       y="333.09546"
+       id="text3078"><tspan
+         sodipodi:role="line"
+         id="tspan3077"
+         style="font-weight:bold;stroke-width:0.75"
+         x="5.5410194"
+         y="333.09546">b</tspan></text>
   </g>
 </svg>
