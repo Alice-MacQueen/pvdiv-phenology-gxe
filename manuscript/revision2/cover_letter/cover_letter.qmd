@@ -1,0 +1,36 @@
+---
+author:
+  - name: Alice MacQueen* and Tom Juenger
+    affiliation:
+      - name: The University of Texas at Austin
+        department: Department of Integrative Biology
+        address: 2415 Speedway
+        city: Austin, TX
+        postal-code: 78712
+address:
+  - Editors
+  - Proceedings of the National Academy of Sciences
+subject: manuscript revision
+subject-title: "Subject"
+opening: "Dear Editors,"
+closing: "Best,"
+format: letter-pdf
+bibliography: references.bib
+---
+
+Thank you for considering this work for publication in *PNAS*. Our manuscript, "Diverse Genotype-by-Weather Interactions in Switchgrass" has undergone substantial revision from our original submission in 2021. This timeframe is long - Dr. MacQueen took a new position in 2022. They continued working with the group as we developed a new algorithm to address major reviewer concerns and significantly altered the manuscript. Because of these alterations, the response to reviewers does not have track changes for each point, though we do point to line numbers for the associated revisions in our response.
+
+Our manuscript is suitable for publication in *PNAS* for the following reasons.
+
+Our work is a key methodological development in understanding genetic variation in genotype-by-environment interactions, or GxE. GxE interactions must vary across the genome; that is, different genes and genetic variants can exhibit different responses to the environment. Yet current statistical models to test for GxE don't have robust frameworks to specify and compete different models of GxE effects, instead focusing on finding a single, best fitting form of GxE covariance. We use multivariate adaptive shrinkage (mash [@urbut2018]) to determine the regions of the switchgrass genome with different types of GxE, specifically regions of the genome with effects on phenology that covary with several weather-based 'cues'. We use a greedy algorithm to compete and select types of GxE and GxWeather that improve our models, then use mash to identify which SNP effects are best modeled with each type of GxE or GxWeather.
+
+Second, to our knowledge, this work is the first to use a statistically unbiased test to detect the relative frequencies of two important types of GxE; antagonistic pleiotropy, or a change in sign of effects between environments, and differential sensitivity, or a change in magnitude of effects between environments. Here, rather than using the local false discovery rate to ask "Are these two effects different?" - as we reasonably expect two effects to be, even if this difference cannot be measured - we use the local false sign rate to ask a more meaningful question: Can we be confident in the sign of these two effects? We use the lfsr to find thousands of genetic effects with antagonistic pleiotropy for the start of vegetative growth for switchgrass.			
+
+Finally, with current advances in high-throughput measurement, and the increased resources devoted to experiments in natural and semi-natural environments, we must consider how to share information across these experiments and how to associate natural variation in genomes with natural
+variation in complex field environments. Advances in methods to find the environmental cues that matter should allow researchers to determine the adaptations important to responses to the natural environment, and how the importance of these genetic mechanisms changes as the environment itself changes. Our manuscript should be of broad interest to PNAS readership for the insights it provides into these important issues.
+
+We suggest that the original editor, Editorial Board members, and anonymous reviewers for this manuscript would be good choices to assess this revision. In the event that is not practicable, we include some additional suggestions below.
+
+We suggest that Douglas Schemske, \_\_\_, and Qifa Zhang would be good Editorial Board members for this manuscript. All would be able to provide strong insights into mapping the genetic basis of adaptive and ecologically relevant traits in a field experimental context.
+
+We suggest that Johanna Schmitt, Trudy Mackay, and Detlef Weigel would be excellent editors for this manuscript. Dr. Schmitt has done extensive work in *Arabidopsis thaliana* and other plant species unravelling the genetic mechanisms involved in responses to the natural environment. Dr. Mackay has extensive experience mapping the genetics of complex traits and genotype-by-environment interactions. Dr. Weigel has done extensive work understanding genetic diversity in *A. thaliana* including extensive work on floral induction cues.
