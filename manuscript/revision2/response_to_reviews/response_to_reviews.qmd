@@ -1,0 +1,136 @@
+---
+author:
+  - name: Alice MacQueen* and Tom Juenger
+    affiliation:
+      - name: The University of Texas at Austin
+        department: Department of Integrative Biology
+        address: 2415 Speedway
+        city: Austin, TX
+        postal-code: 78712
+address:
+  - Editors
+  - Proceedings of the National Academy of Sciences
+subject: manuscript revision
+subject-title: "Subject"
+opening: "Dear Editors,"
+closing: "Best,"
+format: letter-pdf
+---
+
+Thank you for considering this work for publication in *PNAS*. Our manuscript, "Diverse Genotype-by-Weather Interactions in Switchgrass" has undergone substantial revision from our original submission in 2021. This timeframe is long - Dr. MacQueen took a new position in 2022. They continued working with the group as we developed a new algorithm to address major reviewer concerns and significantly altered the manuscript. Because of these alterations, the response to reviewers does not have track changes for each point, though we do point to line numbers for the associated revisions in our response.
+
+We were pleased by the useful feedback given by the reviewers of our original submission. We have addressed all the editorial issues suggested by the two reviewers, and included in this letter are point-by-point responses to these issues.
+
+The previous reviewers brought up two major concerns:
+
+> Reviewer #1:\
+> \
+> Suitable Quality?: No\
+> Sufficient General Interest?: No\
+> Conclusions Justified?: Yes\
+> Clearly Written?: No\
+> Procedures Described?: Yes\
+> \
+> Comments on Significance Statement:\
+> \
+> Conclusions are very specific for the crop/population and traits. General conclusions are lacking.\
+> \
+> Comments:\
+> \
+> The paper by MacQueen et al. presents results of a study on two switchgrass populations grown in 8 garden experiments across a rane of latitudes. Traits are green-up date and flowering time. The data show strong GxE, effects of QTL changing in magnitude and sign. Results are partly validated in an independent segregating population.\
+> \
+> The topic is timely and highly relevant. A better understanding of GxE will be valuable for plant genetics, evolution and breeding. The data are complex and the authors have succeeded in making them accessible to the reader.\
+> \
+> \
+> Relevant literature\
+> The introduction and discussion are focused on findings in Arabidopsis and switchgrass. An excellent study from Arabidopsis with high relevance for this paper is\
+> Fournier-Level et al. 2016 <https://doi.org/10.1073/pnas.1517456113>\
+> \
+> Major findings from other crop species have been ignored. To mention just two references:\
+> \
+> Bustos-Korts et al. 2019 The Plant Journal <https://doi.org/10.1111/tpj.14414>\
+> Millet et al. 2016 Plant Physiology <https://doi.org/10.1104/pp.16.00621> and\
+> There are many papers on crop modelling (eg work by Mark Cooper and others in maize) and the authors might want to consider linking their results to crop modelling to demonstrate the relevance of the results of this study
+
+Comments on additional findings from other crop species
+
+> Results\
+> \
+> There is a large overlap of data and findings with reference 32 Lovell et al. 2021 Nature. It has not become clear which additional insights can be gained from this study. One reason might be that objectives of the study have remained rather vague as well as the generic conclusions that can be drawn from the results.
+
+We edited the Introduction substantially to differentiate this study from Lovell et al 2021.
+
+> In the introduction the aim is given as „we test if these populations differ in their phenological adaptation and hence their phenological GxE". Given prior knowledge such as the origin of the populations and earlier results (Lovell et al.) what is expected?
+
+We edit the Introduction to more clearly articulate the aims of this manuscript. Our key expectation is that different genetic subpopulations and genomic regions have likely evolved distinct patterns of GxE. Thus, we aim to identify the kinds of GxE present for each subpopulation and each trait.
+
+> The results for these two populations did not show a general pattern leading to conclusions on the environmental cues. Associations trait/cue changed across populations, traits, gardens, analysis etc. , it was difficult to see the big picture.
+
+We agree that we do not identify one general pattern or one environmental cue affecting any set of populations or phenological trait. Rather, we aim to identify the kinds of GxE present genome-wide and elaborate when these kinds of GxE differ (Figure 2), and demonstrate that individual loci have different types of GxE across environmental regions and subpopulations (Figure 3).
+
+> The authors claim that the environmental cues in the hypothesis based models improved model fit. What inference is possible from this result? Unless results are validated in independent data or with cross validation the predictive power of the cues cannot be judged.
+
+We edit the Results to a) more clearly articulate this claim and b) add an algorithm to more rigorously demonstrate this claim given the data that we have. We agree that given the data we have, the predictive power of these cues cannot be judged. *may need to look at QTL GxE to address this*. *It differs from our rewritten manuscript aims*.
+
+> Results from the SNPs "mash model of Midwest green-up fell on a covariance matrix of average temperature in the 10 days prior to Midwest green-up". These results should be linked to the phenotypic GxE analysis.
+
+We edit the results to directly compare the GxWeather matrices and the phenotypic correlations in Figure 1B. (lines 406-409; lines 417-420).
+
+> Flowering posterior weights were higher than green-up weights. What does that mean? How does that link to the different heritabilities and levels of GxE?
+
+We believe this comment refers to there being higher loadings on the GxWeather matrices for flowering date than there was for the date of the start of vegetative growth in the original paper (original Figure 2). Our revised analyses uses a selection process for canonical and GxWeather covariance matrices to select only the subset that significantly improves the model log-likelihood. Thus, the covariance matrices included in each model have changed in this revision, as have the relative loadings on GxWeather and canonical covariance matrices. *what do we see now?*
+
+> What can you conclude from the pattern of antagonistic pleiotropy between Texas and Northern gardens that has not been seen in the GxE analysis?
+
+No conclusions about individual loci effects can be drawn from the GxE analysis in Figure 2, as this plot does not show how shrinkage changes the jointly re-estimated SNP effect sizes. The GxE analysis in Figure 2 shows the types of GxE and GxWeather present genome-wide, from loadings on individual loci, but does not show the effects of these loci on traits. Rather, it is an overall characterization of GxE across all eight gardens.
+
+The GxE analysis in Figure 3 shows the re-estimated effects of these loci on traits as contrasts between individual pairs of gardens. From Figure 3, you can conclude that many loci have effects with antagonistic pleiotropy at the site level.
+
+> Discussion\
+> "we must understand the current patterns of trait covariation across environments, .....". What is the understanding from your data? Are there any general patterns or do we need to assess them individually for different genetic material, environments, traits? It looks like the latter so what are the consequences?
+
+We think that these patterns need to be assessed individually for different genetic material, environments, and traits (lines 575-578); thus, we develop an approach to specify multiple environmental cues and compete them to explain patterns of genetic effects (lines 591-595): we use a greedy algorithm to use with mash to select covariance patterns, and use mash to flexibly identify these patterns across populations and environments. (lines \_\_).
+
+> "this is the first experimental work using QTL mapping and GWAS across ....". I disagree, see references above and others.
+
+Edited to clarify our claim. NB: We do cite the first experimental work using both QTL mapping and GWAS (Brachi et al), and there are many others; we meant using these approaches to map GxE.
+
+> "Gulf and Midwest subpopulations have two distinct photoperiod-related flowering responses....". This has been shown for other species, eg Unterseer et al. 2016 Genome Biology
+
+*Try and add this reference in the introduction*
+
+> Data/Methods\
+> \
+> Is one year data enough to make conclusions about the effect of environmental cues? It is well known that GxYear is more pronounced than GxLocation.
+
+We agree that this would be an interesting topic for future work. Our aim was to demonstrate the value of this approach for mapping GxE, and we believe one year of data sufficient to do this.
+
+> The reader should be able to understand what the hypothesis in the hypothesis-driven models is without looking at the supplement.
+
+Agreed. We add Table 1 to better explain the covariance matrices we select from using the greedy mash algorithm. We include the matrices selected by this algorithm as visualizations in Figure 2.
+
+> Reviewer #2:\
+> \
+> Suitable Quality?: No\
+> Sufficient General Interest?: Yes\
+> Conclusions Justified?: No\
+> Clearly Written?: No\
+> Procedures Described?: No\
+> \
+> Comments:\
+> \
+> The authors present a massive dataset on phenological variation among switchgrass cultivars across 8 common gardens. They use this dataset to describe the genetic architecture of gene-environment interactions in two phenological traits: the timing of green-up and flowering. They find that the genetic architecture of these traits varies considerably among two populations of switchgrass (called Gulf and Midwest) and among the latitudinal cline in common gardens, and that some of this variation seems to be related to variation among gardens in key environmental cues including temperature and daylength. They also identify genomic regions associated with this variation and replicate these regions in a separate set of F2 populations.\
+> \
+> While previous publications from this experiment have been published, I believe this is the first to focus on these two phenological traits which are of clear importance in switchgrass. The overall questions that they target are also of great importance - understanding the genetic basis of gene-environment interactions, and identifying the environmental drivers of these phenological traits - and the analytical approach that they use is creative and leverages powerful statistical methods. Given this, this study has the potential to be an important case study in the field for identifying GxE loci. However there are a number of issues with the statistical approach and also with the conceptual framework that I think make the current results uninterpretable. Also, because the methods are relatively novel and complex, it would be very helpful to provide more intuition behind the analytical approaches and more access to the raw results so that others can understand the approach more fully.
+
+> First a note: It would be helpful if the authors would provide a pdf with line-numbers and with a font that can be copied directly.
+
+Edited. We apologize for this omission.
+
+> Major issues:\
+> \
+> Conceptual issues:\
+> \
+> - I like the idea of using environmental measures near the time of phenological events to try to identify environmental drivers and compare the plasticity functions across environments. However the choices here do not make physiological sense, especially for flowering. The environmental indices focus on either the day of flowering, or the 1-2 weeks prior to flowering. However, the developmental transition to flowering likely occurs well before this interval (I'm not sure how long in switchgrass, but it's likely much earlier). Photoperiod and temperature cues driving this developmental transition are irrelevant once the developmental commitment has been made. The length of time before flowers emerge and open may be dependent on these environmental factors as well, but this is physiological, not related mechanistically to the daylength or temperature requirements for flowering. The intervals used may be more relevant to green-up, I'm not familiar with the developmental basis of this trait. But as is, I don't think these metrics are interpretable for what they are designed for.
+
+We agree that the choice of environmental measure is an extremely important consideration.

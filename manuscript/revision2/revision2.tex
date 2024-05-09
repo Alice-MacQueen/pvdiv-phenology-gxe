@@ -323,7 +323,7 @@ multiple environments.
 
 \thispagestyle{firststyle}
 \ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
-\firstpage[15]{2}
+\firstpage[17]{2}
 
 Plant phenological timings are major components of plant fitness
 affected by multiple external environmental cues (e.g.~degree of winter
@@ -429,11 +429,12 @@ range limits of both the Gulf and the Midwest subpopulations, Gulf and
 Midwest vegetative growth occurred over the same period, and Gulf
 flowering occurred after Midwestern flowering (Figure~\ref{fig-map} A).
 These patterns led to strong negative phenotypic correlations for the
-timing of vegetative growth between the North and Texas gardens,
-particularly in the Gulf and across all individuals (hereafter, `Both'
-subpopulations), and contributed to positive phenotypic correlations for
-the timing of flowering that had larger magnitudes at more northern
-gardens (Figure~\ref{fig-map} B).
+timing of the start of vegetative growth between the North and Texas
+gardens, particularly in the Gulf and across all individuals from the
+Gulf and Midwest subpopulations (hereafter, `Both' subpopulations), and
+contributed to positive phenotypic correlations for the timing of
+flowering that had larger magnitudes at more northern gardens
+(Figure~\ref{fig-map} B).
 
 Narrow-sense heritabilities (h\textsuperscript{2}) suggested that
 rank-changing GxE for these phenotypes was present across the common
@@ -465,19 +466,20 @@ empirical weather patterns at each garden at specific times before the
 phenological event (Table 1, SI Appendix, Section S2). For example, the
 more similar that the amount of rainfall prior to flowering is for
 genotypes A and B between gardens in MI and MO, the nearer these
-covariances will be to one. If rainfalls are uncorrelated, covariance
-will be near zero; if there is rank changing (e.g.~high rainfall before
-flowering of A at MO but not MI, and high rainfall before flowering for
-B at MI but not MO), this covariance will be near negative one. We
-specified multiple covariance structures for the canonical, data-driven,
-and GxWeather categories, each of which represented a specific pattern
-of covariance in genetic effect size estimates that could be included in
-the model. The phenotypic correlations for the timing of vegetative
-growth had moderate negative correlations between the Texas and North
-gardens, particularly in the Gulf subpopulation and Both subpopulations
-(Figure~\ref{fig-map} B). If these phenotypic correlations have a
-genetic component, they could be partially or completely captured by the
-covariance structures specified in the mash model.
+covariances will be to one. If rainfall amounts are uncorrelated,
+covariance will be near zero; if there is rank changing (e.g.~high
+rainfall before flowering of A at MO but not MI, and high rainfall
+before flowering for B at MI but not MO), this covariance will be near
+negative one. We specified multiple covariance structures for the
+canonical, data-driven, and GxWeather categories, each of which
+represented a specific pattern of covariance in genetic effect size
+estimates that could be included in the model. The phenotypic
+correlations for the timing of vegetative growth had moderate negative
+correlations between the Texas and North gardens, particularly in the
+Gulf subpopulation and Both subpopulations (Figure~\ref{fig-map} B). If
+these phenotypic correlations have a genetic component, they could be
+partially or completely captured by the covariance structures specified
+in the mash model.
 
 The GxWeather covariance structures allow hypothesis testing of specific
 weather variables as cues for the start of vegetative and reproductive
@@ -493,34 +495,35 @@ effects on these GxWeather matrices in the model, along with the
 posterior effect size estimates, provide information on genome-wide
 patterns of SNP-environment interaction.
 
-Five GxWeather covariance structures were selected by the greedy
-algorithm, zero to two per subpopulation: two for the start of
-vegetative growth, and three for flowering date. Of these five, three
-had mass on them in mash models of the strong effects
-(Figure~\ref{fig-covar} A-B). Two of these three matrices had negative
-covariances between sites between Texas and North gardens
-(Figure~\ref{fig-covar} A), while one had all positive or near-zero
-covariances. SNP-associated phenotypic effects covaried with different
-weather-based cues in the Gulf \& in Both subpopulations
+We used a greedy algorithm to select covariance matrices from each
+model's set that significantly improved the model likelihood. Five
+GxWeather covariance structures were selected, zero to two per
+subpopulation: two for the start of vegetative growth, and three for
+flowering date. Of these five, three had mass on them in mash models of
+the strong effects (Figure~\ref{fig-covar} A-B). Two of these three
+matrices had negative covariances between sites between Texas and North
+gardens (Figure~\ref{fig-covar} A), while one had all positive or
+near-zero covariances. SNP-associated phenotypic effects covaried with
+different weather-based cues in the Gulf \& in Both subpopulations
 (Figure~\ref{fig-covar} B). In total, 65\% of the posterior weight of
 strong SNP effects in the mash model of Gulf vegetative growth fell on a
 covariance matrix constructed using the covariance of daylength 14 days
 prior to the date of vegetative growth. The covariance matrix for this
-weather cue was very similar to the pattern of phenotypic correlation
-for the timing of vegetative growth in the Gulf subpopulation
-(Figure~\ref{fig-map} B; Figure~\ref{fig-covar} A). Mash models of the
-timing of vegetative growth in the Midwest subpopulation and Both
-subpopulations did not include this GxWeather covariance; the Midwest
-had no weight on any GxWeather covariance, while Both subpopulations had
-non-zero weights on two additional GxWeather covariance types, average
-temperature one day prior to green-up, and the day length change in
-seconds in the day prior to green-up (Figure~\ref{fig-covar} B). The
-average temperature covariance matrix had negative covariances between
-Texas and North gardens, though not as strong as the negative phenotypic
-correlations seen in Both subpopulations (Figure~\ref{fig-map} B;
-Figure~\ref{fig-covar} A). Only the Gulf subpopulation and Both
-subpopulations had mass on any GxWeather covariance matrices
-(Figure~\ref{fig-covar} C).
+weather cue was very similar to the observed pattern of phenotypic
+correlation for the timing of vegetative growth in the Gulf
+subpopulation (Figure~\ref{fig-map} B; Figure~\ref{fig-covar} A). Mash
+models of the timing of vegetative growth in the Midwest subpopulation
+and Both subpopulations did not include this GxWeather covariance; the
+Midwest had no weight on any GxWeather covariance, while Both
+subpopulations had non-zero weights on two additional GxWeather
+covariance types, average temperature one day prior to green-up, and the
+day length change in seconds in the day prior to green-up
+(Figure~\ref{fig-covar} B). The average temperature covariance matrix
+had negative covariances between Texas and North gardens, though not as
+strong as the negative phenotypic correlations seen in Both
+subpopulations (Figure~\ref{fig-map} B; Figure~\ref{fig-covar} A). Only
+the Gulf subpopulation and Both subpopulations had mass on any GxWeather
+covariance matrices (Figure~\ref{fig-covar} C) for vegetative growth.
 
 For flowering date, distinct GxWeather covariance structures captured
 covariance in effect sizes for SNPs in the Gulf and Midwest
@@ -529,32 +532,32 @@ subpopulation covaried with cumulative rainfall in the seven days prior
 to flowering (Figure~\ref{fig-covar} D). 22.6\% of SNP effects on
 flowering in the Midwest subpopulation covaried with day length change
 in the two days prior to flowering (Figure~\ref{fig-covar} D), which had
-negative covariances between Texas and North gardens. Neither covariance
-matrix was selected as significantly improving the log-likelihood of the
+negative covariances between Texas and North gardens. Neither of these
+covariance matrices significantly improved the log-likelihood of the
 \emph{mash} model of Both subpopulations, and no GxWeather covariance
-matrices had a non-zero mass in models of Both subpopulations
+matrices had non-zero mass in models of Both subpopulations
 (Figure~\ref{fig-covar} E). In five of the six mash models of strong
 effects, the GxWeather covariance matrices captured a minority of the
-posterior weights of the strong effects (Figure~\ref{fig-covar} C,E);
-the majority of this mass was on various canonical covariance matrices.
-These matrices included simple heterozygosity, with intermediate,
-positive covariances between all gardens, and garden-specific effects
-present only at one garden.
+posterior weights of the strong effects (Figure~\ref{fig-covar} C,E); in
+these five models, the majority of this mass was on various canonical
+covariance matrices. These matrices included simple heterozygosity, with
+intermediate, positive covariances between all gardens, and
+garden-specific effects present only at one garden.
 
 We next characterized the pairwise patterns of effects where we were
 confident in the sign of the effect at both gardens. If the overall
 pattern of phenotypic expression differs between a pair of gardens, this
 difference may be comprised of SNP effects that differ in sign between
 these gardens (effects with antagonistic pleiotropy), SNP effects that
-differ in magnitude - that are large in one garden or region and smaller
-in others, and SNP effects that are indistinguishable in the two gardens
-(Figure~\ref{fig-effects} A). We used the local false sign rate (lfsr),
-an analogue of the lfdr that establishes confidence in the effect sign,
-not the effect's difference from zero, to determine significance. We
-required lfsr significance (p \textless{} 0.05) in both gardens to
-include effects. This means that our tests for antagonistic pleiotropy,
-or a sign change between conditions, carry an equal statistical burden
-to those for effects with the same sign.
+differ in magnitude (effects that are large in one garden or region and
+smaller in others), and SNP effects that are indistinguishable in the
+two gardens (Figure~\ref{fig-effects} A). We used the local false sign
+rate (lfsr), an analogue of the lfdr that establishes confidence in the
+effect sign, not the effect's difference from zero, to determine
+significance. We required lfsr significance (p \textless{} 0.05) in both
+gardens to include effects. This means that our tests for antagonistic
+pleiotropy, or a sign change between conditions, carry an equal
+statistical burden to those for effects with the same sign.
 
 For greenup date for the Gulf subpopulation, hundreds to thousands of
 pairwise effects exhibited antagonistic pleiotropy, or a difference in
@@ -656,15 +659,16 @@ correlated with, plant phenotypic responses remains a major challenge to
 studies interrogating gene action across many natural environments. The
 GxWeather photoperiod and cumulative rainfall cues we identify here are
 functions of the genotypes measured and capture only a minority of SNP
-effects on flowering. We know still less about the overwintering
-parameters that cause variation in the start of vegetative growth. We
-could only assign SNP effects to a GxWeather covariance structures in
-four of the six phenotype \& genetic subpopulations we modeled. More
-generally, it is difficult to predict the time scales over which
+effects on flowering. We could only assign SNP effects to a GxWeather
+covariance structures in four of the six phenotype \& genetic
+subpopulations we modeled. It's likely we did not include some GxWeather
+important to these phenological cues - for example, overwintering
+parameters that might cause variation in the start of vegetative growth.
+More generally, it is difficult to predict the time scales over which
 individuals may integrate environmental cues, particularly in perennial
 species which may integrate these cues over longer time scales. If this
-integration time itself varies between individuals, we cannot select a
-covariance structure that reflects this, though these structures would
+integration time itself varies between individuals, the covariance
+structures we modeled cannot reflect this, though these structures would
 likely be highly correlated with GxWeather structures we did include.
 Our approach offers an opportunity to specify multiple environmental
 cues and compete them to explain patterns of genetic effects, allowing
@@ -847,7 +851,7 @@ shrinkage (\emph{mash}) on SNP effect estimates from the diversity panel
 timing of vegetative growth and flowering, using the switchgrassGWAS
 package and the methods in (40). We used the effect estimates for single
 nucleotide polymorphisms (SNPs) from these GWAS as preliminary effect
-estimates for both traits at each garden. We then jointly modeled
+estimates for the two traits at each garden. We then jointly modeled
 genetic effect estimates, and the mixture of ways these effects might
 covary, across all eight common gardens, using a two-part procedure. We
 first modeled genetic effects with different combinations of covariance
