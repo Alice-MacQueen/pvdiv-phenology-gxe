@@ -15,7 +15,10 @@ subject-title: "Subject"
 opening: "Dear Editors,"
 closing: "Best,"
 format: letter-pdf
+code-annotations: hover
+
 ---
+
 
 Thank you for considering this work for publication in *PNAS*. Our manuscript, "Diverse Genotype-by-Weather Interactions in Switchgrass" has undergone substantial revision from our original submission in 2021. This timeframe is long - Dr. MacQueen took a new position in 2022. They continued working with the group as we developed a new algorithm to address major reviewer concerns and significantly altered the manuscript. Because of these alterations, the response to reviewers does not have track changes for each point, though we do point to line numbers for the associated revisions in our response.
 
@@ -134,3 +137,75 @@ Edited. We apologize for this omission.
 > - I like the idea of using environmental measures near the time of phenological events to try to identify environmental drivers and compare the plasticity functions across environments. However the choices here do not make physiological sense, especially for flowering. The environmental indices focus on either the day of flowering, or the 1-2 weeks prior to flowering. However, the developmental transition to flowering likely occurs well before this interval (I'm not sure how long in switchgrass, but it's likely much earlier). Photoperiod and temperature cues driving this developmental transition are irrelevant once the developmental commitment has been made. The length of time before flowers emerge and open may be dependent on these environmental factors as well, but this is physiological, not related mechanistically to the daylength or temperature requirements for flowering. The intervals used may be more relevant to green-up, I'm not familiar with the developmental basis of this trait. But as is, I don't think these metrics are interpretable for what they are designed for.
 
 We agree that the choice of environmental measure is an extremely important consideration.
+
+> \
+> - I’ve struggled to understand the “hypothesis-based covariance matrix” idea. Since this idea is really key to the idea of this paper, I think the authors should work to make it much more clear and intuitive, perhaps a diagram could help. I think the idea is: if in two gardens the daylength-at-flowering metrics are correlated across accessions, this implies that the importance of daylength on flowering is similar in these two gardens. In a third environment that has little variation in daylength-at-flowering, the genetics of the daylength pathway are still the same, so the lack of observed variation must mean that this cue is less important here. If a SNP has a similar effect in these two gardens, but a smaller effect in gardens without much variation in this metric, this implies that this SNP may contribute to the signaling pathway that links daylength to flowering. This is a neat idea. However the way this is described in the text (eg “SNP effects on flowering ... covaried with daylength”) is confusing. This sounds like SNP effects were larger in gardens where the mean daylength at flowering was later. Or maybe that these SNPs were also GWAS hits for daylength at flowering itself.
+
+>Statistical issues:\
+>\
+> - Narrow-sense heritability: A key result is that the h^2 is low when measured across all trials, but high within trials. However the model used to estimate the global h^2 is missing a term for replication of lines across accessions. u only accounts for replication of additive effects of lines across gardens, but non-additive genetics can be persistent too. Also, this model doesn’t allow var(e) to vary across locations but it’s likely that it does. If the goal is to show rank-crossing GxE, actually fit a GxE model like was done for the environmental indices to directly show it.
+>\
+> - Variance components analysis: The specification of this model is incorrect because Var(u) and Var(ul) are assigned the same distribution. There are many ways of specifying GxE effects in a model like this, and it’s not clear how it is done here. If G is a nxn GRM for n accessions, it can’t be the covariance matrix for both Var(u) (dimension nxn) and Var(ul) (dimension nl x nl). Generally, Var(ul) would be G \otimes Psi where Psi is a lxl covariance matrix among gardens. Sometimes this is constrained to be diagonal (ie no covariance among gardens), and sometimes to be proportional to I (constant variance and no covariance among gardens), but these more restrictive models should be justified.
+
+> \
+> - GWAS: The GWAS model the authors use is not specified (nor was it specified in the 2021 Nature paper referenced). I believe looking at the source code that the model is a linear model with PCs to account for structure but no kinship matrix. It’s not clear how many PCs were used and since the raw GWAS results are not presented it’s impossible to tell if this was sufficient to account for the significant structure in these populations. I’m concerned about this because of the extremely unlikely number of significant markers (19K LD blocks). If each of these was a true positive, the average effect size of each block would be only 0.005% of the genetic variance. With only 350 accessions, the power to detect a locus that explains 10% of the genetic variance is only 50% with alpha = 10^-5 and MAF = 0.05. So if the model is detecting tons of loci it’s likely that the model is severely biased by population structure, and these biases are likely to be somewhat consistent across gardens because the structure is similar. mash doesn’t help when the individual models are biased, it’ll find patterns of correlation whether they are biological or not and use those to shrink effect sizes together.
+
+>\
+\- Mash: A lot of the results interpretation is based on interpreting the SNP loadings on the specified covariance matrices. This is a secondary use of mash (the primary being the refinement of effect sizes), and while they do interpret these somewhat in the mash paper, these loadings need to be interpreted with caution. If these covariance matrices are similar, mash will somewhat arbitrarily assign weight to any of the matrices because all lead to the same fit to the effect-size data. The mash algorithm doesn’t give the full posterior distribution on the loadings so you can’t check for posterior correlations there. It seems likely to me that the hypothesis-driven and data-driven covariance matrices are somewhat correlated here, and the correlations may differ between green-up and flowering because of the better correlation between the environmental metrics and flowering than green-up. In the mash paper, they used cross-validation with the likelihood in the testing set as the evaluation metric to compare models. It might be safer to try dropping specific covariance matrices and comparing the model performance in a held-out testing set to evaluate the importance of the hypothesis-derived covariance matrices.
+
+We thank the reviewer for this comment and agree that the selection of covariance matrices to be included in a mash model is a nontrivial question. To clarify our interpretation of the posterior matrix weights provided by mash, we performed an extensive analysis of the performance of mash models when different covariance matrices are included. Specifically, we implemented a model selection approach that uses a greedy algorithm to evaluate the log likelihood of the mash model as additional covariance matrices were included (see Methods lines \_-\_ and pseudo code below). This is a similar, but more computationally efficient design, than the leave-one-out approach recommended by the reviewer as the runtime of mash increases with the number of covariance matrices included. Additionally, while cross-validation is a powerful approach to model evaluation our limited sample size was prohibitive to the necessary partitioning of individuals included in our analysis.
+
+In practice this greedy algorithm approach offers a fast way to identify the point where redundancy in the addition of a new covariance matrix results in no change to the likelihood of the mash model. Importantly, this removes the potential for arbitrary assignment of weights to the covariance matrices in the model and allows for the selection of matrices that most accurately capture the underlying biology captured by the site-specific effect sizes. We applied this algorithm to only the hypothesis matrices for each phenotype (Figures 1 and 2) using the previously used sets of significantly associated and randomly selected variants in the Gulf subpopulation individuals, Midwest subpopulation individuals, and the two subpopulations combined. The results indicate that only a small number of the original hypothesis matrices (between three and five) are necessary to reach the maximum likelihood model when using the same likelihood ratio test implemented in Urbut et al., indicating that correlation among hypothesis covariance matrices is high. This redundancy was confirmed through our application of the greedy algorithm to a combined set of canonical, data driven, and hypothesis covariance matrices (Figures 3 and 4)
+Our primary conclusion from this analysis is in line with what the reviewer posited, that there is extensive redundancy among canonical, data driven, and hypothesis covariance matrices that is leading to biologically informative patterns of covariance between site effect sizes to be arbitrarily distributed among them. We additionally found evidence that while the correlations between data driven and environmentally informed (hypothesis) covariance matrices, there is extensive similarity in the matrices that are included in the maximum likelihood models across both phenotypes and in the analysis of the Gulf subpopulation, Midwest subpopulations, and the combined cohort.
+
+```r
+Greedy algorithm for mash model selection. 
+____________________________________________________________________________
+
+matrices = [] #<1>
+most_likely_matrices = [] #<2>
+maximum_likelihoods = []#<2>
+
+likelihood = -inf #<2>
+most_likely_matrix = ‘’ #<2>
+
+for matrix in matrices: #<3>
+	matrix_likelihood = mash(effects, std.errs, matrix) [‘likelihood’]
+	if matrix_likelihood > likelihood:
+		most_likely_matrix = matrix
+		likelihood = matrix_likelihood
+
+matrices.remove(most_likely_matrix) #<4>
+most_likely_matrices.append(most_likely_matrix)
+maximum_likelihoods.append(likelihood)
+
+lrt_pvalue = 0
+iteration = 2
+while lrt_pvalue < 0.05: #<5>
+	likelihood = -inf
+  most_likely_matrix = ‘’
+	for matrix in matrices:
+		model_matrices = most_likely_matrices + matrix 
+		model_likelihood = mash(effects, std.errs, model_matrices)[‘likelihood’]
+	if matrix_likelihood > likelihood:
+		most_likely_matrix = matrix
+		likelihood = matrix_likelihood
+
+  matrices.remove(most_likely_matrix)
+  most_likely_matrices.append(most_likely_matrix)
+  maximum_likelihoods.append(likelihood)
+
+  lrt_pvalue = likelihood_ratio_test(likelihood, maximum_likelihoods[iteration-1], df = 1)
+____________________________________________________________________________
+```
+1. Initialize covariance matrices of interest
+2. Initialize lists to store the most likely additional matrix and corresponding maximum likelihood
+3. Obtain model likelihood for a model fit with each matrix
+4. Remove the matrix with the greatest likelihood from the array and store it 
+5. Repeat the process of fitting mash models, finding the most likely, pair, trio, etc. (using the most likely matrices from the preceding iteration) until the likelihood ratio test is no longer significant
+
+>\
+- There appears to be an issue with the construction of the hypothesis-derived covariance matrices. I believe the goal here is to estimate the genetic covariance among gardens based on the phenotypic covariance (P) and the estimated residual covariance (E), where P = G + E. The described approach involves starting with the the phenotypic correlation matrix and then replacing the diagonal with the coefficient of variation. If the diagonal had been replaced with the h2 in each garden, that’d be a valid estimate of G. But as described, it’s likely that you’ll end up with an invalid covariance matrix, one that’s not positive-semi-definite. Instead the appropriate operation would be to both pre- and post-multiply the covariance matrix by a diagonal matrix with the square-root of the CV’s. This maintains a valid covariance-like structure. Or just mean-standardize the traits first and then calculate the covariance of this standardized matrix.
+
+>\
+\ - Antagonistic Pleiotropy: Maybe I’m missing the idea of this analysis, but it doesn’t seem to me that this strategy for partitioning loci between antagonistic pleiotropy and differential sensitivity would have equal power to detect each class. It seems that antagonistic pleiotropy should be a subset of differential sensitivity because the latter is defined as simply a change in magnitude. But even if it’s restricted to “different magnitude but same sign”, the practical definition here seems to be that antagonistic pleiotropy is detected when the signs are different and both lfsrs < threshold (0.05?), while differential sensitivity additionally requires a threshold on the difference in effect sizes (0.4) with no justification for why this size was chosen. This additional criterion will necessarily make the rate of detection different. Even without this, with differential sensitivity one effect size must be much larger than the other in absolute value (which isn’t the case with antagonistic pleiotropy), so differential sensitivity loci will be more likely to pass the lfsr loci than antagonistic pleiotropy loci. Note that previous literature here tried to separate antagonistic pleiotropy from conditional neutrality (ie where in one location the effect was zero), while here the contrast is with differential sensitivity where effects are non-zero in all locations. I’m not aware of previous discussions in the literature of trying to differentiate these two specific classes of GxE variants and not really sure theoretically what the importance would be.
