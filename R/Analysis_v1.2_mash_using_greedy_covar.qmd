@@ -50,7 +50,7 @@ Outline of the current analysis:
 
 1.  Set up. Look at phenotype distribution & heritability; run GWAS to get univariate SNP effect estimates & standard errors. Done elsewhere.
 
-2.  Make hypothesis covariance matrices based on weather data from 2018 - 2020. For cumulative weather variables, use a range of days: every day for the first week, and every week until 28 days. Come back and add more if 28 is chosen by greedy mash.
+2.  Make hypothesis covariance matrices based on weather data from 2018 - 2020. For cumulative weather variables, use a range of days: every day for the first week, and every week until 28 days. Come back and add more weeks if 28 is chosen by greedy mash.
 
 3.  Run greedy mash to find best set of covariance matrices that explain SNP effect variation across environments, using 19K 'randomly associated variants'. Go back to (1) if high number of day covar matrices tend to be chosen by greedy mash.
 
@@ -58,7 +58,7 @@ Outline of the current analysis:
 
 5.  Look at loadings on covariance matrices and meanings of covariance matrices as the writeup (Figure 2, 3; Table 1). Look at amount of antagonistic pleiotropy vs same sign significant effects.
 
-6.  Have Li repeat the QTL analysis and incorporate her results.
+6.  Have Li redo the QTL analysis with any new weather variables and incorporate QTL results.
 
 ------------------------------------------------------------------------
 
@@ -445,7 +445,7 @@ h2 <- mod2$Vu/(mod2$Vu + mod2$Ve)
 
 Another error: "Error in mash(data, covmats) : All U_scaled matrices should be positive semi-definite
 
-So I should adjust these to make sure all are positive semi-definite, too, in addition to replacing the diagonals with h2.
+So I should adjust these to make sure all are positive semi-definite, too, in addition to replacing the diagonals with h^2^.
 
 ### Loop to calculate covar for flowering
 
@@ -628,7 +628,7 @@ for (i in seq_along(U_hyp_2019)) {
 
 ```
 
-### Midwest covar fewer sites
+### Midwest covar with fewer sites
 
 #### flowering: 6 sites
 
@@ -1002,7 +1002,7 @@ Only keep covariance matrices if they significantly improve the mash model likel
 
 Using the random set of SNPs. Then, look at the mash results generated using these covariance matrices using a strong set of SNPs.
 
-Given that the greedy algorithm, run on Sam's random inputs, however he generated or found those, gives many more covar matrices especially from Uhyp, I wonder if some repetition of this analysis would be valuable, before blowing these results all out of proportion in a paper. Either different random sets of effects, or effects from different years of data. Think on this. I definitely want to use my known inputs, not Sam's, as mine have a traceable history (or anyways more traceable).
+Given that the greedy algorithm, run on Sam's random inputs, however he generated or found those, gives many more covar matrices especially from Uhyp, I wonder if some repetition of this analysis would be valuable - either different random sets of effects, or effects from different years of data. Think on this. I definitely want to use my known inputs, not Sam's, as mine have a traceable history (or anyways more traceable).
 
 # -----------------------------
 

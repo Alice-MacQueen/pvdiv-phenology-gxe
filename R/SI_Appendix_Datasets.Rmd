@@ -5,9 +5,12 @@ date: 2021-06-24
 output: html_document
 ---
 
+Edited 2024-05-17 for revision2.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(here)
 library(cowplot)
 library(switchgrassGWAS)
 library(ashr)
@@ -15,7 +18,7 @@ library(ashr)
 
 #
 
-Make all these datasets (except Dataset 7 is already made):
+Make all these datasets:
 
     Dataset 1. SNP-associated effects and standard errors for green-up estimated using the Gulf genetic subpopulation.
     Dataset 2. SNP-associated effects and standard errors for green-up estimated using the Midwest genetic subpopulation.
@@ -27,70 +30,105 @@ Make all these datasets (except Dataset 7 is already made):
     Dataset 8. Overlap between quantitative trait loci for flowering measured using an outbred pseudo-F2 mapping population, and significant mash effect estimates (with a log10Bayes Factor > 2, or in the 1% tail of most significant mash results) found using three overlapping diversity panels. Genes within 20kb with a functionally validated role in flowering in rice are  indicated. 
     
     
-# mash objects
+# Dataset 1-6: mash objects
+
 ```{r}
-m_gulf_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_GR50_Gulf_Uhyp.rds")
-m_gulf_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf/Strong_Effects_19000_SNPs_FL50_Gulf_Uhyp.rds")
+mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
 
-m_midw_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_24000_SNPs_GR50_Midwest_Uhyp.rds")
-m_midw_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Midwest/Strong_Effects_33000_SNPs_FL50_Midwest_Uhyp.rds")
-
-m_gam_gr_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_GR50_Gulf_and_Midwest_Uhyp.rds")
-m_gam_fl_hyp <- readRDS("~/Github/pvdiv-phenology-gxe/analysis/mash/Gulf_and_Midwest/Strong_Effects_19000_SNPs_FL50_Gulf_and_Midwest_Uhyp.rds")
+numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
+suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
+              "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
 ```
 
 
 ```{r}
-m <- m_gam_gr_hyp
-dataset_creation_function <- function(m, filename, ncol = 27){
+m_gulf_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[4], "_SNPs_",
+                                          suffix_v[4], ".rds")))
+m_gulf_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[2], "_SNPs_",
+                                          suffix_v[2], ".rds")))
 
-  all_effects <- switchgrassGWAS:::get_marker_df(m) %>%
-    mutate(log10BF = switchgrassGWAS:::get_log10bf(m))
+m_midw_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[5], "_SNPs_",
+                                          suffix_v[5], ".rds")))
+m_midw_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[6], "_SNPs_",
+                                          suffix_v[6], ".rds")))
+
+m_gam_gr_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[3], "_SNPs_",
+                                          suffix_v[3], ".rds")))
+m_gam_fl_hyp <- readRDS(file.path(mashdir,  
+                                   paste0("Strong_mash_posterior_",
+                                          "est_w_ahm_random_greedy_h2_diag_Ulist", 
+                                          numSNPs_v[1], "_SNPs_",
+                                          suffix_v[1], ".rds")))
+```
+
+
+```{r}
+m <- m_gulf_gr_hyp
+dataset_creation_function <- function(m, filename){
+
+  all_effects <- switchgrassGWAS:::get_marker_df(m)
+  BF <- switchgrassGWAS:::get_log10bf(m) |> 
+    as.vector()
+  all_effects$log10BF <- BF
   
   Means <- get_pm(m)
   StdErr <- get_psd(m)
   lfsr <- get_lfsr(m)
+  # increase clarity of column names for Supplement data
   colnames(StdErr) <- colnames(StdErr) %>%
-    str_replace(., "Stand_Bhat", "Effect_SE_") %>%
-    str_replace(., "Gulf_and_Midwest", "Both")
+    str_replace(., "Stand_Bhat", "Effect_StandardError_") %>%
+    str_replace(., "Gulf_and_Midwest", "Both") %>%
+    str_replace(., "GR50", "GreenupDate") %>%
+    str_replace(., "FL50", "FloweringDate")
   colnames(Means) <- colnames(Means) %>%
     str_replace(., "Stand_Bhat", "Effect_Mean_") %>%
-    str_replace(., "Gulf_and_Midwest", "Both")
+    str_replace(., "Gulf_and_Midwest", "Both") %>%
+    str_replace(., "GR50", "GreenupDate") %>%
+    str_replace(., "FL50", "FloweringDate")
   colnames(lfsr) <- colnames(lfsr) %>%
     str_replace(., "Stand_Bhat", "Effect_lfsr_") %>%
-    str_replace(., "Gulf_and_Midwest", "Both")
+    str_replace(., "Gulf_and_Midwest", "Both") %>%
+    str_replace(., "GR50", "GreenupDate") %>%
+    str_replace(., "FL50", "FloweringDate")
   
-  all_effects <- cbind(all_effects, Means, StdErr, lfsr)
+  all_effects <- cbind(all_effects, Means, StdErr, lfsr) %>%
+    select(starts_with("Marker"), log10BF, ends_with("TX1"), ends_with("TX2"),
+           ends_with("TX3"), ends_with("OK"), ends_with("MO"), ends_with("NE"),
+           ends_with("MI"), ends_with("SD"))
   
-  effects_df <- all_effects %>%
-    pivot_longer(cols = 4:all_of(ncol), names_to = "Condition", values_to = "Value") %>%
-    separate(col = "Condition", into = c(NA, "Type", "Subpop", "Phe", "Site"), 
-             sep = "_") %>%
-    mutate(Phe = case_when(Phe == "GR50" ~ "green-up",
-                           Phe == "FL50" ~ "flowering")) %>%
-    arrange(Subpop, Phe, Site, Type) %>%
-    pivot_wider(names_from = c("Subpop", "Phe", "Site", "Type"), 
-                values_from = "Value") 
-  
-  effects_df %>%
-    select(-value) %>%
+  all_effects |> 
     write_csv(filename)
+  
 }
 
-dataset_creation_function(m_gulf_gr_hyp, filename = "~/Github/pvdiv-phenology-gxe/manuscript/Coauthors/PNAS/Dataset_1_gulf_green-up.csv")
-dataset_creation_function(m_gulf_fl_hyp, filename = "~/Github/pvdiv-phenology-gxe/manuscript/Coauthors/PNAS/Dataset_4_gulf_flowering.csv")
 
-dataset_creation_function(m_gam_gr_hyp, filename = "~/Github/pvdiv-phenology-gxe/manuscript/Coauthors/PNAS/Dataset_3_both_subpopulations_green-up.csv")
-dataset_creation_function(m_gam_fl_hyp, filename = "~/Github/pvdiv-phenology-gxe/manuscript/Coauthors/PNAS/Dataset_6_both_subpopulations_flowering.csv")
+dataset_creation_function(m_gulf_gr_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_1_Gulf_vegetative_growth_date.csv"))
+dataset_creation_function(m_gulf_fl_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_4_Gulf_reproductive_growth_date.csv"))
 
-dataset_creation_function(m_midw_fl_hyp, filename = "~/Github/pvdiv-phenology-gxe/manuscript/Coauthors/PNAS/Dataset_5_midwest_flowering.csv",
-                          ncol = 21)
-dataset_creation_function(m_midw_gr_hyp, filename = "~/Github/pvdiv-phenology-gxe/manuscript/Coauthors/PNAS/Dataset_2_midwest_green-up.csv",
-                          ncol = 21)
+dataset_creation_function(m_gam_gr_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_3_Both_subpopulations_vegetative_growth_date.csv"))
+dataset_creation_function(m_gam_fl_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_6_Both_subpopulations_reproductive_growth_date.csv"))
+
+dataset_creation_function(m_midw_fl_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_5_Midwest_reproductive_growth_date.csv"))
+dataset_creation_function(m_midw_gr_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_2_Midwest_vegetative_growth_date.csv"))
 ```
 
 
-
+# Dataset 7
 
 
 

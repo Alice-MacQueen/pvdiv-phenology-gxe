@@ -133,7 +133,7 @@ Type or paste text here. Break this section up into subheads as needed
 
 ## Section S3. Narrow-sense heritability estimation {.unnumbered}
 
-In the diversity panel, we determined narrow-sense heritabilities (h^2^) for green-up and flowering dates at single gardens using genomic relationship matrices calculated using the van Raden method [@vanraden2008]. Genomic relationship matrices were calculated within each subpopulation (Midwest and Gulf) and for both genetic subpopulations (Both). We used ASReml (VSN International) to specify mixed models of the form:
+In the diversity panel, we determined narrow-sense heritabilities (h^2^) for green-up and flowering dates at single gardens using genomic relationship matrices calculated using the van Raden method [@vanraden2008]. Genomic relationship matrices were calculated within each subpopulation (Midwest and Gulf) and for both genetic subpopulations (Both). We used rrBLUP [@rrBLUP] to specify mixed models of the form:
 
 $$
 \mathbf{y} = 1 + Zu + e
@@ -193,7 +193,15 @@ This can also be done with LaTeX's `\newpage` command. You may find `\FloatBarri
 
 If your document relies on movies or datasets, please list them here with their captions. Use the `movie{your caption}` and `\dataset{file_name.ext}{your caption}` commands to do so.
 
-\dataset{dataset_one.txt}{SNP-associated effects and standard errors for the start of vegetative growth jointly re-estimated in the Gulf genetic subpopulation.}
+Datasets 1 through 6 are csv files where the first two columns have the following definitions:
+
+-   Marker: The SNP marker in the format Chromosome_Position
+
+-   log10BF: log10(Bayes Factor) of the significance of the marker effect in the mash model
+
+The remaining column names follow the pattern Effect\_\[Mean/StandardError/lfsr\]\_\[Subpopulation\]\_\[Phenotype\]\_\[Garden\], where Mean and Standard Error are estimates of the effect mean and standard error, lfsr is the local false sign rate statistic for the effect, and \[Subpopulation\], \[Phenotype\], and \[Garden\] follow the conventions of Figure 1.
+
+\dataset{Dataset_1_Gulf_vegetative_growth_date.csv}{SNP-associated effects for the start of vegetative growth jointly re-estimated in the Gulf genetic subpopulation.}
 
 \dataset{dataset_two.txt}{SNP-associated effects and standard errors for the start of vegetative growth jointly re-estimated in the Midwest genetic subpopulation.}
 
