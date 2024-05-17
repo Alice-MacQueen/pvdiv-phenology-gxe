@@ -1,0 +1,213 @@
+---
+title: Diverse Genotype-by-Weather Interactions in Switchgrass
+pdf-engine: pdflatex
+format:
+  pnas-si-pdf:
+    keep-tex: false  
+author:
+  - name: Alice H. MacQueen
+    affiliations:
+      - name: University of Texas at Austin
+        id: a
+        department: Department of Integrative Biology
+        city: Austin
+        state: TX
+        postal-code: 78712
+    email: alicem@uchicago.edu
+    attributes:
+      equal-contributor: true
+      corresponding: true
+  - name: Li Zhang
+    affiliations:
+      - ref: a
+    attributes:
+      equal-contributor: true
+  - name: Samuel A. Smith
+    affiliations:
+        - ref: a
+    attributes:
+      equal-contributor: true
+  - name: Jason Bonnette
+    affiliations:
+          - ref: a
+  - name: Arvid R. Boe
+    affiliations:
+      - name: South Dakota State University
+        id: b
+        department: Department of Agronomy
+        city: Brookings
+        state: SD
+        postal-code: 57006
+  - name: Phillip A. Fay
+    affiliations:
+      - name: USDA-ARS
+        id: c
+        department: Grassland, Soil and Water Research Laboratory
+        city: Temple
+        state: TX
+        postal-code: 76502
+  - name: Felix B. Fritschi
+    affiliations:
+      - name: University of Missouri
+        id: d
+        department: Division of Plant Sciences
+        city: Columbia
+        state: MO
+        postal-code: 65211
+  - name: David B. Lowry
+    affiliations:
+      - name: Michigan State University
+        id: e
+        department: Department of Plant Biology
+        city: East Lansing
+        state: MI
+        postal-code: 48824
+  - name: Robert B. Mitchell
+    affiliations:
+      - name: USDA-ARS
+        id: f
+        department: Wheat, Sorghum, and Forage Research Unit
+        city: Lincoln
+        state: NE
+        postal-code: 68583
+  - name: Francis M. Rouquette Jr
+    affiliations:
+      - name: Texas A&M University
+        id: g
+        department: Texas A&M AgriLife Research and Extension Center
+        city: Overton
+        state: TX
+        postal-code: 75684
+  - name: Yanqi Wu
+    affiliations:
+      - name: Oklahoma State University
+        id: h
+        department: Department of Plant and Soil Sciences
+        city: Stillwater
+        state: OK
+        postal-code: 74078
+  - name: Arbel Harpak
+    affiliations:
+      - ref: a
+  - name: Thomas E. Juenger
+    affiliations:
+      - ref: a
+    attributes:
+      corresponding: true
+    email: tjuenger@utexas.edu
+bibliography: bibliography.bib  
+fontsize: "9pt"
+classoption:
+ - twoside
+---
+
+\noindent This PNAS template for Supporting Information (SI) may be used to organize your supporting material. The template is intended to provide a clearly organized PDF file that will ensure readers can easily navigate to sections or specific figures and tables. Movie files or large datasets can be presented as separate files. Further information is available in the [PNAS Author Center](https://www.pnas.org/authors/submitting-your-manuscript).
+
+## Using the template {.unnumbered}
+
+Specify the title, author list, and corresponding authors with the same YAML specification as in the [corresponding PNAS Quarto template](https://github.com/christopherkenny/pnas). The cover page will be automatically generated with the relevant description of the SI.
+
+Figures should be placed on separate pages with legends set immediately below each figure. Table titles should be set immediately above each table. Note that tables extending beyond the width of the page can be included in the PDF or provided as separate dataset files. Oversized/nonstandard page sizes are accepted as part of your SI Appendix file.
+
+References cited in the SI text should be included in a separate reference list at the end of this SI file: @varga2016multilingual and @olsen1992optimal.
+
+Supporting information for Brief Reports is limited to extended methods, essential supporting datasets, and videos (no additional tables or figures). Supporting figures and tables are not allowed for Brief Reports.
+
+## Submitting SI {.unnumbered}
+
+Save your completed SI file as a PDF for submission. Further submission instructions are available [here](https://www.pnas.org/page/authors/submission#preparation).
+
+## Subhead {.unnumbered}
+
+Type or paste text here. This should be additional explanatory text such as an extended technical description of results, full details of mathematical models, etc.
+
+# Supplementary Methods
+
+## Section S1. Covariance matrices generated to jointly re-estimate SNP effects across eight sites {.unnumbered}
+
+Type or paste text here.
+
+## Section S2. Greedy mash algorithm used to select covariance matrices that significantly improved the model log-likelihood {.unnumbered}
+
+Type or paste text here. Break this section up into subheads as needed
+
+## Section S3. Narrow-sense heritability estimation {.unnumbered}
+
+In the diversity panel, we determined narrow-sense heritabilities (h^2^) for green-up and flowering dates at single gardens using genomic relationship matrices calculated using the van Raden method [@vanraden2008]. Genomic relationship matrices were calculated within each subpopulation (Midwest and Gulf) and for both genetic subpopulations (Both). We used ASReml (VSN International) to specify mixed models of the form:
+
+$$
+\mathbf{y} = 1 + Zu + e
+$$
+
+$$
+Var(u) = G\sigma_u^2
+$$
+
+$$
+Var(e) = I\sigma_e^2
+$$
+
+in which the vector **y** represents the flowering date or green-up date values for that garden, Z the design matrix for random effects, u the whole genome additive genetic effect, and e the residual. Matrix G is the whole genomic relationship matrix based on all SNPs retained for subpopulation-specific analyses. I is the rank-y identity matrix. Phenotypic variance $\sigma_p^2$ is $\sigma_u^2 + \sigma_e^2$. Narrow-sense heritability is then $h^2 = (\sigma_u^2 / \sigma_p^2)$.
+
+These models were run for each of the eight gardens, and across all gardens by adding an additional environmental effect of site without an interaction term. This resulted in 54 models: 3 sets of populations (the Gulf, Midwest, and Both subpopulations) for 9 garden sets (all eight gardens separately, and all eight gardens together) and two phenotypes (green-up date and flowering date).
+
+## Section S4. Outbred pseudo-F2 mapping population and Quantitative Trait Locus mapping {.unnumbered}
+
+To confirm candidate genomic regions and patterns of allelic effects found in the diversity panel, we analyzed flowering in an outbred pseudo-F2 cross between four grandparents, two Midwest and two Gulf individuals. The formation of this mapping population has been described previously [@Milano2016]. The parents of this cross were DAC, an early flowering Midwest individual, VS16, a late flowering Midwest individual, AP13, an early flowering Gulf individual, and WBC, a late flowering Gulf individual. We made F1 crosses of the two early flowering genotypes, AP13xDAC, and the two late flowering genotypes, WBCxVS16. We then clonally propagated and planted the four parents, the two F1 genotypes (AP13xDAC, and VS16xWBC), and 801 F2 genotypes at eight field sites in May-July of 2015. To be directly comparable to the diversity panel data, only 2019 phenology data from the pseudo-F2 cross from the same eight common garden sites were used here.
+
+Details on the genetic map construction, map polishing and fine-scale reordering can be accessed on [DataDryad](https://datadryad.org/stash/dataset/doi:10.5061/dryad.ghx3ffbjv). QTL mapping was conducted with R/qtl2 [@broman2019]. We performed a genome scan with a linear mixed model that accounts for the relationships among individuals and for environmental covariates (i.e., field sites). The full model can be expressed as:
+
+$$
+phenotype = \mu + QTL + E + QTL*E + kinship + e
+$$
+
+where $\mu$ is the population mean, QTL is the marker genetic effect, E is the environmental effects (here, common garden), QTL\*E is the interaction between marker genetic and environmental effects, kinship corresponds to the background polygenic variation, and e is the error term. The genome scan was accomplished with the ‘scan1’ function. The statistical significance of the genome scan was established by performing a stratified (i.e., stratifying on common garden) permutation test (n=1000) using ‘scan1perm’ function. The estimated QTL effect was obtained using ‘scan1coef’ function in R/qtl2.
+
+Figures should be cross-referenced like @fig-frog. Each figure should be on its own page. You can control this by placing a pagebreak shortcode, with `{{< pagebreak >}}`.
+
+This can also be done with LaTeX's `\newpage` command. You may find `\FloatBarrier` useful if your figures or tables are running off to the wrong pages.
+
+{{< pagebreak >}}
+
+![Figure](figs/frog.eps){#fig-frog}
+
+\FloatBarrier <!-- always leave a blank line between this and figures --->
+
+{{< pagebreak >}}
+
+\FloatBarrier
+
+<!-- use these FloatBarrier calls to avoid true-to-the-theme jumping ahead of the frog --->
+
+| Species           |  CBS |   CV |   G3 |
+|:------------------|-----:|-----:|-----:|
+| Acetaldehyde      |  0.0 |  0.0 |  0.0 |
+| Vinyl alcohol     |  9.1 |  9.6 | 13.5 |
+| Hydroxyethylidene | 50.8 | 51.2 | 54.0 |
+
+: Simple table example {#tbl-simple}
+
+{{< pagebreak >}}
+
+## Datasets {.unnumbered}
+
+If your document relies on movies or datasets, please list them here with their captions. Use the `movie{your caption}` and `\dataset{file_name.ext}{your caption}` commands to do so.
+
+\dataset{dataset_one.txt}{SNP-associated effects and standard errors for the start of vegetative growth jointly re-estimated in the Gulf genetic subpopulation.}
+
+\dataset{dataset_two.txt}{SNP-associated effects and standard errors for the start of vegetative growth jointly re-estimated in the Midwest genetic subpopulation.}
+
+\dataset{dataset_three.txt}{SNP-associated effects and standard errors for the start of vegetative growth jointly re-estimated in both Midwest and Gulf genetic subpopulations.}
+
+\dataset{dataset_four.txt}{SNP-associated effects and standard errors for the start of reproductive growth jointly re-estimated in the Gulf genetic subpopulation.}
+
+\dataset{dataset_five.txt}{SNP-associated effects and standard errors for the start of reproductive growth jointly re-estimated in the Midwest genetic subpopulation.}
+
+\dataset{dataset_six.txt}{SNP-associated effects and standard errors for the start of reproductive growth jointly re-estimated in both the Midwest and Gulf genetic subpopulations.}
+
+# References
+
+<!-- references for the SI go here. The below div controls its printing --->
+
+::: {#refs}
+:::

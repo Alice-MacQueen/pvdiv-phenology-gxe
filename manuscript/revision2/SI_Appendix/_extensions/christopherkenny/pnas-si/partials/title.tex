@@ -1,0 +1,26 @@
+\templatetype{pnassupportinginfo}
+
+$if(title)$
+\title{$title$}
+$endif$
+
+$if(author)$
+\author{%
+$for(by-author/first)$
+$by-author.name.literal$%
+$endfor$%
+$for(by-author/rest/allbutlast)$
+, $by-author.name.literal$%
+$endfor$%
+$for(by-author/rest/last)$
+, and $by-author.name.literal$
+$endfor$
+}
+$endif$
+$-- needs a /first then /rest/allbutlast then /last pattern
+
+$for(by-author)$
+$if(by-author.attributes.corresponding)$
+\correspondingauthor{$by-author.name.literal$\\E-mail: $by-author.email$}
+$endif$
+$endfor$
