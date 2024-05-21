@@ -455,24 +455,24 @@ vegetative and reproductive timing using
 \emph{mash}}{Inference of GxWeather effects for vegetative and reproductive timing using mash}}\label{inference-of-gxweather-effects-for-vegetative-and-reproductive-timing-using-mash}
 
 We next looked for evidence of GxWeather by jointly re-estimating
-genetic effects across all eight common gardens using the mash model,
-which can flexibly capture many modes of covariance across gardens
-(Figure~\ref{fig-map} D; SI Appendix, Datasets 1-6). We specified three
-qualitative categories of covariance structures across gardens:
-``canonical'' covariance, with simple patterns of effect size covariance
-introduced in the initial \emph{mash} manuscript; ``data-driven''
-covariances derived from common patterns of SNP effects observed in the
-data, and ``GxWeather'' covariance, estimated from the covariance of
-empirical weather patterns at each garden at specific times before the
-phenological event (Table 1; SI Appendix, Section S2). For example, the
-more similar that the amount of rainfall prior to flowering is for
-genotypes A and B between gardens in MI and MO, the nearer these
-covariances will be to one. If rainfall amounts are uncorrelated,
-covariance will be near zero; if there is rank changing (e.g.~high
-rainfall before flowering of A at MO but not MI, and high rainfall
-before flowering for B at MI but not MO), this covariance will be near
-negative one. We specified multiple covariance structures for the
-canonical, data-driven, and GxWeather categories, each of which
+genetic effects across all eight common gardens using the \emph{mash}
+model, which can flexibly capture many modes of covariance across
+gardens (Figure~\ref{fig-map} D; SI Appendix, Datasets 1-6). We
+specified three qualitative categories of covariance structures across
+gardens: ``canonical'' covariance, with simple patterns of effect size
+covariance introduced in the initial \emph{mash} manuscript;
+``data-driven'' covariances derived from common patterns of SNP effects
+observed in the data, and ``GxWeather'' covariance, estimated from the
+covariance of empirical weather patterns at each garden at specific
+times before the phenological event (Table 1; SI Appendix, Section S2).
+For example, the more similar that the amount of rainfall prior to
+flowering is for genotypes A and B between gardens in MI and MO, the
+nearer these covariances will be to one. If rainfall amounts are
+uncorrelated, covariance will be near zero; if there is rank changing
+(e.g.~high rainfall before flowering of A at MO but not MI, and high
+rainfall before flowering for B at MI but not MO), this covariance will
+be near negative one. We specified multiple covariance structures for
+the canonical, data-driven, and GxWeather categories, each of which
 represented a specific pattern of covariance in genetic effect size
 estimates that could be included in the model. The phenotypic
 correlations for the timing of vegetative growth had moderate negative
@@ -480,7 +480,7 @@ correlations between the Texas and North gardens, particularly in the
 Gulf subpopulation and Both subpopulations (Figure~\ref{fig-map} B). If
 these phenotypic correlations have a genetic component, they could be
 partially or completely captured by the covariance structures specified
-in the mash model.
+in the \emph{mash} model.
 
 The GxWeather covariance structures allow hypothesis testing of specific
 weather variables as cues for the start of vegetative and reproductive
@@ -500,23 +500,23 @@ We used a greedy algorithm to select covariance matrices from each
 model's set that significantly improved the model likelihood. Five
 GxWeather covariance structures were selected, zero to two per
 subpopulation: two for green-up date, and three for flowering date. Of
-these five, three had mass on them in mash models of the strong effects
-(Figure~\ref{fig-covar} A-B). Two of these three matrices had negative
-covariances between sites between Texas and North gardens
+these five, three had mass on them in \emph{mash} models of the strong
+effects (Figure~\ref{fig-covar} A-B). Two of these three matrices had
+negative covariances between sites between Texas and North gardens
 (Figure~\ref{fig-covar} A), while one had all positive or near-zero
 covariances. SNP-associated phenotypic effects covaried with different
 weather-based cues in the Gulf \& in Both subpopulations
 (Figure~\ref{fig-covar} B). In total, 65\% of the posterior weight of
-strong SNP effects in the mash model of Gulf green-up fell on a
+strong SNP effects in the \emph{mash} model of Gulf green-up fell on a
 covariance matrix constructed using the covariance of day length 14 days
 prior to the date of green-up. The covariance matrix for this weather
 cue was visually similar to the observed pattern of phenotypic
 correlation for the timing of vegetative growth in the Gulf
-subpopulation (Figure~\ref{fig-map} B; Figure~\ref{fig-covar} A). Mash
-models of the timing of vegetative growth in the Midwest subpopulation
-and Both subpopulations did not include this GxWeather covariance; the
-Midwest had no weight on any GxWeather covariance, while Both
-subpopulations had non-zero weights on two additional GxWeather
+subpopulation (Figure~\ref{fig-map} B; Figure~\ref{fig-covar} A).
+\emph{Mash} models of the timing of vegetative growth in the Midwest
+subpopulation and Both subpopulations did not include this GxWeather
+covariance; the Midwest had no weight on any GxWeather covariance, while
+Both subpopulations had non-zero weights on two additional GxWeather
 covariance types, average temperature one day prior to green-up, and the
 day length change in seconds in the day prior to green-up
 (Figure~\ref{fig-covar} B). The average temperature covariance matrix
@@ -537,13 +537,13 @@ negative covariances between Texas and North gardens. Neither of these
 covariance matrices significantly improved the log-likelihood of the
 \emph{mash} model of Both subpopulations, and no GxWeather covariance
 matrices had non-zero mass in models of Both subpopulations
-(Figure~\ref{fig-covar} E). In five of the six mash models of strong
-effects, the GxWeather covariance matrices captured a minority of the
-posterior weights of the strong effects (Figure~\ref{fig-covar} C,E); in
-these five models, the majority of this mass was on various canonical
-covariance matrices. These matrices included simple heterozygosity, with
-intermediate, positive covariances between all gardens, and
-garden-specific effects present only at one garden.
+(Figure~\ref{fig-covar} E). In five of the six \emph{mash} models of
+strong effects, the GxWeather covariance matrices captured a minority of
+the posterior weights of the strong effects (Figure~\ref{fig-covar}
+C,E); in these five models, the majority of this mass was on various
+canonical covariance matrices. These matrices included simple
+heterozygosity, with intermediate, positive covariances between all
+gardens, and garden-specific effects present only at one garden.
 
 We next characterized the pairwise patterns of effects where we were
 confident in the sign of the effect at both gardens. If the overall
@@ -597,25 +597,25 @@ SNP effects using an independent pseudo-F2 mapping population created
 from Gulf \& Midwest individuals and grown at the same sites
 (Figure~\ref{fig-qtl} A,B). We conducted quantitative trait loci (QTL)
 mapping of flowering as functions of five environmental cues that we
-also used as covariance matrices in mash, and identified eight QTL for
-flowering date, eight QTL for flowering as a function of day length
-change two days prior, one QTL for the start of vegetative growth, and
-two QTL for vegetative growth as a function of daylength change one day
-prior, all of which showed QTL by environment interactions (SI Appendix,
-Fig. S3). All QTL for flowering overlapped one or more homologs from
-rice or \emph{A. thaliana} with functionally validated roles in
-flowering (SI Appendix, Dataset 7). All flowering and green-up QTL
-intervals contained at least one SNP significant in at least one mash
-run at a log10-transformed Bayes Factor \textgreater{} 2, or in the 1\%
-tail of significance, whichever was stricter (SI Appendix, Dataset 8).
-We also looked for enrichments of mash SNPs in the 1\% tail of
-significance (the `mash 1\% tail') within each QTL interval. At the 5\%
-level, three QTL had enrichments of SNPs in the mash 1\% tail. Overall,
-there were five significant enrichments (p \textless{} 0.05,
-hypergeometric test) of SNPs in the mash 1\% tail in the QTL intervals.
-Thus, we were able to experimentally support some of our re-estimates of
-SNP effects with a QTL mapping experiment using a separate mapping
-population.
+also used as covariance matrices in \emph{mash}, and identified eight
+QTL for flowering date, eight QTL for flowering as a function of day
+length change two days prior, one QTL for the start of vegetative
+growth, and two QTL for vegetative growth as a function of daylength
+change one day prior, all of which showed QTL by environment
+interactions (SI Appendix, Fig. S3). All QTL for flowering overlapped
+one or more homologs from rice or \emph{A. thaliana} with functionally
+validated roles in flowering (SI Appendix, Dataset 7). All flowering and
+green-up QTL intervals contained at least one SNP significant in at
+least one \emph{mash} run at a log10-transformed Bayes Factor
+\textgreater{} 2, or in the 1\% tail of significance, whichever was
+stricter (SI Appendix, Dataset 8). We also looked for enrichments of
+\emph{mash} SNPs in the 1\% tail of significance (the `\emph{mash} 1\%
+tail') within each QTL interval. At the 5\% level, three QTL had
+enrichments of SNPs in the \emph{mash} 1\% tail. Overall, there were
+five significant enrichments (p \textless{} 0.05, hypergeometric test)
+of SNPs in the \emph{mash} 1\% tail in the QTL intervals. Thus, we were
+able to experimentally support some of our re-estimates of SNP effects
+with a QTL mapping experiment using a separate mapping population.
 
 \section{Discussion}\label{discussion}
 
@@ -721,11 +721,12 @@ genetic subpopulations. (c) Narrow sense heritability of green-up and
 flowering within single common gardens (purple) and across all eight
 common gardens (green), within and between two genetic subpopulations.
 (d) Flow diagram of the methods applied to the green-up and flowering
-dates to jointly estimate SNP effects across all sites. Mash was fit to
-SNP effect data and used to find covariance matrices that improved the
-mash model likelihood using a large set of randomly selected, relatively
-unlinked SNP effects; this model was applied to a ``strong'' set of SNP
-effects with large effect sizes in the univariate GWAS.}
+dates to jointly estimate SNP effects across all sites. \emph{Mash} was
+fit to SNP effect data and used to find covariance matrices that
+improved the \emph{mash} model likelihood using a large set of randomly
+selected, relatively unlinked SNP effects; this model was applied to a
+``strong'' set of SNP effects with large effect sizes in the univariate
+GWAS.}
 
 \end{figure}%
 
@@ -738,23 +739,24 @@ effects with large effect sizes in the univariate GWAS.}
 }
 
 \caption{\label{fig-covar}Example hypothesis-driven covariance matrices
-specified in mash and the posterior weights placed on all covariance
-matrices. (a) Left column: Five example hypothesized covariance matrices
-specified for the green-up date or flowering date phenotype; these
-matrices were created from environment-specific correlations across
-eight common gardens, and are described in Table 1. Common gardens are
-arranged in latitudinal order within the matrices. Right column: Five
-example canonical covariance matrices. Canonical matrices (purple) have
-simple interpretations, such as equal effects across all common gardens,
-or effects specific to a single common garden. (b,d) Total posterior
-weight placed on each covariance matrix type specified for (b) green-up
-date and (d) flowering date mash models, within and between two genetic
-subpopulations. Hypothesized covariance matrices (green). Covariance
-matrices included in mash that had zero posterior weight in all three
-mash runs on the genetic subpopulations, such as the identity matrix,
-are not shown. (c,e) Total posterior weight placed on covariance
-matrices that were hypothesized or canonical, for the (c) green-up date
-phenotype and (e) flowering date phenotype.}
+specified in \emph{mash} and the posterior weights placed on all
+covariance matrices. (a) Left column: Five example hypothesized
+covariance matrices specified for the green-up date or flowering date
+phenotype; these matrices were created from environment-specific
+correlations across eight common gardens, and are described in Table 1.
+Common gardens are arranged in latitudinal order within the matrices.
+Right column: Five example canonical covariance matrices. Canonical
+matrices (purple) have simple interpretations, such as equal effects
+across all common gardens, or effects specific to a single common
+garden. (b,d) Total posterior weight placed on each covariance matrix
+type specified for (b) green-up date and (d) flowering date \emph{mash}
+models, within and between two genetic subpopulations. Hypothesized
+covariance matrices (green). Covariance matrices included in \emph{mash}
+that had zero posterior weight in all three \emph{mash} runs on the
+genetic subpopulations, such as the identity matrix, are not shown.
+(c,e) Total posterior weight placed on covariance matrices that were
+hypothesized or canonical, for the (c) green-up date phenotype and (e)
+flowering date phenotype.}
 
 \end{figure}%
 
@@ -796,14 +798,14 @@ and with jointly re-estimated SNP effects in the 1\% tail of
 significance from a diversity panel. Dotted lines indicate
 permutation-based significance thresholds for each weather-related
 function. Stars indicate QTL with significant enrichment for SNPs in the
-1\% mash tail; G, M, and B indicate which subpopulation had enrichment:
-G - Gulf subpopulation, M -Midwest subpopulation, B - both
-subpopulations. Rug plots show genomic locations of SNPs in the 1\% mash
-tail for flowering date for each subpopulation. a) QTL mapping for the
-start of vegetative growth (Greenup Date), and three weather-related
-functions of greenup date. b) QTL mapping for the start of reproductive
-growth (Flowering Date), and two weather-related functions of flowering
-date.}
+1\% \emph{mash} tail; G, M, and B indicate which subpopulation had
+enrichment: G - Gulf subpopulation, M -Midwest subpopulation, B - both
+subpopulations. Rug plots show genomic locations of SNPs in the 1\%
+\emph{mash} tail for flowering date for each subpopulation. a) QTL
+mapping for the start of vegetative growth (Greenup Date), and three
+weather-related functions of greenup date. b) QTL mapping for the start
+of reproductive growth (Flowering Date), and two weather-related
+functions of flowering date.}
 
 \end{figure}%
 
@@ -838,10 +840,10 @@ from the Gulf genetic subpopulation. To allow for the possibility that
 different subpopulations had different strengths of connection between
 our phenotypes and genotypes (41), we conducted three sets of genetic
 analyses: on Gulf and Midwest genotypes separately, and on both
-subpopulations together (`Both'). Analyses to determine narrow-sense
-heritability (h\textsuperscript{2}) for green-up and flowering were done
-using linear mixed models and followed (33). Details on these models can
-be found in (SI Appendix, Section S3,S4).
+subpopulations together (`Both' subpopulations). Analyses to determine
+narrow-sense heritability (h\textsuperscript{2}) for green-up and
+flowering were done using linear mixed models and followed (33). Details
+on these models can be found in (SI Appendix, Section S2).
 
 \subsubsection{Mapping major patterns of genotype-by-environment effects
 on green-up and
@@ -866,7 +868,8 @@ as ``random''), we then specified a variety of potential covariance
 structures among genetic effect size estimates from each garden (as
 expanded on below) and used a greedy algorithm to iteratively select and
 add covariance structures that significantly improved the log likelihood
-of the \emph{mash} model. Given the high correlation between some of the
+of the \emph{mash} model. Details on these models can be found in (SI
+Appendix, Section S3). Given the high correlation between some of the
 covariance patterns we tested, this approach allowed us to select only
 the subset of patterns of covariance that significantly improved the fit
 of the jointly inferred structure of genetic effect estimates present in
@@ -888,12 +891,12 @@ gardens; covariances near one mean that the population has a strong,
 positive linear relationship in individual responses at that pair of
 gardens, while covariances near zero mean that there is no relationship
 within the population for individual responses at that pair of gardens.
-Mash SNP effects will undergo strong shrinkage towards one another in
-the first case, and little shrinkage in the second case. Mash also
-generates data-driven covariance matrices corresponding to major
-patterns of SNP effects present in the data. We generated six
-data-driven matrices per mash run, five produced by singular value
-decomposition (SVD) of an overall matrix.
+\emph{Mash} SNP effects will undergo strong shrinkage towards one
+another in the first case, and little shrinkage in the second case.
+\emph{Mash} also generates data-driven covariance matrices corresponding
+to major patterns of SNP effects present in the data. We generated six
+data-driven matrices per \emph{mash} run, five produced by singular
+value decomposition (SVD) of an overall matrix.
 
 Last, we characterized the overall patterns of antagonistic pleiotropy
 in the set of SNPs where there was pairwise significance of effects at
@@ -952,7 +955,7 @@ found in the diversity panel, we analyzed flowering in an outbred
 pseudo-F2 cross between four individuals, two Midwest and two Gulf
 individuals. The formation of this mapping population has been described
 previously (35); additional details on QTL mapping can be found in SI
-Appendix, Section S6. To be directly comparable to the diversity panel
+Appendix, Section S4. To be directly comparable to the diversity panel
 data, only 2019 phenology data from the pseudo-F2 cross from the same
 eight common garden sites were used.
 

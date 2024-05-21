@@ -62,7 +62,148 @@ Outline of the current analysis:
 
 ------------------------------------------------------------------------
 
-## Step 1: GWAS
+## Step 1: GWAS & mash input prep
+
+GWAS were run on BLUPs from models run at each garden individually. The GWAS were run in R/Plots_v0.3_manuscript_figures.Rmd, starting at line 1243. I copy-pasted that info here to have the full workflow in one qmd document; you may need to refer to it if you need additional information.
+
+### Run GWAS
+
+```{r}
+library(bigsnpr)
+library(tidyverse)
+library(switchgrassGWAS)
+library(AnnotationDbi)
+txdb <- loadDb(file = file.path("~", "Github", "pvdiv-genome",
+                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+inputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
+outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
+subpop_v <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest", Gulf = "Gulf")
+snp_v <- c("12\\.1M", "8\\.8M", "10\\.3M")
+
+inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
+                                   "inputkinship.txt"),  delim = " ", 
+                                   col_names = "SNPfiles")
+set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
+
+
+for(j in 4){#seq_along(set_v)){
+  for(i in seq_along(subpop_v)){
+    dir.create(file.path(outputdir, names(set_v)[j]), showWarnings = FALSE)
+    snp <- snp_attach(inputfiles$SNPfiles[i])
+    phe_df <- read_csv(file.path(inputdir, paste0("BLUP_phenotypes_",
+                                                  "for_gwas_GR_FL_",
+                                                  names(subpop_v)[i],
+                                                  ".csv"))) 
+  if(names(set_v)[j] != "single_sites"){
+    phe_df <- phe_df %>%
+    dplyr::select(PLANT_ID, ends_with(names(set_v)[j]))
+  } else {
+    phe_df <- phe_df %>%
+    dplyr::select(PLANT_ID, !ends_with("sites"))
+    if(names(subpop_v)[i] != "Gulf"){
+      phe_df <- phe_df %>%
+    dplyr::select(PLANT_ID, ends_with("NE"), ends_with("MI"), ends_with("SD"))
+    }
+  }
+  pvdiv_standard_gwas(snp, df = phe_df, type = "linear", 
+                      outputdir = file.path(outputdir, names(set_v)[j]),
+                      savegwas = TRUE, saveannos = TRUE, txdb = txdb,
+                      minphe = 130)
+
+  gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir,
+                                                       names(set_v)[j]), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       snp_v[i]))
+  phenotypes <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+  out1 <- pvdiv_bigsnp2mashr(path = file.path(outputdir, names(set_v)[j]), 
+                             snp = snp, gwas_rds = gwas_rds, 
+                             phenotypes = phenotypes, numSNPs = 1000, 
+                             clump = FALSE, scaled = FALSE, saveoutput = TRUE,
+                             suffix = paste0("FL_", names(set_v)[j], "_",
+                                             names(subpop_v)[i]))
+  }
+}
+
+
+```
+
+I made the mash inputs originally in the Analysis_v0.6_weather_covariance_Uhyp_greenup.Rmd file. I copy-pasted that info here to have the full workflow in one qmd document; some needs to be run on the Juenger lab server.
+
+### Make mashr inputs for 8 GR50 phenotypes & run mash.
+
+Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50. Otherwise they look ok for FL50 and GR50.
+
+#### 2a. Gulf & Gulf&Midwest.
+
+NB: Do this on server, where the large GWAS_datatable objects were created.
+
+```{r mash inputs with gulf}
+#| eval: false
+# library()
+k = 3 # subpop: G&M, M, Gulf
+for(k in c(1, 3)){
+phe_suffix <- paste("GR50", subpop_v[k], 
+                    sep = "*.*")
+snp <- snp_attach(inputfiles$SNPfiles[k])
+gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix))
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+    str_replace(., "_$", "")
+phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir), 
+                           snp = snp, gwas_rds = gwas_rds, 
+                           phenotypes = phenotypes, numSNPs = numSNPs, 
+                           clump = TRUE, scaled = TRUE, saveoutput = TRUE,
+                           suffix = paste0("GR50_", names(subpop_v)[k]))
+}
+```
+
+#### 2b. Midwest, dropping gardens with zero values.
+
+Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.
+
+```{r check midwest}
+mwdf <- readRDS(file.path(outputdir,
+                          "B_hat_strong_df_19000topSNPs_GR50_Midwest.rds"))
+
+summary(mwdf)
+```
+
+```{r mash midwest}
+k=2
+phe_suffix <- paste("GR50", subpop_v[k], 
+                    sep = "*.*")
+snp <- snp_attach(inputfiles$SNPfiles[k])
+gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+                                      pattern = paste0("GWAS_datatable*.*",
+                                                       phe_suffix))
+gwas_rds <- gwas_rds[c(1:4,6:8)]
+
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -41) %>%
+    str_replace(., "_$", "")
+phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
+numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
+out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir), 
+                           snp = snp, gwas_rds = gwas_rds, 
+                           phenotypes = phenotypes, numSNPs = numSNPs, 
+                           clump = TRUE, scaled = TRUE, saveoutput = TRUE,
+                           suffix = paste0("GR50_", names(subpop_v)[k]))
+# Ran mash using a 'nohup_v0.6' R script.
+```
+
+Used scp to move these output files (which all have the same suffix) to laptop.
+
+e.g. `scp -i Github/jls_alice alice@popgen.biosci.utexas.edu:~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/*19000topSNPs_GR50_Midwest*  /home/alice/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Midwest/`
+
+`scp -i ~/Github/jls_alice alice@popgen.biosci.utexas.edu:~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Part-One-Output*  /home/alice/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/`
+
+Files with the six suffixes I have/want mash results for: B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds B_hat_strong_df_19000topSNPs_FL50_Gulf.rds B_hat_strong_df_19000topSNPs_GR50_Gulf_and_Midwest.rds B_hat_strong_df_19000topSNPs_GR50_Gulf.rds B_hat_strong_df_24000topSNPs_GR50_Midwest.rds B_hat_strong_df_33000topSNPs_FL50_Midwest.rds
+
+# ----------------------
 
 ## Step 2: Covariance matrices
 
@@ -1002,7 +1143,7 @@ Only keep covariance matrices if they significantly improve the mash model likel
 
 Using the random set of SNPs. Then, look at the mash results generated using these covariance matrices using a strong set of SNPs.
 
-Given that the greedy algorithm, run on Sam's random inputs, however he generated or found those, gives many more covar matrices especially from Uhyp, I wonder if some repetition of this analysis would be valuable - either different random sets of effects, or effects from different years of data. Think on this. I definitely want to use my known inputs, not Sam's, as mine have a traceable history (or anyways more traceable).
+Given that the greedy algorithm, run on Sam's random inputs, however he generated or found those, gives many more covar matrices especially from Uhyp, I wonder if some repetition of this analysis would be valuable - either different random sets of effects, or effects from different years of data. Think on this. I definitely want to use my known inputs, not Sam's, as mine have a traceable history (or anyways are currently traceable).
 
 # -----------------------------
 
