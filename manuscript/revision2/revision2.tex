@@ -170,8 +170,9 @@
 \hypersetup{
   pdftitle={Diverse Genotype-by-Weather Interactions in Switchgrass},
   pdfauthor={Alice H. MacQueen; Li Zhang; Samuel A. Smith; Jason Bonnette; Arvid R. Boe; Phillip A. Fay; Felix B. Fritschi; David B. Lowry; Robert B. Mitchell; Francis M. Rouquette Jr; Yanqi Wu; Arbel Harpak; Thomas E. Juenger},
-  pdfkeywords={allele-by-environment effect variation, antagonistic
-pleiotropy, photoperiod, cumulative rainfall, genetic variation},
+  pdfkeywords={allele-by-environment effect variation, rank-changing
+genotype-by-environment interaction, photoperiod, cumulative
+rainfall, genetic variation},
   colorlinks=true,
   linkcolor={blue},
   filecolor={Maroon},
@@ -287,8 +288,9 @@ this work with L.Z. and S.A.S.}
 \correspondingauthor{\textsuperscript{\correspond}To whom correspondence should be addressed. E-mail: alicem@uchicago.edu}
 \correspondingauthor{\textsuperscript{\correspond}To whom correspondence should be addressed. E-mail: tjuenger@utexas.edu}
 
-\keywords{allele-by-environment effect variation | antagonistic
-pleiotropy | photoperiod | cumulative rainfall | genetic variation}
+\keywords{allele-by-environment effect variation | rank-changing
+genotype-by-environment interaction | photoperiod | cumulative
+rainfall | genetic variation}
 
 \begin{document}
 \maketitle
@@ -307,14 +309,14 @@ example, in the Gulf population, 65\% of genetic effects on the timing
 of vegetative growth covary with daylength 14 days prior to green-up
 date, and 33\% of genetic effects on the timing of flowering covary with
 cumulative rainfall in the seven days prior to flowering. However, most
-variation in genetic effects across sites is site-specific and can not
-be attributed to variation in weather variables alone. We demonstrate
-that we can identify genetic variation with GxWeather and assign these
-loci to specific weather-based cues or other patterns. Breeding for
-particular alleles at the GxWeather loci we identified could change
-flowering responsiveness in a photoperiod and rainfall-specific way.
-More broadly, our approach proposes a refined, powerful characterization
-of genotype-by-environment interactions in any species phenotyped in
+variation in genetic effects is site-specific and can not be attributed
+to variation in the studied weather variables. We demonstrate that we
+can identify genetic variation with GxWeather and assign these loci to
+specific weather-based cues or other patterns. Breeding for particular
+alleles at the GxWeather loci we identified could change flowering
+responsiveness in a photoperiod or rainfall-specific way. More broadly,
+our approach proposes a refined, powerful characterization of
+genotype-by-environment interactions in any species phenotyped in
 multiple environments.
 \end{abstract}
 
@@ -360,13 +362,13 @@ genotype-environment covariance, despite the key expectation that
 different genetic subpopulations, and even different genomic regions,
 have likely evolved distinct patterns of GxE (22). Additionally, despite
 theoretical predictions that local adaptation should involve
-antagonistic pleiotropy, or sign-changing GxE, at the level of
-individual loci (23--26), previous empirical work has found limited
-evidence of antagonistic pleiotropy (12, 27). However, this work has
-been limited by a known statistical bias that reduced detection of
-genetic effects that differ in sign (27--29). Thus, despite substantial
-interest in the frequencies of various forms of GxE, the prevalence of
-antagonistic pleiotropy relative to other forms of GxE remains unknown.
+antagonistic pleiotropy, or alleles with effects with opposing fitness
+outcomes (23--26), previous empirical work has found limited evidence of
+antagonistic pleiotropy (12, 27). However, this work has been limited by
+a known statistical bias that reduced detection of genetic effects that
+differ in sign (27--29). Thus, despite substantial interest in the
+frequencies of various forms of GxE, particularly sign-changing GxE,
+relative to other forms of GxE remains unknown.
 
 Previous research suggests that switchgrass phenological timings should
 have GxWeather and that these timings could differ by genetic
@@ -385,33 +387,34 @@ individuals from the well-studied lowland ecotype and the phenotypically
 intermediate coastal ecotype (33).
 
 Here, we estimate GxWeather for two phenological timings in switchgrass
-by assigning patterns of genetic effects on phenology across gardens to
-many patterns of weather covariance at these gardens. To do this, we
-phenotype a diversity panel of hundreds of switchgrass genotypes from
-the Midwest and Gulf subpopulations for the timing of vegetative and
-reproductive development at eight common garden locations spanning 17
-degrees of latitude. These gardens cover the majority of the latitudinal
-and climatic range of switchgrass and capture the most comprehensive
-picture to date of the environmental variation this species encounters.
-We define multiple ways phenological timings might covary with weather
-(Table 1) and additional ways phenological timings might vary by site
-(SI Appendix, Table S1, Section SX), then jointly re-estimate genetic
-effects on these timings at all eight sites using the set of these
-covariance matrices that significantly improved the modeled
-log-likelihood when included (SI Appendix, Section SX) (36). We use the
-Bayesian framework \emph{mash} (multivariate adaptive shrinkage)
-developed by (36), to refine effect size estimates from genome-wide
-association (GWAS) conducted on individuals at each of the eight sites.
-\emph{mash} allows us to identify and specify multiple covariance
-structures among genetic effect estimates across sites, including
-structures that represent covariance in weather variables of interest.
-Importantly, this method circumvents statistical biases in detecting
-genetic effects with the same or opposite signs (37). To confirm our
-genetic mapping of GxWeather, we compare our posterior genetic effect
-estimates from \emph{mash} to mapping results from an outbred pseudo-F2
-cross grown at the same sites. Our analyses allow us to describe the
-weather cues and genetic variation affecting phenology in two divergent
-natural populations of switchgrass.
+by assigning patterns of genetic effects on phenology for cloned
+individuals grown at eight common gardens to many patterns of weather
+covariance at these gardens. To do this, we phenotype a diversity panel
+of hundreds of switchgrass genotypes from the Midwest and Gulf
+subpopulations for the timing of vegetative and reproductive development
+at eight common garden locations spanning 17 degrees of latitude. These
+gardens cover the majority of the latitudinal and climatic range of
+switchgrass and capture the most comprehensive picture to date of the
+environmental variation this species encounters. We define multiple ways
+phenological timings might covary with weather (Table 1) and additional
+ways phenological timings might vary by garden (SI Appendix, Section
+S1), then jointly re-estimate genetic effects on these timings at all
+eight common gardens using the set of these covariance matrices that
+significantly improved the modeled log-likelihood when included (SI
+Appendix, Section S2) (36). We use the Bayesian framework \emph{mash}
+(multivariate adaptive shrinkage) developed by (36), to refine effect
+size estimates from genome-wide association (GWAS) conducted on
+individuals at each of the eight gardens. \emph{mash} allows us to
+identify and specify multiple covariance structures among genetic effect
+estimates across sites, including structures that represent covariance
+in weather variables of interest. Importantly, this method circumvents
+statistical biases in detecting genetic effects with the same or
+opposite signs (37). To confirm our genetic mapping of GxWeather, we
+compare our significant posterior genetic effects locations from
+\emph{mash} to mapping results from an outbred mapping population grown
+at the same sites. Our analyses allow us to describe the weather cues
+and genetic variation affecting phenology in two divergent natural
+populations of switchgrass across the species' latitudinal range.
 
 \section{Results}\label{results}
 
@@ -455,9 +458,9 @@ vegetative and reproductive timing using
 \emph{mash}}{Inference of GxWeather effects for vegetative and reproductive timing using mash}}\label{inference-of-gxweather-effects-for-vegetative-and-reproductive-timing-using-mash}
 
 We next looked for evidence of GxWeather by jointly re-estimating
-genetic effects across all eight common gardens using the \emph{mash}
-model, which can flexibly capture many modes of covariance across
-gardens (Figure~\ref{fig-map} D; SI Appendix, Datasets 1-6). We
+genetic effects of SNPs across all eight common gardens using the
+\emph{mash} model, which can flexibly capture many modes of covariance
+across gardens (Figure~\ref{fig-map} D; SI Appendix, Datasets 1-6). We
 specified three qualitative categories of covariance structures across
 gardens: ``canonical'' covariance, with simple patterns of effect size
 covariance introduced in the initial \emph{mash} manuscript;
@@ -484,7 +487,8 @@ in the \emph{mash} model.
 
 The GxWeather covariance structures allow hypothesis testing of specific
 weather variables as cues for the start of vegetative and reproductive
-growth. Say that a SNP in FLC controls flowering in a
+growth. Say that a SNP in the gene \emph{Flowering Locus C} (FLC), a
+well-known flowering time regulator, controls flowering in a
 photoperiod-dependent manner. In that case, the joint estimate of
 effects for that SNP could have a high mixture proportion, or mass, on a
 covariance matrix created using a photoperiod-based environmental cue,
@@ -543,48 +547,49 @@ the posterior weights of the strong effects (Figure~\ref{fig-covar}
 C,E); in these five models, the majority of this mass was on various
 canonical covariance matrices. These matrices included simple
 heterozygosity, with intermediate, positive covariances between all
-gardens, and garden-specific effects present only at one garden.
+gardens, and single effect matrices with garden-specific effects (SI
+Appendix, Section S1).
 
 We next characterized the pairwise patterns of effects where we were
 confident in the sign of the effect at both gardens. If the overall
 pattern of phenotypic expression differs between a pair of gardens, this
 difference may be comprised of SNP effects that differ in sign between
-these gardens (effects with antagonistic pleiotropy), SNP effects that
-differ in magnitude (effects that are large in one garden or region and
-smaller in others), and SNP effects that are indistinguishable in the
-two gardens (Figure~\ref{fig-effects} A). We used the local false sign
-rate (lfsr), an analogue of the lfdr that establishes confidence in the
-effect sign, not the effect's difference from zero, to determine
-significance. We required lfsr significance (p \textless{} 0.05) in both
-gardens to include effects. This means that our tests for antagonistic
-pleiotropy, or a sign change between conditions, carry an equal
-statistical burden to those for effects with the same sign.
+these gardens (effects with rank-changing GxE between gardens), SNP
+effects that differ in magnitude (effects that are large in one garden
+or region and smaller in others), and SNP effects that are
+indistinguishable in the two gardens (Figure~\ref{fig-effects} A). We
+used the local false sign rate (lfsr), an analogue of the lfdr that
+establishes confidence in the effect sign, not the effect's difference
+from zero, to determine significance. We required lfsr significance (p
+\textless{} 0.05) in both gardens to include effects. This means that
+our tests for a sign change between gardens carry an equal statistical
+burden to those for effects with the same sign.
 
 For green-up date for the Gulf subpopulation, hundreds to thousands of
-pairwise effects exhibited antagonistic pleiotropy, or a difference in
-effect sign, between pairs of Texas and North gardens
-(Figure~\ref{fig-effects} B; SI Appendix, Fig SX). 78.7\% of pairwise
-comparisons between North and Texas gardens had a difference in sign,
-while only 28.6\% and 0.2\% of North-North or Texas-Texas comparisons
-had a difference in sign, respectively (Figure~\ref{fig-effects} B). The
-majority of pairwise effects for greenup for the Midwest
-(\textgreater55\%) and Both (\textgreater85\%) subpopulations were the
-same sign, and effects most often differed in magnitude between gardens
-within and between the regions (Figure~\ref{fig-effects} B).
+pairwise effects exhibited a difference in effect sign, between pairs of
+Texas and North gardens (Figure~\ref{fig-effects} B; SI Appendix, Fig
+SX). 78.7\% of pairwise comparisons between North and Texas gardens had
+a difference in sign, while only 28.6\% and 0.2\% of North-North or
+Texas-Texas comparisons had a difference in sign, respectively
+(Figure~\ref{fig-effects} B). The majority of pairwise effects for
+greenup for the Midwest (\textgreater55\%) and Both (\textgreater85\%)
+subpopulations were the same sign, and effects most often differed in
+magnitude between gardens within and between the regions
+(Figure~\ref{fig-effects} B).
 
 For flowering date for the Gulf subpopulation, less than 2\% of pairwise
-effects exhibited antagonistic pleiotropy, or a difference in effect
-sign, within or between regions (Figure~\ref{fig-effects} B). More
-effects differed in magnitude between the Texas and North regions than
-within these regions (42.7\% vs \textless20\%; Figure~\ref{fig-effects}
-B), while the majority of effects had no GxE. The Midwest population had
-relatively few significant effects for flowering, but a large proportion
-of these differed in sign between Texas and North regions (42.7\%) or
-within the North region (65.4\%). Finally, in Both subpopulations, less
-than 20\% of pairwise effects differed in sign (Figure~\ref{fig-effects}
-B). Most differences in sign were between TX1, the southernmost garden,
-and all other gardens (SI Appendix, Fig SX). Similarly, more effects
-that differed in magnitude included gardens in the Texas region
+effects exhibited a difference in effect sign within or between regions
+(Figure~\ref{fig-effects} B). More effects differed in magnitude between
+the Texas and North regions than within these regions (42.7\% vs
+\textless20\%; Figure~\ref{fig-effects} B), while the majority of
+effects had no GxE. The Midwest population had relatively few
+significant effects for flowering, but a large proportion of these
+differed in sign between Texas and North regions (42.7\%) or within the
+North region (65.4\%). Finally, in Both subpopulations, less than 20\%
+of pairwise effects differed in sign (Figure~\ref{fig-effects} B). Most
+differences in sign were between TX1, the southernmost garden, and all
+other gardens (SI Appendix, Fig SX). Similarly, more effects that
+differed in magnitude included gardens in the Texas region
 (52.3-55.9\%), and most effect pairs in the North region were not
 distinguishable (91.5\%).
 
@@ -592,16 +597,16 @@ distinguishable (91.5\%).
 mapping
 population}\label{confirmation-of-effects-on-phenology-using-an-independent-mapping-population}
 
-We sought additional experimental support for our joint re-estimates of
-SNP effects using an independent pseudo-F2 mapping population created
-from Gulf \& Midwest individuals and grown at the same sites
-(Figure~\ref{fig-qtl} A,B). We conducted quantitative trait loci (QTL)
-mapping of flowering as functions of five environmental cues that we
-also used as covariance matrices in \emph{mash}, and identified eight
-QTL for flowering date, eight QTL for flowering as a function of day
-length change two days prior, one QTL for the start of vegetative
-growth, and two QTL for vegetative growth as a function of daylength
-change one day prior, all of which showed QTL by environment
+We sought additional experimental support the occurrence and location of
+our significant SNP effect re-estimates using an independent pseudo-F2
+mapping population created from Gulf \& Midwest individuals and grown at
+the same sites (Figure~\ref{fig-qtl} A,B). We conducted quantitative
+trait loci (QTL) mapping of flowering as functions of five environmental
+cues that we also used as covariance matrices in \emph{mash}, and
+identified eight QTL for flowering date, eight QTL for flowering as a
+function of day length change two days prior, one QTL for the start of
+vegetative growth, and two QTL for vegetative growth as a function of
+daylength change one day prior, all of which showed QTL by environment
 interactions (SI Appendix, Fig. S3). All QTL for flowering overlapped
 one or more homologs from rice or \emph{A. thaliana} with functionally
 validated roles in flowering (SI Appendix, Dataset 7). All flowering and
@@ -628,31 +633,34 @@ can be altered. Here, we demonstrate that we can associate multiple
 patterns of GxWeather with specific genomic regions using a switchgrass
 diversity panel grown at eight common gardens. We can assign genetic
 effects to both GxWeather patterns with interpretable weather-based
-cues, and to agnostic, site-based patterns. We use this approach to
+cues, and to unmeasured, site-based patterns. We use this approach to
 study GxWeather for the timings of vegetative and reproductive
 development in the deeply genetically diverged Gulf and Midwest
 subpopulations of switchgrass.
 
 Our analysis of the timing of vegetative growth in the Gulf and in Both
-subpopulations revealed substantial antagonistic pleiotropy in effects
-between the Texas and North gardens (Figure~\ref{fig-effects} B). This
-result supports theoretical models that local adaptation should involve
-antagonistic pleiotropy at the level of individual loci (23--26), and is
-the first experimental work using GWAS across common gardens to find
-antagonistic pleiotropy to be common in small genomic regions (12, 38,
-39).
+subpopulations revealed many alleles with sign changes in their effects
+between the Texas and North gardens (Figure~\ref{fig-effects} B). As
+phenological timings are major components of plant fitness, this result
+supports theoretical models that local adaptation should involve
+antagonistic pleiotropy at the level of individual loci (23--26); it
+expands the genetics of local adaptation research to more than two field
+sites and to a wider range of genetic variation by using effects from
+GWAS in common gardens located throughout the species' range to
+determine that rank-changing GxE for phenological timings is common in
+small genomic regions (12, 38, 39).
 
 Our analysis of the timing of flowering showed that the Gulf and Midwest
 subpopulations have distinct GxWeather: flowering timing in the Midwest
-subpopulation has photoperiod-related variation, in that flowering
-timing covaries with a day length change signal two days before
-flowering occurs. In contrast, the Gulf subpopulation does not have
-variation in flowering based on a photoperiod cue. Instead, the Gulf
-subpopulation has variation in flowering that covaries with the rainfall
-that occurs in the week prior to flowering. Three genomic regions
-affecting flowering that we re-estimated across all eight sites were
-also supported by QTL from an independent mapping population at these
-sites (Figure~\ref{fig-qtl} B).
+subpopulation has photoperiod-related genetic variation, in that
+flowering timing covaries with a day length change signal two days
+before flowering occurs. In contrast, the Gulf subpopulation does not
+have genetic variation in flowering that covaries with a photoperiod
+cue. Instead, the Gulf subpopulation has genetic variation in flowering
+that covaries with the rainfall that occurs in the week prior to
+flowering. Three genomic regions affecting flowering that we
+re-estimated across all eight sites were also supported by QTL from an
+independent mapping population at these sites (Figure~\ref{fig-qtl} B).
 
 Identifying the environmental cues that are predictive of, or even
 correlated with, plant phenotypic responses remains a major challenge to
@@ -686,11 +694,11 @@ improve our understanding of genetic variation in GxE.
 \begin{tabular}{lrr}
 Weather variable & Time Frame & Covariance Matrices \\
 \midrule
-1. cumulative GDD at 12C in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60 \\
-2. cumulative rainfall in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60  \\
-3. day length (hours) on a specific day indicated by the time frame & (1-7) and 14 days prior to green up date & 48 \\
-4. day length change (seconds) on a specific day indicated by the time frame & (1-7) and 14 days prior to green up date & 48 \\
-5. average temperature in the time frame & (1-7), 14, 21, 28 days prior to green up date & 60 \\
+1. cumulative growing degree days at 12C in the time frame & (1-7), 14, 21, 28 days prior to the phenological date & 60 \\
+2. cumulative rainfall in the time frame & (1-7), 14, 21, 28 days prior to the phenological date & 60  \\
+3. day length (hours) on a specific day indicated by the time frame & (1-7) and 14 days prior to the phenological date & 48 \\
+4. day length change (seconds) on a specific day indicated by the time frame & (1-7) and 14 days prior to the phenological date & 48 \\
+5. average temperature in the time frame & (1-7), 14, 21, 28 days prior to the phenological date & 60 \\
 \bottomrule
 \end{tabular}
 
@@ -898,37 +906,37 @@ to major patterns of SNP effects present in the data. We generated six
 data-driven matrices per \emph{mash} run, five produced by singular
 value decomposition (SVD) of an overall matrix.
 
-Last, we characterized the overall patterns of antagonistic pleiotropy
-in the set of SNPs where there was pairwise significance of effects at
-pairs of gardens. To do this, we used the `get\_GxE' function of the
-switchgrassGWAS R package. First, this determines the set of SNPs with
-evidence of significant effects in both conditions for all pairs of
-conditions using local false sign rates (lfsr) as the significance
-criteria. Second, to determine antagonistic pleiotropy, this function
-determines if effects significant in both conditions are of opposite
-sign.
+Last, we characterized the overall patterns of GxE in the set of SNPs
+where there was pairwise significance of effects at pairs of gardens. To
+do this, we used the `get\_GxE' function of the switchgrassGWAS R
+package. First, this determines the set of SNPs with evidence of
+significant effects in both conditions for all pairs of conditions using
+local false sign rates (lfsr) as the significance criteria. Then, this
+function determines if effects significant in both conditions are of
+opposite sign.
 
 Using the lfsr rather than the local false discovery rate (lfdr) is a
-critical change in our ability to detect antagonistic pleiotropy. The
-lfdr, like other measures of FDR, focuses on if we have enough evidence
-to reject the null hypothesis that an effect j is 0, or that there is a
-significant effect. Previous studies of antagonistic pleiotropy (e.g.
-(39)) have used the lfdr or equivalent statistical tests to detect
-antagonistic pleiotropy. These tests were conservative, in that they
-required two non-zero effects of different signs, while tests for
-differential sensitivity required only one non-zero effect. This
-previous work recognized that this testing bias could lead to
-undercounting occurrences of antagonistic pleiotropy (27, 29), and
-sought to reduce it by permutation (28). However, using the lfsr to test
-for antagonistic pleiotropy does not undercount occurrences of
-antagonistic pleiotropy, as this statistic answers a fundamentally
-different question. For each effect j, the lfsr\textsubscript{j} is
-defined as the probability that we make an error in the sign of effect j
-if we were forced to declare the effect positive or negative (37). Thus,
-rather than asking ``Are these two effects different?'' - as we
-reasonably expect two effects to be, even if this difference cannot be
-measured - the local false sign rate answers a more meaningful question:
-Can we be confident in the sign of this effect?
+critical change in our ability to detect alleles directly contributing
+to rank-changing GxE between environments. The lfdr, like other measures
+of FDR, focuses on if we have enough evidence to reject the null
+hypothesis that an effect j is 0, or that there is a significant effect.
+Previous studies of antagonistic pleiotropy (e.g. (39)) have used the
+lfdr or equivalent statistical tests to detect antagonistic pleiotropy.
+These tests were conservative, in that they required two non-zero
+effects of different signs, while tests for differential sensitivity
+required only one non-zero effect. This previous work recognized that
+this testing bias could lead to undercounting occurrences of
+antagonistic pleiotropy (27, 29), and sought to reduce it by permutation
+(28). However, using the lfsr to test for allelic effects that differ in
+sign does not undercount these occurences, as this statistic answers a
+fundamentally different question. For each effect j, the
+lfsr\textsubscript{j} is defined as the probability that we make an
+error in the sign of effect j if we were forced to declare the effect
+positive or negative (37). Thus, rather than asking ``Are these two
+effects different?'' - as we reasonably expect two effects to be, even
+if this difference cannot be measured - the local false sign rate
+answers a more meaningful question: Can we be confident in the sign of
+this effect?
 
 In addition, the get\_GxE function also sets an arbitrary threshold to
 count an effect as changing in magnitude between environments, commonly
@@ -943,8 +951,9 @@ different magnitudes is arbitrary but useful to fully characterize how
 effects vary across environments to ultimately influence phenotypes. Our
 use of the lfsr to determine significance and our specification that SNP
 effects must be significant in both conditions to be included means that
-our tests for antagonistic pleiotropy carry an equal statistical burden
-to those measuring differential sensitivity and effects without GxE.
+our tests for alleles with rank-changing GxE carry an equal statistical
+burden to those measuring differential sensitivity and effects without
+GxE.
 
 \subsubsection{Confirmation of genotype-by-environment effects using an
 independent mapping
