@@ -130,38 +130,55 @@ dataset_creation_function(m_midw_gr_hyp, filename = here("manuscript", "revision
 
 # Dataset 7
 
-
-
-# Dataset 8
-
-
-## QTL
 ```{r}
-qtldf <- read_csv("~/Github/pvdiv-phenology-gxe/phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv")
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("AnnotationDbi")
+BiocManager::install("GenomicFeatures")
+BiocManager::install("VariantAnnotation")
+```
+
+Find: `qtlplot` in Analysis_v0.6_QTL_interval_plotting. Really, find code to remake this with new QTL from revision2.
+
+Find this file on NAS: "~/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite"
+
+Couldn't find it on the NAS, scp'd it from the Juenger Lab Server:
+`scp -i ~/Documents/server_keys/jls_alice alice@popgen.biosci.utexas.edu:/home/alice/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite ~/Documents/Github/pvdiv-phenology-gxe/data-raw/ignore/`
+
+It's too big to commit; had to add it to data-raw/ignore files ignored by .gitignore. 
+
+```{r}
+qtldf <- read_csv(here("phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv"))
 
 qtldf <- qtldf %>%
   separate(flank_lo, into = c("CHR", "Pos_Mb_lo"), sep = "_", convert = TRUE) %>%
   separate(flank_hi, into = c("flank", "Pos_Mb_hi"), sep = "_", convert = TRUE) %>%
   mutate(Pos_Mb_lo = round(Pos_Mb_lo, digits = 2),
          Pos_Mb_hi = round(Pos_Mb_hi, digits = 2)) %>%
-  select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
+  dplyr::select(CHR, Pos_Mb_lo, Pos_Mb_hi, lodcolumn, lod, everything()) %>%
   arrange(CHR, Pos_Mb_lo)
 
 qtlplot <- qtldf %>%
-  mutate(phe = case_when(lodcolumn == "FL50" ~ "50% flowering",
-                              lodcolumn == "dyln_fl50" ~ "Daylength",
-                              lodcolumn == "dyln_change_sec" ~ "daylength change (s)",
-                              lodcolumn == "CGDD_12C" ~ "GDD, GR to FL",
-                              lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
+  mutate(phe = case_when(lodcolumn == "FL50" ~ "Flowering Date",
+                         lodcolumn == "dyln_fl50" ~ "Daylength",
+                         lodcolumn == "dyln_change_sec" ~ 
+                           "daylength change (s)",
+                         lodcolumn == "dyln_change_sec_2d_prior" ~ 
+                           "daylength change, 2 days prior (s)",
+                         lodcolumn == "GR50" ~ "Greenup Date",
+                         lodcolumn == "crain_gr2fl" ~ "Rainfall, GR to FL")) %>%
   #filter(phe %in% c("Daylength", "GDD, GR to FL")) %>%
   mutate(POS_lo = Pos_Mb_lo * 1000000,
          POS_hi = Pos_Mb_hi * 1000000)
 
 qtlplot$phe <- factor(qtlplot$phe, 
-                      levels = c("50% flowering", "Rainfall, GR to FL",
+                      levels = c("Flowering Date", "Rainfall, GR to FL",
                                  "GDD, GR to FL", "Daylength",
-                                          "daylength change (s)",
-                                          "Rainfall, 1 day",
+                                 "daylength change (s)",
+                                 "daylength change, 2 days prior (s)",
+                                 "Rainfall, 1 day",
+                                 "Greenup Date",
                                                   #"Rainfall, 2d sum",
                                                   "Rainfall, 3d sum",
                                                   "Rainfall, 5d sum"#,
@@ -169,176 +186,225 @@ qtlplot$phe <- factor(qtlplot$phe,
                                                   ))
 ```
 
+
+```{r}
+library(AnnotationDbi)
+library(GenomicFeatures)
+library(switchgrassGWAS)
+qtl_anno_df <- qtlplot %>%
+  dplyr::rename(start = POS_lo, end = POS_hi)
+not_all_na <- function(x) any(!is.na(x))
+txdb <- loadDb("~/Documents/Github/pvdiv-phenology-gxe/data-raw/ignore/Pvirgatum_516_v5.1.gene.txdb.sqlite")
+# source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+
+ftanno <- read_csv(here("data/Pvirgatum_v5.1.annotation_FTGeneHomologs.csv"))
+ftkey <- read_delim(here("data", "OsGene_keyword_table.txt"),
+                    delim = "\t")
+ftanno %>%
+  filter(!is.na(OsGene)) %>%
+  left_join(ftkey, by = c("OsGene" = "Symbol")) %>%
+  filter(Keyword %in% c("flowering time", "heading date")) %>% unique()
+
+osgene_keyword_df <- ftkey %>%
+  dplyr::select(-RAPdb, -MSU) %>%
+  group_by(Symbol, Keyword) %>%
+  dplyr::slice(1) %>%
+  pivot_wider(names_from = Keyword, values_from = Title)
+
+osgene_key <- osgene_keyword_df %>%
+  dplyr::select(Symbol, `flowering time`, `heading date`, anther, flower,
+                `floral meristem`, `floral meristem determinacy`, flowering,
+                `flower development`, `carpel differentiation`, stamen, 
+                `stamen number`, vegetative, `plant growth`, `chloroplast development`, chloroplast) %>%
+  pivot_longer(cols = -Symbol, names_to = "Keyword", values_to = "Title") %>%
+  filter(!is.na(Title)) %>%
+  pivot_wider(names_from = Keyword, values_from = Title)
+
+os_annos <- ftanno %>%
+  filter(OsGene %in% osgene_key$Symbol | !is.na(AtGene)) %>%
+  mutate(Pos_Mb = round(start/10000)/100,
+         #Pos_Mb_e = floor(start/10000)/100,
+         POS_bin = round(Pos_Mb*100/2)) %>%# ,
+         #POS_bin_hi = round(Pos_Mb_e*100/2))
+  dplyr::select(OsGene, AtGene, locusName, everything()) %>%
+  dplyr::rename(`Gene ID` = locusName)
+
+qtl_annos <- switchgrassGWAS::pvdiv_table_topsnps(df = qtl_anno_df, type = "table", txdb = txdb) %>%
+    inner_join(os_annos, by = c("Gene ID")) %>%
+    left_join(osgene_key, by = c("OsGene" = "Symbol")) %>%
+    dplyr::select(where(not_all_na)) %>%
+    group_by(CHR, pos, `Gene ID`) %>%
+    dplyr::slice(1) 
+
+names(qtl_annos)
+all_na_gr_fl <- rowSums(is.na(qtl_annos[,59:70]))
+add_column(qtl_annos, GR_FL_Osgene_NA = all_na_gr_fl, .before = TRUE) %>%
+  group_by(CHR, pos, GR_FL_Osgene_NA < 12) %>%
+  tally()
+flowering_qtl_annos <- add_column(qtl_annos, GR_FL_Osgene_NA = all_na_gr_fl, .before = TRUE) %>%
+  filter(GR_FL_Osgene_NA < 12) %>%
+  dplyr::select(CHR, pos, phe, lod, Pos_Mb_lo, Pos_Mb_hi, ci_lo, ci_hi, `Gene ID`,  gene_start:gene_width, `Arabidopsis thaliana homolog`:`Rice gene annotation`, OsGene, anther:`floral meristem determinacy`) |> 
+  mutate(
+    Phenology_type = case_when(phe %in% 
+                                 c("Flowering Date", 
+                                   "daylength change, 2 days prior (s)") ~
+                                 "Flowering Date",
+                               phe %in% c("Greenup Date", 
+                                          "daylength change (s)") ~ 
+                                 "Greenup Date",
+                               TRUE ~ NA_character_
+                               ),
+    .before = 3)
+
+flowering_qtl_annos |> 
+  filter(Phenology_type == "Greenup Date")
+  
+flowering_qtl_annos |> 
+  arrange(Phenology_type) |> 
+  write_csv(here("manuscript/revision2/SI_Appendix/Dataset_7_QTL_intervals_with_functionally_validated_homologs.csv"))
+```
+
+
+
+# Dataset 8
+All flowering and green-up QTL intervals contained at least one SNP significant in at least one mash run at a log10-transformed Bayes Factor > 2, or in the 1% tail of significance, whichever was stricter. 
+
+## Objects generated earlier
+Get `qtlplot` object by running code starting at about line 150 (for Dataset 7).
+Get `m_gulf_fl_hyp` and other objects by running code starting at about line 35 (for Datasets 1-6).
+
+## Thresholds
+Decide on cutoff to use for rug plots and enrichment analysis: SNPs sig in 1% tail or BF\>2, whichever is stricter
+
+1% tail is stricter in all cases except Midwest flowering, where BF\>2 is stricter, equivalent to a 0.49% tail (0.995119 quantile).
+
+What is the Bayes Factor at the 99th quantile? If it's not above 2, what is the quantile where the BF \> 2?
+
+```{r}
+#quantile(pw_gf$log10BayesFactor, 0.99)  # Gulf: Use 2.56 BF
+#quantile(pw_mf$log10BayesFactor, 0.99)  # Midwest: Use 2 BF
+#quantile(pw_gamf$log10BayesFactor, 0.99)  # GAM: Use 2.65 BF
+#quantile(pw_mf$log10BayesFactor, 0.995119)
+
+#quantile(pw_gg$log10BayesFactor, 0.99)  # Gulf: Use 2.0989 BF
+#quantile(pw_mg$log10BayesFactor, 0.99)  # Midwest: Use 4.6831 BF
+#quantile(pw_gamg$log10BayesFactor, 0.99)  # GAM: Use 3.0865 BF
+```
+
+Now there are significant greenup date QTL, separate QTL & mash into greenup and flowering associations, and look for overlaps just within each phenology type. 
+
 ```{r}
 m <- m_gulf_fl_hyp
-qtl_df <- qtlplot
+qtl_df <- qtlplot |>   # split by Phenology type. Define based on Figure 4.
+  mutate(
+    Phenology_type = case_when(phe %in% 
+                                 c("Flowering Date", 
+                                   "daylength change, 2 days prior (s)") ~
+                                 "Flowering Date",
+                               phe %in% c("Greenup Date", 
+                                          "daylength change (s)") ~ 
+                                 "Greenup Date",
+                               TRUE ~ NA_character_
+                               ),
+    .before = 3)
+qtl_fl <- qtl_df |> 
+  filter(Phenology_type == "Flowering Date")
+qtl_gr <- qtl_df |> 
+  filter(Phenology_type == "Greenup Date")
+
 subpop = "Gulf"
-phe = "flowering"
+phe = "Flowering Date"
 
-qtl_mash_overlap_function <- function(m, subpop, phe){
+qtl_mash_overlap_function <- function(qtl, m, subpop, phe, onepcttail = 2){
 
-  mash_df <- switchgrassGWAS:::get_marker_df(m) %>%
-    mutate(log10BF = switchgrassGWAS:::get_log10bf(m)) %>%
+  mash_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
+      as.data.frame() %>%
+      dplyr::mutate(value = row_number()) %>%
+      as_tibble() %>%
+      left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
+      dplyr::rename(log10BayesFactor = .data$V1) %>%
+      dplyr::select(-.data$value) |> 
+  ## TODO: FIX list/matrix column here
     tidyr::separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, 
                     sep = "_", extra = "merge", convert = TRUE) %>%
-    dplyr::arrange(.data$Chr, .data$Pos) %>%
-    select(-value)
-  
-  for(i in 1:nrow(qtl_df)){  # from 1 to 16
+    dplyr::arrange(.data$Chr, .data$Pos)
+
+  for(i in 1:nrow(qtl)){  # from 1 to 16
     ## In block & > 2
     qtl_sub <- mash_df %>%
-      filter(Chr %in% qtl_df$CHR[i] & between(Pos, qtl_df$POS_lo[i],
-                                               qtl_df$POS_hi[i])) %>% 
-      filter(log10BF > 2)
+      filter(Chr %in% qtl$CHR[i] & between(Pos, qtl$POS_lo[i],
+                                               qtl$POS_hi[i])) %>% 
+      filter(log10BayesFactor > 2)
   
     if(i == 1){
-    outputdf <- tibble(Chr = qtl_df$CHR[i], QTL_Pos_lo = qtl_df$POS_lo[i], 
-                       QTL_Pos_hi = qtl_df$POS_hi[i], 
-                       QTL_phenotype = qtl_df$lodcolumn[i], 
-                       QTL_LOD = qtl_df$lod[i], mash_Pos = qtl_sub$Pos, 
-                       mash_log10BF = qtl_sub$log10BF, mash_subpop = subpop, 
+    outputdf <- tibble(Chr = qtl$CHR[i], QTL_Pos_lo = qtl$POS_lo[i], 
+                       QTL_Pos_hi = qtl$POS_hi[i], 
+                       QTL_phenotype = qtl$lodcolumn[i], 
+                       QTL_LOD = qtl$lod[i], mash_Pos = qtl_sub$Pos, 
+                       mash_log10BayesFactor = qtl_sub$log10BayesFactor, mash_subpop = subpop, 
                        mash_phenotype = phe)
     } else {
-      outputdf1 <- tibble(Chr = qtl_df$CHR[i], QTL_Pos_lo = qtl_df$POS_lo[i], 
-                          QTL_Pos_hi = qtl_df$POS_hi[i], 
-                          QTL_phenotype = qtl_df$lodcolumn[i], 
-                          QTL_LOD = qtl_df$lod[i], mash_Pos = qtl_sub$Pos, 
-                          mash_log10BF = qtl_sub$log10BF, mash_subpop = subpop, 
+      outputdf1 <- tibble(Chr = qtl$CHR[i], QTL_Pos_lo = qtl$POS_lo[i], 
+                          QTL_Pos_hi = qtl$POS_hi[i], 
+                          QTL_phenotype = qtl$lodcolumn[i], 
+                          QTL_LOD = qtl$lod[i], mash_Pos = qtl_sub$Pos, 
+                          mash_log10BayesFactor = qtl_sub$log10BayesFactor,
+                          mash_subpop = subpop, 
                           mash_phenotype = phe)
       outputdf <- outputdf %>%
         full_join(outputdf1)
     }
   }
+  outputdf <- outputdf |> 
+    mutate(
+      Marker_in_mash_1pct_tail = 
+        case_when(mash_log10BayesFactor >= onepcttail ~ TRUE,
+                  mash_log10BayesFactor < onepcttail ~ FALSE,
+                  TRUE ~ NA)
+    )
   return(outputdf)
 }
 
-overlap1 <- qtl_mash_overlap_function(m_gulf_fl_hyp, subpop = "Gulf", 
-                                      phe = "flowering") 
-overlap2 <- qtl_mash_overlap_function(m_midw_fl_hyp, subpop = "Midwest", 
-                                      phe = "flowering") 
-overlap3 <- qtl_mash_overlap_function(m_gam_fl_hyp, subpop = "Both", 
-                                      phe = "flowering") 
+overlap1 <- qtl_mash_overlap_function(qtl_fl, m_gulf_fl_hyp, 
+                                      subpop = "Gulf", 
+                                      phe = "Flowering Date",
+                                      onepcttail = 2.56) 
+overlap2 <- qtl_mash_overlap_function(qtl_fl, m_midw_fl_hyp, 
+                                      subpop = "Midwest", 
+                                      phe = "Flowering Date",
+                                      onepcttail = 2) 
+overlap3 <- qtl_mash_overlap_function(qtl_fl, m_gam_fl_hyp, 
+                                      subpop = "Both", 
+                                      phe = "Flowering Date",
+                                      onepcttail = 2.65) 
+overlap4 <- qtl_mash_overlap_function(qtl_gr, m_gulf_gr_hyp, 
+                                      subpop = "Gulf", 
+                                      phe = "Greenup Date",
+                                      onepcttail = 2.0989) 
+overlap5 <- qtl_mash_overlap_function(qtl_gr, m_midw_gr_hyp, 
+                                      subpop = "Midwest", 
+                                      phe = "Greenup Date",
+                                      onepcttail = 4.6831) 
+overlap6 <- qtl_mash_overlap_function(qtl_gr, m_gam_gr_hyp, 
+                                      subpop = "Both", 
+                                      phe = "Greenup Date",
+                                      onepcttail = 3.0865) 
 
+overlap4 %>%
+  full_join(overlap5) %>%
+  full_join(overlap6) |> 
+  arrange(Chr, mash_Pos)
 dataset_8 <- overlap1 %>%
   full_join(overlap2) %>%
   full_join(overlap3) %>%
-  arrange(Chr, mash_Pos)
+  full_join(overlap4) %>%
+  full_join(overlap5) %>%
+  full_join(overlap6) |> 
+  arrange(mash_phenotype, Chr, mash_Pos)
 
-write_csv(dataset_8, file = "~/Github/pvdiv-phenology-gxe/manuscript/Coauthors/PNAS/Dataset_8_QTL_mash_overlap.csv")
+write_csv(dataset_8, file = here("manuscript", "revision2", "SI_Appendix",
+                                 "Dataset_8_QTL_mash_overlap.csv"))
 ```
 
 
-
-
-Is there an enrichment of SNPs in the top 1% (5%? 10%?) of the distribution for each mash result in the QTL regions?
-1% is probably best out of these three arbitrary cutoffs.
-```{r}
-m <- m_gulf_fl_hyp
-qtl_df <- qtlplot
-
-get_QTL_enrichment <- function(m, qtl_df, quantile = 0.95){
-  pw_df_all <- get_post_weights(m)
-  
-  BFthresh <- quantile(pw_df_all$log10BayesFactor, quantile)
-  pw_df <- pw_df_all %>%
-  filter(log10BayesFactor > BFthresh) %>%
-  select(Chr:Pos, log10BayesFactor, everything())
-  
-  for(i in 1:nrow(qtl_df)){  # from 1 to 16
-  ## In block & > 2
-  QTLandBF <- pw_df %>%
-    filter(Chr %in% qtl_df$CHR[i] & between(Pos, qtl_df$POS_lo[i],
-                                             qtl_df$POS_hi[i])) %>% 
-    tally()
-  ## BF>2
-  inBF <- pw_df %>%
-    tally()
-  ## BF not > 2 (all minus BF > 2, all is below)
-  allwrtBF <- pw_df_all %>%
-    tally()
-  ## All in block
-  inQTL <- pw_df_all %>%
-    filter(Chr %in% qtl_df$CHR[i] & between(Pos, qtl_df$POS_lo[i],
-                                             qtl_df$POS_hi[i])) %>%
-    tally()
-  notinBF <- (allwrtBF$n[1]-inBF$n[1])
-  pval <- phyper(QTLandBF$n[1], inBF$n[1], allwrtBF$n[1]-inBF$n[1], 
-                 inQTL$n[1], lower.tail = FALSE)
-  
-  if(i == 1){
-  outputdf <- tibble(Chr = qtl_df$CHR[i], Pos_lo = qtl_df$POS_lo[i], Pos_hi = qtl_df$POS_hi[i], inQTLandBF = QTLandBF$n[1], inBF = inBF$n[1], notinBF = notinBF, inQTL = inQTL$n[1], pvalue = pval)
-  } else {
-    outputdf <- outputdf %>%
-      add_row(Chr = qtl_df$CHR[i], Pos_lo = qtl_df$POS_lo[i], Pos_hi = qtl_df$POS_hi[i],inQTLandBF = QTLandBF$n[1], inBF = inBF$n[1], notinBF = notinBF, inQTL = inQTL$n[1], pvalue = pval)
-    }
-  }
-  return(outputdf)
-}
-
-get_post_weights <- function(m){
-  log10bf_df <- switchgrassGWAS:::get_log10bf(m = m) %>%
-      as.data.frame() %>%
-      rownames_to_column(var = "value") %>%
-      dplyr::mutate(value = as.integer(.data$value)) %>%
-      as_tibble() %>%
-      left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
-      dplyr::rename(log10BayesFactor = .data$V1) %>%
-      dplyr::select(-.data$value)
-  
-  pw_df <- as_tibble(m$posterior_weights)
-  pw_df <- switchgrassGWAS:::get_marker_df(m = m) %>%
-    bind_cols(pw_df)
-  
-  ggman_df <- pw_df %>%
-    #left_join(m_meta) %>%
-    tidyr::separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, sep = "_",
-             extra = "merge", convert = TRUE) %>%
-    dplyr::left_join(log10bf_df, by = "Marker") %>%
-    dplyr::arrange(.data$Chr, .data$Pos) 
-  return(ggman_df)
-}
-
-
-qtlplot <- qtlplot %>%
-  arrange(desc(lod)) %>%
-  mutate(pos = as.integer(pos)) %>%
-  group_by(CHR, pos) %>%
-  slice(1) %>%
-  arrange(CHR, pos)
-enrich_gf <- get_QTL_enrichment(m_gulf_fl_hyp, qtl_df = qtlplot, 0.99) %>%
-  mutate(subpop = "Gulf", phenotype = "flowering")
-enrich_mf <- get_QTL_enrichment(m_midw_fl_hyp, qtl_df = qtlplot, 0.99) %>%
-  mutate(subpop = "Midwest", phenotype = "flowering")
-enrich_gamf <- get_QTL_enrichment(m_gam_fl_hyp, qtl_df = qtlplot, 0.99) %>%
-  mutate(subpop = "Both", phenotype = "flowering")
-
-enrich_df <- enrich_gf %>%
-  full_join(enrich_mf) %>%
-  full_join(enrich_gamf) %>%
-  arrange(Chr, Pos_lo)
-enrich_df <- enrich_df %>%
-  left_join(qtlplot, by = c("Chr" = "CHR", "Pos_lo" = "POS_lo", "Pos_hi" = "POS_hi")) %>%
-  select(Chr, Pos_lo, Pos_hi, inQTLandBF:subpop, lod, lodcolumn, pos) %>%
-  unique() %>%
-  arrange(Chr, Pos_lo, lodcolumn)
-
-enrich_df %>%
-  filter(pvalue < 0.05)
-  
-t.test(enrich_df[enrich_df$pvalue < 0.05,]$lod, enrich_df[enrich_df$pvalue >= 0.05,]$lod) 
-qtlplot %>% group_by(CHR, POS_lo) %>% tally() # 21-24 unique QTL by Pos lo/hi. 23 by QTL maximum. 12 of 24 have enriched mash hits.
-
-```
-
-16 QTL. In all cases there was at least one SNP in the QTL interval that was in the 1% tail of SNPs in one of the three flowering mash runs.
-We also looked for enrichment of SNPs in the 1% tail of significance in the mash distribution within each QTL interval. (in random genomic intervals of the same size do we see a similar level of enrichment?)
-Half of these QTL had a significant enrichment of significant results for mash compared to expectations given the number of SNPs in the QTL interval.
-
-2K: 2 QTL (lod 14 & 17), 1 enriched (in Midwest) (lod 17: CGDD_12C)
-2N: 4 QTL (3 non-overlapping) (lod 19, 39, 17, 15), 2 enriched (lod 39 dylnfl50 in Midwest, in Both & 15 CGDD_12C in all three)
-4K: 2 QTL, 2 enriched (lod 40 dyln in Midwest & 33 dyln in Gulf)
-5N: 4 QTL (3 non-overlapping) (lod 55, 25, 17, 33), 3 enriched (2 non-overlapping) (lod 25 dyln in Midwest, 17 CGDD in Gulf, in Midwest, 33 dyln in Gulf, in Both)
-7K: 2 QTL, 0 en (lod 14, 13)
-8N: 1 QTL, 0 en (lod 15)
-9N: 1 QTL, 0 en (lod 18)
 
