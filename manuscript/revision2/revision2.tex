@@ -40,13 +40,6 @@
   \KOMAoptions{parskip=half}}
 \makeatother
 \usepackage{xcolor}
-\ifLuaTeX
-  \usepackage{luacolor}
-  \usepackage[soul]{lua-ul}
-\else
-  \usepackage{soul}
-  
-\fi
 \setlength{\emergencystretch}{3em} % prevent overfull lines
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
@@ -367,7 +360,7 @@ outcomes (23--26), previous empirical work has found limited evidence of
 antagonistic pleiotropy (12, 27). However, this work has been limited by
 a known statistical bias that reduced detection of genetic effects that
 differ in sign (27--29). Thus, despite substantial interest in the
-frequencies of various forms of GxE, particularly sign-changing GxE,
+frequencies of various forms of GxE, the frequency of sign-changing GxE
 relative to other forms of GxE remains unknown.
 
 Previous research suggests that switchgrass phenological timings should
@@ -401,7 +394,7 @@ ways phenological timings might vary by garden (SI Appendix, Section
 S1), then jointly re-estimate genetic effects on these timings at all
 eight common gardens using the set of these covariance matrices that
 significantly improved the modeled log-likelihood when included (SI
-Appendix, Section S2) (36). We use the Bayesian framework \emph{mash}
+Appendix, Section S2-S5) (36). We use the Bayesian framework \emph{mash}
 (multivariate adaptive shrinkage) developed by (36), to refine effect
 size estimates from genome-wide association (GWAS) conducted on
 individuals at each of the eight gardens. \emph{mash} allows us to
@@ -460,22 +453,22 @@ vegetative and reproductive timing using
 We next looked for evidence of GxWeather by jointly re-estimating
 genetic effects of SNPs across all eight common gardens using the
 \emph{mash} model, which can flexibly capture many modes of covariance
-across gardens (Figure~\ref{fig-map} D; SI Appendix, Datasets 1-6). We
-specified three qualitative categories of covariance structures across
-gardens: ``canonical'' covariance, with simple patterns of effect size
-covariance introduced in the initial \emph{mash} manuscript;
-``data-driven'' covariances derived from common patterns of SNP effects
-observed in the data, and ``GxWeather'' covariance, estimated from the
-covariance of empirical weather patterns at each garden at specific
-times before the phenological event (Table 1; SI Appendix, Section S2).
-For example, the more similar that the amount of rainfall prior to
-flowering is for genotypes A and B between gardens in MI and MO, the
-nearer these covariances will be to one. If rainfall amounts are
-uncorrelated, covariance will be near zero; if there is rank changing
-(e.g.~high rainfall before flowering of A at MO but not MI, and high
-rainfall before flowering for B at MI but not MO), this covariance will
-be near negative one. We specified multiple covariance structures for
-the canonical, data-driven, and GxWeather categories, each of which
+across gardens (Figure~\ref{fig-map} D; SI Appendix, Sections S1-S5,
+Datasets 1-6). We specified three qualitative categories of covariance
+structures across gardens: ``canonical'' covariance, with simple
+patterns of effect size covariance introduced in the initial \emph{mash}
+manuscript; ``data-driven'' covariances derived from common patterns of
+SNP effects observed in the data, and ``GxWeather'' covariance,
+estimated from the covariance of empirical weather patterns at each
+garden at specific times before the phenological event (Table 1; SI
+Appendix, Section S1). For example, the more similar that the amount of
+rainfall prior to flowering is for genotypes A and B between gardens in
+MI and MO, the nearer these covariances will be to one. If rainfall
+amounts are uncorrelated, covariance will be near zero; if there is rank
+changing (e.g.~high rainfall before flowering of A at MO but not MI, and
+high rainfall before flowering for B at MI but not MO), this covariance
+will be near negative one. We specified multiple covariance structures
+for the canonical, data-driven, and GxWeather categories, each of which
 represented a specific pattern of covariance in genetic effect size
 estimates that could be included in the model. The phenotypic
 correlations for the timing of vegetative growth had moderate negative
@@ -568,7 +561,7 @@ burden to those for effects with the same sign.
 For green-up date for the Gulf subpopulation, hundreds to thousands of
 pairwise effects exhibited a difference in effect sign, between pairs of
 Texas and North gardens (Figure~\ref{fig-effects} B; SI Appendix, Fig
-SX). 78.7\% of pairwise comparisons between North and Texas gardens had
+S1). 78.7\% of pairwise comparisons between North and Texas gardens had
 a difference in sign, while only 28.6\% and 0.2\% of North-North or
 Texas-Texas comparisons had a difference in sign, respectively
 (Figure~\ref{fig-effects} B). The majority of pairwise effects for
@@ -588,7 +581,7 @@ differed in sign between Texas and North regions (42.7\%) or within the
 North region (65.4\%). Finally, in Both subpopulations, less than 20\%
 of pairwise effects differed in sign (Figure~\ref{fig-effects} B). Most
 differences in sign were between TX1, the southernmost garden, and all
-other gardens (SI Appendix, Fig SX). Similarly, more effects that
+other gardens (SI Appendix, Figure S1). Similarly, more effects that
 differed in magnitude included gardens in the Texas region
 (52.3-55.9\%), and most effect pairs in the North region were not
 distinguishable (91.5\%).
@@ -607,7 +600,7 @@ identified eight QTL for flowering date, eight QTL for flowering as a
 function of day length change two days prior, one QTL for the start of
 vegetative growth, and two QTL for vegetative growth as a function of
 daylength change one day prior, all of which showed QTL by environment
-interactions (SI Appendix, Fig. S3). All QTL for flowering overlapped
+interactions (SI Appendix, Figure S2). All QTL for flowering overlapped
 one or more homologs from rice or \emph{A. thaliana} with functionally
 validated roles in flowering (SI Appendix, Dataset 7). All flowering and
 green-up QTL intervals contained at least one SNP significant in at
@@ -779,17 +772,18 @@ flowering date phenotype.}
 \caption{\label{fig-effects}Types of GxE present between of pairs of
 jointly re-estimated effects in eight common gardens, for effects with
 lfsr \textless{} 0.05. a) Examples of effect patterns at three pairs of
-sites with three types of GxE. Sign: Effects that differ in sign at
-these pairs of gardens (p \textless{} 0.05, lfsr). Magnitude: Effects
-identical in sign (p \textless{} 0.05, lfsr) that differ in magnitude by
-a factor of \textgreater0.4. None: Effects not distinguishable by
-magnitude nor sign of the effect. b) The fraction of effects with each
-GxE type for the start of vegetative growth (Greenup Date) and
-reproductive growth (Flowering Date), within and between two genetic
-subpopulations. Common gardens are grouped by the larger region they
-came from: North gardens are within the natural range of the Midwest
-subpopulation, while Texas gardens are within the natural range of the
-Gulf subpopulation.}
+sites with three types of GxE. All effects are for an alternate allele,
+with the reference allele effect defined to be zero at both gardens.
+Sign: Effects that differ in sign at these pairs of gardens (p
+\textless{} 0.05, lfsr). Magnitude: Effects identical in sign (p
+\textless{} 0.05, lfsr) that differ in magnitude by a factor of
+\textgreater0.4. None: Effects not distinguishable by magnitude nor sign
+of the effect. b) The fraction of effects with each GxE type for the
+start of vegetative growth (Greenup Date) and reproductive growth
+(Flowering Date), within and between two genetic subpopulations. Common
+gardens are grouped by the larger region they came from: North gardens
+are within the natural range of the Midwest subpopulation, while Texas
+gardens are within the natural range of the Gulf subpopulation.}
 
 \end{figure}%
 
@@ -838,8 +832,8 @@ year had green growth. The start of reproductive growth, or flowering
 date, was the day of the year when 50\% of the plant tillers had
 panicles undergoing anthesis. We scored green-up and flowering as day of
 the year, then linked these dates to multiple weather-based
-environmental factors measured daily at each common garden (SI Appendix,
-Section S1, Table S1).
+environmental factors measured daily at each common garden (Table 1, SI
+Appendix, Section S1).
 
 The formation and resequencing of the diversity panel has been described
 previously (33). The diversity panel contained 134 sequenced, clonally
@@ -851,7 +845,7 @@ analyses: on Gulf and Midwest genotypes separately, and on both
 subpopulations together (`Both' subpopulations). Analyses to determine
 narrow-sense heritability (h\textsuperscript{2}) for green-up and
 flowering were done using linear mixed models and followed (33). Details
-on these models can be found in (SI Appendix, Section S2).
+on these models can be found in (SI Appendix, Section S6).
 
 \subsubsection{Mapping major patterns of genotype-by-environment effects
 on green-up and
@@ -863,42 +857,50 @@ shrinkage (\emph{mash}) on SNP effect estimates from the diversity panel
 (36). To do this, we first conducted univarate genome-wide association
 (GWAS) on site-specific best linear unbiased predictors (BLUPs) for the
 timing of vegetative growth and flowering, using the switchgrassGWAS
-package and the methods in (40). We used the effect estimates for single
-nucleotide polymorphisms (SNPs) from these GWAS as preliminary effect
-estimates for the two traits at each garden. We then jointly modeled
-genetic effect estimates, and the mixture of ways these effects might
-covary, across all eight common gardens, using a two-part procedure. We
-first modeled genetic effects with different combinations of covariance
-structures, using the effect size estimates from a subset of \ul{19K}
-relatively unlinked (r\textsuperscript{2} \textless{} 0.2), randomly
-selected SNPs used in the GWAS. In these models (hereafter referred to
-as ``random''), we then specified a variety of potential covariance
+package and the methods in (40) (SI Appendix, Section S2). We used the
+effect estimates for single nucleotide polymorphisms (SNPs) from these
+GWAS as preliminary effect estimates for the two traits at each garden.
+We then jointly modeled genetic effect estimates, and the mixture of
+ways these effects might covary, across all eight common gardens, using
+a two-part procedure: a greedy algorithm to choose covariance structures
+using a random SNP subset, followed by a final run of mash with the best
+covariance structures using a strong SNP subset (SI Appendix, Section
+S3-S5). In brief, we first modeled genetic effects with different
+combinations of covariance structures, using the effect size estimates
+from subsets of 71-127K relatively unlinked (r\textsuperscript{2}
+\textless{} 0.2), randomly selected SNPs used in the GWAS. The number of
+SNPs was chosen to result in an approximately million entry matrix for
+each trait \& subpopulation, where matrix rows were SNPs and columns
+were univariate GWAS. In these models (hereafter referred to as
+``random''), we then specified a variety of potential covariance
 structures among genetic effect size estimates from each garden (as
 expanded on below) and used a greedy algorithm to iteratively select and
 add covariance structures that significantly improved the log likelihood
-of the \emph{mash} model. Details on these models can be found in (SI
-Appendix, Section S3). Given the high correlation between some of the
+of the \emph{mash} model. Given the high correlation between some of the
 covariance patterns we tested, this approach allowed us to select only
 the subset of patterns of covariance that significantly improved the fit
 of the jointly inferred structure of genetic effect estimates present in
-the data. We then selected 19K relatively unlinked (r\textsuperscript{2}
-\textless{} 0.2) SNPs from each univariate GWAS that had the largest
-effect estimates in each GWAS (hereafter ``strong'' effects), which gave
-sets of \ul{\textbf{48K - 80K}} SNPs, and jointly re-estimated these
-effect size estimates at all eight sites using the set of significant
-covariance matrices that most improved the model fit on the random
-effects. Notably, the majority of these ``strong'' effects were not
-significant in univariate GWAS.
+the data. We then selected 19K - 33K relatively unlinked
+(r\textsuperscript{2} \textless{} 0.2) SNPs from each univariate GWAS
+that had the largest effect estimates in each GWAS (hereafter ``strong''
+effects). Notably, the majority of these ``strong'' effects were not
+significant in univariate GWAS. In many cases, there was overlap in the
+markers with the largest effect estimates at different locations; thus,
+19 - 33K SNPs selected for each of eight univariate GWAS ultimately gave
+sets of 35K - 63K SNPs. We jointly re-estimated these effect size
+estimates at all eight sites using the set of significant covariance
+matrices that most improved the model fit on the random effects (SI
+Appendix, Section S5, Datasets 1-6).
 
 We generated hypothesis-based covariance matrices derived from
 correlations in environmental cues in the green-up or flowering date
-windows for the three populations (Table 1; SI Appendix, Table S1,
-Section S1). These covariance matrices represent correlations between
-identical genotypes drawn from a specific population at pairs of common
-gardens; covariances near one mean that the population has a strong,
-positive linear relationship in individual responses at that pair of
-gardens, while covariances near zero mean that there is no relationship
-within the population for individual responses at that pair of gardens.
+windows for the three populations (Table 1; SI Appendix, Section S1).
+These covariance matrices represent correlations between identical
+genotypes drawn from a specific population at pairs of common gardens;
+covariances near one mean that the population has a strong, positive
+linear relationship in individual responses at that pair of gardens,
+while covariances near zero mean that there is no relationship within
+the population for individual responses at that pair of gardens.
 \emph{Mash} SNP effects will undergo strong shrinkage towards one
 another in the first case, and little shrinkage in the second case.
 \emph{Mash} also generates data-driven covariance matrices corresponding
@@ -964,7 +966,7 @@ found in the diversity panel, we analyzed flowering in an outbred
 pseudo-F2 cross between four individuals, two Midwest and two Gulf
 individuals. The formation of this mapping population has been described
 previously (35); additional details on QTL mapping can be found in SI
-Appendix, Section S4. To be directly comparable to the diversity panel
+Appendix, Section S7. To be directly comparable to the diversity panel
 data, only 2019 phenology data from the pseudo-F2 cross from the same
 eight common garden sites were used.
 

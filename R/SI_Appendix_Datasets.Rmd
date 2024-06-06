@@ -16,20 +16,21 @@ library(switchgrassGWAS)
 library(ashr)
 ```
 
-#
+# 
 
 Make all these datasets:
 
-    Dataset 1. SNP-associated effects and standard errors for green-up estimated using the Gulf genetic subpopulation.
-    Dataset 2. SNP-associated effects and standard errors for green-up estimated using the Midwest genetic subpopulation.
-    Dataset 3. SNP-associated effects and standard errors for green-up estimated using Both genetic subpopulations.
-    Dataset 4. SNP-associated effects and standard errors for flowering estimated using the Gulf genetic subpopulation.
-    Dataset 5. SNP-associated effects and standard errors for flowering estimated using the Midwest genetic subpopulation.
-    Dataset 6. SNP-associated effects and standard errors for flowering estimated using Both genetic subpopulations.
-    Dataset 7. Genes within QTL that have functionally validated roles in flowering in rice.
-    Dataset 8. Overlap between quantitative trait loci for flowering measured using an outbred pseudo-F2 mapping population, and significant mash effect estimates (with a log10Bayes Factor > 2, or in the 1% tail of most significant mash results) found using three overlapping diversity panels. Genes within 20kb with a functionally validated role in flowering in rice are  indicated. 
-    
-    
+```         
+Dataset 1. SNP-associated effects and standard errors for green-up estimated using the Gulf genetic subpopulation.
+Dataset 2. SNP-associated effects and standard errors for green-up estimated using the Midwest genetic subpopulation.
+Dataset 3. SNP-associated effects and standard errors for green-up estimated using Both genetic subpopulations.
+Dataset 4. SNP-associated effects and standard errors for flowering estimated using the Gulf genetic subpopulation.
+Dataset 5. SNP-associated effects and standard errors for flowering estimated using the Midwest genetic subpopulation.
+Dataset 6. SNP-associated effects and standard errors for flowering estimated using Both genetic subpopulations.
+Dataset 7. Genes within QTL that have functionally validated roles in flowering in rice.
+Dataset 8. Overlap between quantitative trait loci for flowering measured using an outbred pseudo-F2 mapping population, and significant mash effect estimates (with a log10Bayes Factor > 2, or in the 1% tail of most significant mash results) found using three overlapping diversity panels. Genes within 20kb with a functionally validated role in flowering in rice are  indicated. 
+```
+
 # Dataset 1-6: mash objects
 
 ```{r}
@@ -39,7 +40,6 @@ numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
 suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
               "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
 ```
-
 
 ```{r}
 m_gulf_gr_hyp <- readRDS(file.path(mashdir,  
@@ -76,6 +76,60 @@ m_gam_fl_hyp <- readRDS(file.path(mashdir,
                                           suffix_v[1], ".rds")))
 ```
 
+## SI Appendix Table S1 Info
+
+#### random SNP inputs
+
+```{r}
+popkey = list(all = "Gulf_and_Midwest", midwest = "Midwest", gulf = "Gulf")
+phekey = list(greenup = "GR50", flowering = "FL50")
+# i=2; j=1
+
+for (i in seq_along(popkey)) {
+  for (j in seq_along(phekey)) {
+    
+    if (i == 2 & j == 1) {
+      betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("B_hat_random_df_24000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+      stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("S_hat_random_df_24000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+    } else if (i == 2 & j == 2) {
+      betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("B_hat_random_df_33000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+      stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("S_hat_random_df_33000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+    } else {
+      betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("B_hat_random_df_19000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+      stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
+                                 paste0("S_hat_random_df_19000topSNPs_",
+                                        phekey[[j]], "_", popkey[[i]], ".rds")))
+    }
+    print(paste(names(popkey)[i], names(phekey)[j], "random SNP set (input into greedy mash algorithm) has", nrow(betas), "SNPs"))
+  }
+}
+
+```
+
+So random SNP sets have 71-127K SNPs.
+
+#### strong SNP inputs
+
+Numbers for this section: We then selected 19K relatively unlinked (r2 < 0.2) SNPs from each univariate GWAS that had the largest effect estimates in each GWAS (hereafter "strong" effects), which gave sets of 48K - 80K SNPs, and jointly re-estimated these effect size estimates at all eight sites using the set of significant covariance matrices that most improved the model fit on the random effects. Notably, the majority of these "strong" effects were not significant in univariate GWAS.
+
+```{r}
+switchgrassGWAS:::get_marker_df(m_gulf_gr_hyp) # 45931
+switchgrassGWAS:::get_marker_df(m_gulf_fl_hyp) # 50490
+switchgrassGWAS:::get_marker_df(m_midw_gr_hyp) # 49030
+switchgrassGWAS:::get_marker_df(m_midw_fl_hyp) # 63367
+switchgrassGWAS:::get_marker_df(m_gam_gr_hyp)  # 44765
+switchgrassGWAS:::get_marker_df(m_gam_fl_hyp)  # 35735
+```
 
 ```{r}
 m <- m_gulf_gr_hyp
@@ -127,7 +181,6 @@ dataset_creation_function(m_midw_fl_hyp, filename = here("manuscript", "revision
 dataset_creation_function(m_midw_gr_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_2_Midwest_vegetative_growth_date.csv"))
 ```
 
-
 # Dataset 7
 
 ```{r}
@@ -141,12 +194,11 @@ BiocManager::install("VariantAnnotation")
 
 Find: `qtlplot` in Analysis_v0.6_QTL_interval_plotting. Really, find code to remake this with new QTL from revision2.
 
-Find this file on NAS: "~/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite"
+Find this file on NAS: "\~/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite"
 
-Couldn't find it on the NAS, scp'd it from the Juenger Lab Server:
-`scp -i ~/Documents/server_keys/jls_alice alice@popgen.biosci.utexas.edu:/home/alice/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite ~/Documents/Github/pvdiv-phenology-gxe/data-raw/ignore/`
+Couldn't find it on the NAS, scp'd it from the Juenger Lab Server: `scp -i ~/Documents/server_keys/jls_alice alice@popgen.biosci.utexas.edu:/home/alice/Github/pvdiv-genome/Pvirgatum_516_v5.1.gene.txdb.sqlite ~/Documents/Github/pvdiv-phenology-gxe/data-raw/ignore/`
 
-It's too big to commit; had to add it to data-raw/ignore files ignored by .gitignore. 
+It's too big to commit; had to add it to data-raw/ignore files ignored by .gitignore.
 
 ```{r}
 qtldf <- read_csv(here("phenology-fourway/5-QTLmappingForAlice/QTLsWithFlankMarkers_FL50_phenotypes_Alice_7_SITES_Full_model.csv"))
@@ -185,7 +237,6 @@ qtlplot$phe <- factor(qtlplot$phe,
                                                   #"Rainfall, 7d sum"
                                                   ))
 ```
-
 
 ```{r}
 library(AnnotationDbi)
@@ -264,16 +315,16 @@ flowering_qtl_annos |>
   write_csv(here("manuscript/revision2/SI_Appendix/Dataset_7_QTL_intervals_with_functionally_validated_homologs.csv"))
 ```
 
-
-
 # Dataset 8
-All flowering and green-up QTL intervals contained at least one SNP significant in at least one mash run at a log10-transformed Bayes Factor > 2, or in the 1% tail of significance, whichever was stricter. 
+
+All flowering and green-up QTL intervals contained at least one SNP significant in at least one mash run at a log10-transformed Bayes Factor \> 2, or in the 1% tail of significance, whichever was stricter.
 
 ## Objects generated earlier
-Get `qtlplot` object by running code starting at about line 150 (for Dataset 7).
-Get `m_gulf_fl_hyp` and other objects by running code starting at about line 35 (for Datasets 1-6).
+
+Get `qtlplot` object by running code starting at about line 150 (for Dataset 7). Get `m_gulf_fl_hyp` and other objects by running code starting at about line 35 (for Datasets 1-6).
 
 ## Thresholds
+
 Decide on cutoff to use for rug plots and enrichment analysis: SNPs sig in 1% tail or BF\>2, whichever is stricter
 
 1% tail is stricter in all cases except Midwest flowering, where BF\>2 is stricter, equivalent to a 0.49% tail (0.995119 quantile).
@@ -291,7 +342,7 @@ What is the Bayes Factor at the 99th quantile? If it's not above 2, what is the 
 #quantile(pw_gamg$log10BayesFactor, 0.99)  # GAM: Use 3.0865 BF
 ```
 
-Now there are significant greenup date QTL, separate QTL & mash into greenup and flowering associations, and look for overlaps just within each phenology type. 
+Now there are significant greenup date QTL, separate QTL & mash into greenup and flowering associations, and look for overlaps just within each phenology type.
 
 ```{r}
 m <- m_gulf_fl_hyp
@@ -405,6 +456,3 @@ dataset_8 <- overlap1 %>%
 write_csv(dataset_8, file = here("manuscript", "revision2", "SI_Appendix",
                                  "Dataset_8_QTL_mash_overlap.csv"))
 ```
-
-
-

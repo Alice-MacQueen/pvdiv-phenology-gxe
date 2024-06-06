@@ -64,17 +64,189 @@ Outline of the current analysis:
 
 ## Step 1: GWAS & mash input prep
 
-GWAS were run on BLUPs from models run at each garden individually. The GWAS were run in R/Plots_v0.3_manuscript_figures.Rmd, starting at line 1243. I copy-pasted that info here to have the full workflow in one qmd document; you may need to refer to it if you need additional information.
+GWAS were run on BLUPs from models run at each garden individually. The GWAS were run in R/Plots_v0.3_manuscript_figures.Rmd, starting at line 1243. I copy-pasted that info here to have the full workflow in one qmd document; you may need to refer to the Rmd file if you need additional information.
+
+### BLUPs
+
+Copied this code from R/Plots_v0.2_manuscript_figures.Rmd, which is where the ASREML code to calculate BLUPs individually for each location x subpop x phenotype came from; you may need to refer to the Rmd file if you need additional information.
+
+ASReml h2 greenup analysis
+```{r}
+#| eval: false
+#| 
+library(tidyverse)
+library(asreml)
+library(switchgrassGWAS)
+library(cowplot)
+
+source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+outputdir <- file.path(workingdir, "analysis", "heritability")
+metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
+sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
+subpops <- read_rds(file.path(workingdir, "data", "subpop_color_coding.rds"))
+phe_gr_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_GR50.rds"))
+phe_fl_df <- read_rds(file.path(workingdir, "data",
+                                "Weather_related_phe_for_asreml_h2_FL50.rds"))
+k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+
+```
+
+get BLUPs from ASReml
+```{r}
+site_v <- list(eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl")
+phe_gr <- c("GR50", "tmin_10d", "cgdd_12c_10d")
+phe_dfs <- list(phe_gr_df, phe_fl_df)
+phe_lists <- list(phe_gr, phe_fl)
+h2_table <- tibble()
+
+i = 1
+j = 1
+k = 1
+p = 2
+
+for(p in seq_along(phe_dfs)){
+  phe_v <- phe_lists[[p]]
+  phe <- phe_dfs[[p]]
+  
+  for(i in seq_along(site_v)){
+    for(j in seq_along(subpop_v)){
+      for(k in seq_along(phe_v)){
+        phe_single <- phe %>%
+    left_join(sites, by = "SITE") %>%
+    filter(manu_site %in% site_v[[i]] & SUBPOP %in% subpop_v[[j]]) %>%
+    rename(phenotype = eval(phe_v[k])) %>%
+    mutate(PLANT_ID = as_factor(PLANT_ID),
+           SITE = as_factor(SITE),
+           PLOT_GL = as_factor(PLOT_GL)) %>%
+    as.data.frame()
+  
+  if(length(site_v[[i]]) > 1){  # need to add site as a random factor if 
+    # there is more than one site included in the dataset.
+    tryCatch({
+     asr_out <- asreml(phenotype ~ 1,
+                       random = ~vm(PLANT_ID, k_full) +
+                         ~idv(manu_site),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+  
+    h2_est <- vpredict(asr_out, h2 ~ V2/(V1+V2+V3)) %>% as_tibble() %>%
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik)
+    blup <- summary(asr_out, coef=TRUE)$coef.random %>% as_tibble(rownames = "Effect")
+    write_csv(blup, file.path(outputdir, paste0("blups_", names(site_v)[i], "_",
+                                                 names(subpop_v)[j],
+                                                 "_", phe_v[k], ".csv")))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  } else {
+    tryCatch({
+    asr_out <- asreml(phenotype ~ 1,
+                       random = ~vm(PLANT_ID, k_full),
+                       residual = ~idv(units),
+                       data = phe_single, 
+                       workspace = "3gb")
+    
+    h2_est <- vpredict(asr_out, h2 ~ V1/(V1+V2)) %>% as_tibble() %>%
+      mutate(site = names(site_v)[i],
+             subpop = names(subpop_v)[j],
+             phe = phe_v[k],
+             bic = summary(asr_out)$bic[1],
+             loglik = summary(asr_out)$loglik)
+  }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  }
+  
+  if(i == 1 & j == 1 & k == 1){
+    h2_table <- h2_est
+  } else {
+    h2_table <- add_row(h2_table, h2_est)
+  }
+  tryCatch({
+      save_plot(filename=file.path(outputdir, paste0("ASReml_performance_",
+                                                 names(site_v)[i], "_",
+                                                 names(subpop_v)[j],
+                                                 "_", phe_v[k], ".png")), 
+            plot = plot(asr_out))
+    }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
+  
+      }
+    }
+  }
+  
+}
+
+```
+
+set up phenotype df for gwas
+```{r}
+#| eval: false 
+#| 
+site_v <- list(eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
+subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
+phe_fl <- c("FL50", "dyln_fl50", "dyln_change_sec", "cgdd_12c_gr2fl")
+phe_gr <- c("GR50", "tmin_10d", "cgdd_12c_10d")
+phe_dfs <- list(phe_gr_df, phe_fl_df)
+phe_lists <- list(phe_gr, phe_fl)
+
+i = 1
+j = 1
+k = 1
+p = 2
+phe_gwas <- tibble()
+
+for(j in seq_along(subpop_v)){
+  for(p in seq_along(phe_dfs)){
+    phe_v <- phe_lists[[p]]
+    phe <- phe_dfs[[p]]
+    for(i in seq_along(site_v)){
+      for(k in seq_along(phe_v)){
+        phe_raw <- read_csv(file.path(outputdir, paste0("blups_",
+                                                        names(site_v)[i], "_",
+                                                        names(subpop_v)[j],
+                                                        "_", phe_v[k],
+                                                        ".csv")))
+        names(phe_raw)[2] <- paste0(phe_v[k], "_G_BLUP")
+        phe_proc <- phe_raw %>%
+          separate(Effect, into = c("factor", "PLANT_ID"), sep = "\\)_") %>%
+          filter(!is.na(PLANT_ID)) %>%
+          left_join(metadata, by = "PLANT_ID") %>%
+          filter(SUBPOP %in% subpop_v[[j]]) %>%
+          select(PLANT_ID, 3)
+        if(i == 1 & k == 1 & p == 1){
+          phe_gwas <- phe_proc
+        } else {
+          phe_gwas <- phe_gwas %>%
+            left_join(phe_proc, by = "PLANT_ID")
+        }
+      }
+    }
+  }
+write_csv(phe_gwas, path = file.path(outputdir, paste0("G_BLUP_phenotypes_",
+                                                       "for_gwas_GR_FL_",
+                                                       names(subpop_v)[j],
+                                                       ".csv")))
+}
+```
 
 ### Run GWAS
 
+NB: only the single_site BLUPs & GWAS that I generated were used in the subsequent analysis.
 ```{r}
+#| eval: false
+#| 
 library(bigsnpr)
 library(tidyverse)
 library(switchgrassGWAS)
 library(AnnotationDbi)
-txdb <- loadDb(file = file.path("~", "Github", "pvdiv-genome",
-                                "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
+library(here)
+txdb <- loadDb(file = here("data-raw", "ignore",
+                           "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
 workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
 inputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
 outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
@@ -1152,7 +1324,6 @@ Given that the greedy algorithm, run on Sam's random inputs, however he generate
 ```{r}
 #| eval: false
 #| 
-#| 
 
 library(tidyverse)
 library(bigsnpr)
@@ -1294,12 +1465,12 @@ for (i in 1:6) {  # change this for different scripts
 }
 ```
 
-# ----------------
 
 Reasoning from Analysis_v0.6 script for dropping sites from the Midwest:
 
 Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50. Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.
 
+# ---
 # Step 5: Redo writeup & figures
 
 ## Load mash objects
@@ -1751,10 +1922,10 @@ f2c <- df_2fl_a %>%
 pa_legend <- plot_covar_Ulist_fig2(Ulist_gg$`Daylength (14d prior)`, legend = TRUE) + 
   labs(subtitle = "Daylength (14d prior)")
 legend <- get_legend(pa_legend) 
+  
 ```
 
 ```{r build figure 2}
-
 
 ggdraw() +
   theme_oeco + 
@@ -1776,7 +1947,6 @@ ggdraw() +
   draw_plot(f2b, x = 0.85, y = 0.47, width = 0.15, height = 0.53) +
   draw_plot(f2c, x = 0.3, y = 0, width = 0.55, height = 0.47) +
   draw_plot(f2d, x = 0.85, y = 0, width = 0.15, height = 0.47)
-
 
 ```
 
