@@ -167,7 +167,15 @@ To prepare subsets of effect estimates and their standard errors from these GWAS
 
 Because we were particularly interested in determining whether genomic loci varied in their patterns of genetic covariance across gardens, specifying the optimal set of covariance matrices in *mash* was an important model-building problem. If very similar covariance matrices are included when fitting a model in *mash*, *mash* will arbitrarily assign effect loadings across these matrices, as all assignments will lead to the same fit to the effect-size data. Our GxWeather covariance matrices were in many cases highly correlated, as they represented covariation in the same weather variables in overlapping time frames. We thus evaluated the performance of *mash* models when different covariance matrices were included by implementing a "greedy" mash algorithm.
 
+Specifically, given $k$ covariance matrices for each phenotype, and $m$ corresponding effect sizes and standard errors across $n$ contexts of interest, we first fit a set of mash models with each of the $k$ matrices separately. We then identify the model with the maximum log likelihood estimates and select the corresponding matrix, leaving $k-1$ covariance matrices. We then fit a new set of mash models where the selected covariance matrix is paired with each of the remaining $k-1$ covariance matrices. The most likely pair of covariance matrices are then selected and the process is repeated for all possible $k-2$ matrix triplets. This process is repeated until one of two stop conditions are met: (i) all covariance matrices have been added to the mash model, resulting in a final model with all of the original $k$ covariance matrices are included or (ii) a likelihood ratio test with one degree of freedom between the likelihood of the current model and the model from the previous iteration has a *p*-value \> 0.05. The result is a set of log likelihood estimates for each model and the stepwise ‘path’ of covariance matrices that best explain the observed effect sizes and standard errors observed for the phenotype of interest.
+
+We applied the greedy *mash* algorithm to the entire set of canonical, data-driven, and GxWeather covariance matrices described in Section S1. We used the random subset of SNP effect estimates, described in Section S3, in the greedy *mash* algorithm in order to test covariance matrices on an unbiased representation of all effects across the genome. The code to replicate this analysis can be found at git\@github.com:Alice-MacQueen/pvdiv-phenology-gxe.git/analysis/mash_greedy_algorithm/mash_h2_diag_covar/ in four directories: all_inputs/, gulf_inputs/, midwest_flowering/, and midwest_greenup/. For our six models of two phenological traits in three genetic subpopulations, between eight and twelve iterations of the greedy algorithm were necessary before a stop condition was met (@tbl-greedy). The relatively small number of necessary iterations, and correspondingly small number of covariance matrices selected, indicate that the hypothesis covariance matrices were highly correlated with one another and that inclusion of all the hypothesis covariance matrices introduced redundancy in the model. Most notably, the canonical "Identity" covariance matrix, representing independent effects, was the first matrix selected in all six applications of the greedy algorithm (@tbl-greedy). This indicated that a large number of independent effects were present in our analyses of both phenological traits. In addition, most or all of the available canonical covariance matrices, which specifed garden-specific effects, were selected before any GxWeather covariance matrices or data-driven covariance matrices (@tbl-greedy). Finally, at least one GxWeather covariance matrix was selected in each greedy algorithm application; in contrast, only one data-driven covariance matrix was selected (@tbl-greedy).
+
 ## Section S5. *Mash* to jointly re-estimate SNP effects across eight common gardens {.unnumbered}
+
+To evaluate the prevalence and kinds of covariance patterns of SNP effects across our eight common gardens, we used multivariate adaptive shrinkage (*mash*) to jointly re-estimate SNP effect estimates for our strong effects subset using the set of covariance matrices selected by the greedy *mash* algorithm. Mash is a statistical method that allows estimation and comparison of many effects jointly across many different conditions; it improves on previous methods by allowing arbitrary correlations in effect sizes among conditions. Mash assigns mixture proportions for each SNP's effect onto each provided covariance matrix using maximum likelihood. Then, mash uses Bayes' theorem to shrink effects for each SNP towards the set of covariance matrices in accordance to their mixture proportions. The ability to specify multiple types of covariance matrix is an important advantage *mash* offers for studying patterns of GxE: user-specified covariance matrices allow hypothesis testing of specific environmental drivers for each SNP's effect, while the data-driven covariance matrices mash creates allow exploration of additional unexplained patterns of covariation.
+
+The code used to run *mash* can be found at git\@github.com:Alice-MacQueen/pvdiv-phenology-gxe.git/R/Analysis_v1.2_mash_using_greedy_covar.qmd, starting at line 1325.
 
 ## Section S6. Narrow-sense heritability estimation {.unnumbered}
 
@@ -217,22 +225,39 @@ This can also be done with LaTeX's `\newpage` command. You may find `\FloatBarri
 
 <!-- use these FloatBarrier calls to avoid true-to-the-theme jumping ahead of the frog --->
 
-| Phenology type | Subpopulation |  Effects Selected per GWAS, Strong Subset |  Effects Selected per GWAS, Random Subset | Total Markers, Strong Subset | Total Markers, Random Subset |
-|:-----------|--------------:|-----------:|-----------:|------------|------------|
-| Greenup Date   |          Gulf |                                     19000 |                                     38000 | 45931                        | 91862                        |
-|                |       Midwest |                                     24000 |                                     48000 | 49030                        | 98060                        |
-|                |          Both |                                     19000 |                                     38000 | 44765                        | 89530                        |
-| Flowering Date |          Gulf |                                     19000 |                                     38000 | 50490                        | 100980                       |
-|                |       Midwest |                                     33000 |                                     66000 | 63367                        | 126734                       |
-|                |          Both |                                     19000 |                                     38000 | 35735                        | 71470                        |
+| Phenology type | Subpopulation | Effects Selected per GWAS, Strong Subset | Effects Selected per GWAS, Random Subset | Total Markers, Strong Subset | Total Markers, Random Subset |
+|:-----------|-----------:|-----------:|-----------:|------------|------------|
+| Greenup Date   |          Gulf |                                    19000 |                                    38000 | 45931                        | 91862                        |
+|                |       Midwest |                                    24000 |                                    48000 | 49030                        | 98060                        |
+|                |          Both |                                    19000 |                                    38000 | 44765                        | 89530                        |
+| Flowering Date |          Gulf |                                    19000 |                                    38000 | 50490                        | 100980                       |
+|                |       Midwest |                                    33000 |                                    66000 | 63367                        | 126734                       |
+|                |          Both |                                    19000 |                                    38000 | 35735                        | 71470                        |
 
 : Effect estimates selected for joint re-estimation across eight common gardens using *mash* {#tbl-simple}
 
 {{< pagebreak >}}
 
-## Datasets {.unnumbered}
+| Greedy Algorithm Iteration \# |     Gulf Greenup Date |           Midwest Greenup Date |    Both Greenup Date | Gulf Flowering Date     | Midwest Flowering Date         | Both Flowering Date     |
+|:----------|----------:|----------:|-----------:|------------|------------|------------------|
+| 1                             |              Identity |                       Identity |             Identity | Identity                | Identity                       | Identity                |
+| 2                             |         Simple Het. 2 |               Single Effect MO |     Single Effect MI | Simple Het. 1           | Simple Het. 1                  | Single Effect TX3       |
+| 3                             |      Single Effect MO |               Single Effect NE |     Single Effect SD | Single Effect MI        | Single Effect MI               | Single Effect TX1       |
+| 4                             |      Single Effect NE |              Single Effect TX2 |     Single Effect NE | Single Effect TX3       | Single Effect TX2              | Single Effect OK        |
+| 5                             | Daylength (14d prior) |              Single Effect TX1 |    Single Effect TX2 | Single Effect SD        | Single Effect MO               | Single Effect MI        |
+| 6                             |      Single Effect MI |               Single Effect MI |     Single Effect OK | Single Effect OK        | Single Effect TX3              | Single Effect NE        |
+| 7                             |      Single Effect SD |               Single Effect OK |    Single Effect TX3 | Single Effect NE        | Daylength change (s), 2d prior | Single Effect TX2       |
+| 8                             |     Single Effect TX2 |              Single Effect TX3 |        Simple Het. 1 | Single Effect TX1       | Single Effect SD               | Single Effect MO        |
+| 9                             |    Cumulative GDD, 6d |                  Simple Het. 1 |    Single Effect TX1 | Single Effect TX2       | \-                             | Single Effect SD        |
+| 10                            |     Single Effect TX3 | Daylength change (s), 7d prior |     Single Effect MO | Single Effect MO        | \-                             | Simple Het. 1           |
+| 11                            |   Data-driven $PCA_2$ |                             \- |         Temp Ave, 1d | Cumulative rainfall, 7d | \-                             | Cumulative rainfall, 1d |
+| 12                            |                    \- |                             \- | Daylength change (s) | \-                      | \-                             | \-                      |
 
-If your document relies on movies or datasets, please list them here with their captions. Use the `movie{your caption}` and `\dataset{file_name.ext}{your caption}` commands to do so.
+: Covariance matrices selected in each iteration of the greedy *mash* algorithm, for each phenological trait and genetic subpopulation. Naming matches the conventions in Figure 2 of the main text. {#tbl-greedy}
+
+{{< pagebreak >}}
+
+## Datasets {.unnumbered}
 
 Datasets 1 through 6 are csv files where the first two columns have the following definitions:
 
