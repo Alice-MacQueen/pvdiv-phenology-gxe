@@ -71,6 +71,7 @@ GWAS were run on BLUPs from models run at each garden individually. The GWAS wer
 Copied this code from R/Plots_v0.2_manuscript_figures.Rmd, which is where the ASREML code to calculate BLUPs individually for each location x subpop x phenotype came from; you may need to refer to the Rmd file if you need additional information.
 
 ASReml h2 greenup analysis
+
 ```{r}
 #| eval: false
 #| 
@@ -94,6 +95,7 @@ k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_
 ```
 
 get BLUPs from ASReml
+
 ```{r}
 site_v <- list(eight_sites = c("TX1", "TX2", "TX3", "OK", "MO", "NE", "MI", "SD"))
 subpop_v <- list(Gulf = "Gulf", Midwest = "Midwest", Gulf_and_Midwest = c("Gulf", "Midwest"))
@@ -184,6 +186,7 @@ for(p in seq_along(phe_dfs)){
 ```
 
 set up phenotype df for gwas
+
 ```{r}
 #| eval: false 
 #| 
@@ -237,6 +240,7 @@ write_csv(phe_gwas, path = file.path(outputdir, paste0("G_BLUP_phenotypes_",
 ### Run GWAS
 
 NB: only the single_site BLUPs & GWAS that I generated were used in the subsequent analysis.
+
 ```{r}
 #| eval: false
 #| 
@@ -1465,12 +1469,12 @@ for (i in 1:6) {  # change this for different scripts
 }
 ```
 
-
 Reasoning from Analysis_v0.6 script for dropping sites from the Midwest:
 
 Some univariate GWAS for the Midwest had population structure issues. Mostly for greenup - even GR50 at MO was quite bad. Drop MO for GR50. Midwest_GR50_SD have values of zero for Bhat and Shat. Drop this from Midwest analyses.
 
 # ---
+
 # Step 5: Redo writeup & figures
 
 ## Load mash objects
