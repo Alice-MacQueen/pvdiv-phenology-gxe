@@ -76,6 +76,9 @@ m_gam_fl_hyp <- readRDS(file.path(mashdir,
                                           suffix_v[1], ".rds")))
 ```
 
+
+
+
 ## SI Appendix Table S1 Info
 
 #### random SNP inputs
@@ -180,6 +183,33 @@ dataset_creation_function(m_gam_fl_hyp, filename = here("manuscript", "revision2
 dataset_creation_function(m_midw_fl_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_5_Midwest_reproductive_growth_date.csv"))
 dataset_creation_function(m_midw_gr_hyp, filename = here("manuscript", "revision2", "SI_Appendix", "Dataset_2_Midwest_vegetative_growth_date.csv"))
 ```
+
+
+### Overlap with Hd1 from switchgrass functional validation study
+
+```{r}
+df_gam_fl <- read_csv(here("manuscript", "revision2", "SI_Appendix", "Dataset_6_Both_subpopulations_reproductive_growth_date.csv"))
+df_gam_fl <- read_csv(here("manuscript", "revision2", "SI_Appendix", "Dataset_4_Gulf_reproductive_growth_date.csv"))
+df_gam_fl <- read_csv(here("manuscript", "revision2", "SI_Appendix", "Dataset_5_Midwest_reproductive_growth_date.csv"))
+
+df_gam_fl |> 
+  separate(Marker, into = c("Chr", "Pos"), sep = "_", 
+           remove = FALSE, convert = TRUE) |> 
+  filter(Chr == "Chr04K", between(Pos, 23100000, 23200000)) |> 
+  pivot_longer(cols = matches("lfsr"), names_to = "Garden", values_to = "lfsr")
+
+get_significant_results(m_gam_fl_hyp) |> 
+  as.data.frame() |> 
+  rownames_to_column(var = "Marker") |> 
+  separate(Marker, into = c("Chr", "Pos"), sep = "_", 
+           remove = FALSE, convert = TRUE) |> 
+  filter(Chr == "Chr04K", between(Pos, 23100000, 23200000))
+
+mash_plot_effects(m = m_gam_fl_hyp, i = 13819)
+```
+Chr04K_23164108 in Both has log10BF ~ 2.3
+Chr04K_23179015 in Gulf has log10BF ~ 1.86
+Nearby SNPs _not_ significant in Midwest. log10BF ~ 0.1
 
 # Dataset 7
 
@@ -456,3 +486,16 @@ dataset_8 <- overlap1 %>%
 write_csv(dataset_8, file = here("manuscript", "revision2", "SI_Appendix",
                                  "Dataset_8_QTL_mash_overlap.csv"))
 ```
+
+
+## Figure S1
+
+Figure 3 is North x Texas GxE effects. Figure S1 is garden x garden GxE effects of individual loci.
+
+Most differences in sign were between TX1, the southernmost garden, and all other gardens (SI Appendix, Figure S1). Similarly, more effects that differed in magnitude included gardens in the Texas region (52.3-55.9%), and most effect pairs in the North region were not distinguishable (91.5%).
+
+## Figure S2
+
+QTL x Env effects
+
+We conducted quantitative trait loci (QTL) mapping of flowering as functions of five environmental cues that we also used as covariance matrices in mash, and identified eight QTL for flowering date, eight QTL for flowering as a function of day length change two days prior, one QTL for the start of vegetative growth, and two QTL for vegetative growth as a function of daylength change one day prior, all of which showed QTL by environment interactions (SI Appendix, Figure S2).

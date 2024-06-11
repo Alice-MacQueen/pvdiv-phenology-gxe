@@ -209,13 +209,19 @@ $$
 
 where $\mu$ is the population mean, QTL is the marker genetic effect, E is the environmental effects (here, common garden), QTL\*E is the interaction between marker genetic and environmental effects, kinship corresponds to the background polygenic variation, and e is the error term. The genome scan was accomplished with the ‘scan1’ function. The statistical significance of the genome scan was established by performing a stratified (i.e., stratifying on common garden) permutation test (n=1000) using ‘scan1perm’ function. The estimated QTL effect was obtained using ‘scan1coef’ function in R/qtl2.
 
-Figures should be cross-referenced like @fig-frog. Each figure should be on its own page. You can control this by placing a pagebreak shortcode, with `{{< pagebreak >}}`.
+Figures should be cross-referenced like @fig-qtl-by-env. Each figure should be on its own page. You can control this by placing a pagebreak shortcode, with `{{< pagebreak >}}`.
 
 This can also be done with LaTeX's `\newpage` command. You may find `\FloatBarrier` useful if your figures or tables are running off to the wrong pages.
 
 {{< pagebreak >}}
 
-![Figure](figs/frog.eps){#fig-frog}
+![Figure](figs/frog.eps){#fig-garden-by-garden-gxe}
+
+\FloatBarrier <!-- always leave a blank line between this and figures --->
+
+{{< pagebreak >}}
+
+![Figure](figs/frog.eps){#fig-qtl-by-env}
 
 \FloatBarrier <!-- always leave a blank line between this and figures --->
 
@@ -226,7 +232,7 @@ This can also be done with LaTeX's `\newpage` command. You may find `\FloatBarri
 <!-- use these FloatBarrier calls to avoid true-to-the-theme jumping ahead of the frog --->
 
 | Phenology type | Subpopulation | Effects Selected per GWAS, Strong Subset | Effects Selected per GWAS, Random Subset | Total Markers, Strong Subset | Total Markers, Random Subset |
-|:---------------|--------------:|-----------------------------------------:|-----------------------------------------:|------------------------------|------------------------------|
+|:-----------|-----------:|-----------:|-----------:|------------|------------|
 | Greenup Date   |          Gulf |                                    19000 |                                    38000 | 45931                        | 91862                        |
 |                |       Midwest |                                    24000 |                                    48000 | 49030                        | 98060                        |
 |                |          Both |                                    19000 |                                    38000 | 44765                        | 89530                        |
@@ -239,7 +245,7 @@ This can also be done with LaTeX's `\newpage` command. You may find `\FloatBarri
 {{< pagebreak >}}
 
 | Greedy Algorithm Iteration \# |     Gulf Greenup Date |           Midwest Greenup Date |    Both Greenup Date | Gulf Flowering Date     | Midwest Flowering Date         | Both Flowering Date     |
-|:------------------------------|----------------------:|-------------------------------:|---------------------:|-------------------------|--------------------------------|-------------------------|
+|:----------|----------:|----------:|----------:|-----------|-----------|-----------|
 | 1                             |              Identity |                       Identity |             Identity | Identity                | Identity                       | Identity                |
 | 2                             |         Simple Het. 2 |               Single Effect MO |     Single Effect MI | Simple Het. 1           | Simple Het. 1                  | Single Effect TX3       |
 | 3                             |      Single Effect MO |               Single Effect NE |     Single Effect SD | Single Effect MI        | Single Effect MI               | Single Effect TX1       |
