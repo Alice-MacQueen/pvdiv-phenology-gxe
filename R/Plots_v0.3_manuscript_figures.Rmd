@@ -9,6 +9,7 @@ Add any libraries/scripts that need to be loaded for these analyses here.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(here)
 library(cowplot)
 library(viridis)
 library(lubridate)
@@ -17,28 +18,49 @@ library(GGally)
 library(maps)
 library(ggmap)
 usa <- map_data("usa")
-source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+# source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 ```
+
+```{r}
+theme_oeco <- theme_classic() +
+  theme(axis.title = element_text(size = 10), 
+        axis.text = element_text(size = 10), 
+        axis.line.x = element_line(linewidth = 0.35, colour = 'grey50'),
+        axis.line.y = element_line(linewidth = 0.35, colour = 'grey50'),
+        axis.ticks = element_line(linewidth = 0.25, colour = 'grey50'), 
+        legend.justification = c(1, 0.75), 
+        legend.position = c(1, 0.9), 
+        legend.key.size = unit(0.35, 'cm'),
+        legend.title = element_blank(), 
+        legend.text = element_text(size = 9),
+        legend.background = element_blank(),
+        plot.subtitle = element_text(size = 10, vjust = 0), #plot.margin = unit(c(0.35, 0, 0.25, 0), 'cm'),
+        strip.background = element_blank(), 
+        strip.text = element_text(hjust = 0.5, size = 10 ,vjust = 0), 
+        strip.placement = 'outside', panel.spacing.x = unit(-0.5, 'cm'))
+theme_set(theme_oeco)
+```
+
 
 # Load data
 Add any data that needs to be loaded for these analyses here.
 ```{r}
-workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
-metadata <- read_rds(file.path(workingdir, "data", "metadata.rds"))
-sites <- read_rds(file.path(workingdir, "data", "sites.rds"))
-subpops <- read_rds(file.path(workingdir, "data", "subpop_color_coding.rds"))
-phe_gr_df <- read_rds(file.path(workingdir, "data",
+# workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+metadata <- read_rds(here("data", "metadata.rds"))
+sites <- read_rds(here("data", "sites.rds"))
+subpops <- read_rds(here("data", "subpop_color_coding.rds"))
+phe_gr_df <- read_rds(here("data",
                                 "Weather_related_phe_for_asreml_h2_GR50.rds"))
-phe_fl_df <- read_rds(file.path(workingdir, "data",
+phe_fl_df <- read_rds(here("data",
                                 "Weather_related_phe_for_asreml_h2_FL50.rds"))
-phenotypes <- readRDS("~/Github/pvdiv-phenology-gxe/data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds")
-h2gr <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "h2_df_GR50_related_functions_of_weather_v1.csv"))
-h2fl <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "h2_df_FL50_related_functions_of_weather_v1.csv"))
-h2gr_gxe <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_GR50_related_functions_of_weather_v2.csv"))
-h2fl_gxe <- read_csv(file.path(workingdir, "analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_FL50_related_functions_of_weather_v1.csv"))
+phenotypes <- readRDS(here("data/Julian_date_GDD_and_rainfall_phenotypes_4wcr_and_gwas.rds"))
+h2gr <- read_csv(here("analysis", "heritability", "kinship_subpop", "h2_df_GR50_related_functions_of_weather_v1.csv"))
+h2fl <- read_csv(here("analysis", "heritability", "kinship_subpop", "h2_df_FL50_related_functions_of_weather_v1.csv"))
+h2gr_gxe <- read_csv(here("analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_GR50_related_functions_of_weather_v2.csv"))
+h2fl_gxe <- read_csv(here("analysis", "heritability", "kinship_subpop", "gxe_and_h2_df_FL50_related_functions_of_weather_v1.csv"))
 
-h2gr <- h2gr %>%
-  full_join(h2gr_gxe)
+#h2gr <- h2gr %>%
+#  full_join(h2gr_gxe)
 h2gr <- h2gr_gxe
 h2fl <- h2fl %>%
   full_join(h2fl_gxe)
@@ -81,7 +103,7 @@ ggplot() +
   #scale_fill_manual(values = c("#280B54FF","#FAC127FF", "#D44842FF", "white")) +
   #scale_color_manual(values = c(rep("black", 10), "#280B54FF","#FAC127FF", "#D44842FF", "white", "#280B54FF","#FAC127FF", "#D44842FF", "white"), guide = FALSE) +
   #scale_alpha_manual(values = c(0.7, 0.7, 0.7, 0.7), guide = FALSE)
-save_plot(filename = "../manuscript/plots/Map_subpops_and_Ecotypes.png", plot = last_plot(), base_height = 3)
+save_plot(filename = here("manuscript", "revision2", "intermediate_files", "Map_subpops_and_Ecotypes.png"), plot = last_plot(), base_height = 3)
 ?geom_point
 ```
 
@@ -160,53 +182,53 @@ pand <- cor_fl %>%
   filter(SUBPOP %in% c("Gulf")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
   ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
-  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
-                                      "white", "#27AD81FF", "#5DC863FF",
-                                      "#FDE725FF"), limits = c(-1,1)) +
+  scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+                                  "white", "#FE9B2DFF", "#DB3A07FF",
+                                  "#7A0403FF"), limits = c(-1,1)) +
   theme(legend.position = "none")
 pane <- cor_fl %>%
   filter(SUBPOP %in% c("Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
   ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
-  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
-                                      "white", "#27AD81FF", "#5DC863FF",
-                                      "#FDE725FF"), limits = c(-1,1)) +
+  scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+                                  "white", "#FE9B2DFF", "#DB3A07FF",
+                                  "#7A0403FF"), limits = c(-1,1)) +
   theme(legend.position = "none")
 panf <- cor_fl %>%
   filter(SUBPOP %in% c("Gulf", "Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
   ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
-  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
-                                      "white", "#27AD81FF", "#5DC863FF",
-                                      "#FDE725FF"), limits = c(-1,1)) +
+  scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+                                  "white", "#FE9B2DFF", "#DB3A07FF",
+                                  "#7A0403FF"), limits = c(-1,1)) +
   theme(legend.position = "none")
 pana <- cor_gr %>%
   filter(SUBPOP %in% c("Gulf")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
   ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
-  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
-                                      "white", "#27AD81FF", "#5DC863FF",
-                                      "#FDE725FF"), limits = c(-1,1)) +
+  scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+                                  "white", "#FE9B2DFF", "#DB3A07FF",
+                                  "#7A0403FF"), limits = c(-1,1)) +
   theme(legend.position = c(0.4, 0.85))
 panb <- cor_gr %>%
   filter(SUBPOP %in% c("Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
   ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
-  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
-                                      "white", "#27AD81FF", "#5DC863FF",
-                                      "#FDE725FF"), limits = c(-1,1)) +
+  scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+                                  "white", "#FE9B2DFF", "#DB3A07FF",
+                                  "#7A0403FF"), limits = c(-1,1)) +
   theme(legend.position = "none")
 panc <- cor_gr %>%
   filter(SUBPOP %in% c("Gulf", "Midwest")) %>%
   select(TX1, TX2, TX3, OK, MO, NE, MI, SD) %>%
   ggcorr(method = "pairwise", label = FALSE, layout.exp = 0.2, hjust = 0.95) +
-  scale_fill_gradientn(colors = c("#440154FF", "#3B528BFF", "#2C728EFF",
-                                      "white", "#27AD81FF", "#5DC863FF",
-                                      "#FDE725FF"), limits = c(-1,1)) +
+  scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+                                  "white", "#FE9B2DFF", "#DB3A07FF",
+                                  "#7A0403FF"), limits = c(-1,1)) +
   theme(legend.position = "none")
 
-pheno_corr <- plot_grid(pana, panb, panc, pand, pane, panf, nrow = 2)
-save_plot(filename = "../manuscript/plots/Phenotypic_correlations_GR50_FL50_2.svg", plot = pheno_corr, base_width = 6.5)
+pheno_corr <- plot_grid(panc, panf, panb, pane, pana, pand, nrow = 3)
+save_plot(filename = here("manuscript", "revision2", "intermediate_files", "Phenotypic_correlations_GR50_FL50_2.svg"), plot = pheno_corr, base_width = 3.5, base_height = 4.5)
 ```
 
 

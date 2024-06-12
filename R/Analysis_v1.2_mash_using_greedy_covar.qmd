@@ -1477,6 +1477,8 @@ Some univariate GWAS for the Midwest had population structure issues. Mostly for
 
 # Step 5: Redo writeup & figures
 
+NB: Figure 1 is in Plots_v0.3_manuscript_figures.Rmd
+
 ## Load mash objects
 
 ```{r}
@@ -1734,7 +1736,8 @@ for (i in 1:nrow(U1)) {
     ggplot(aes(x = .data$rowU, y = .data$colU)) +
     switchgrassGWAS::theme_oeco +
     geom_tile(aes(fill = .data$covar), na.rm = TRUE) +
-    scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF", "#1BD0D5FF",
+    scale_fill_gradientn(colors = c("#30123BFF", "#4777EFFF",
+                                    "#1BD0D5FF",
                                   "white", "#FE9B2DFF", "#DB3A07FF",
                                   "#7A0403FF"),
                          limits = c(-1, 1)) +
@@ -1954,10 +1957,37 @@ ggdraw() +
 
 ```
 
+Build Figure 2 with covariance matrices as first two rows over covar barplots
+
+```{r}
+
+ggdraw() +
+  theme_oeco + 
+  draw_plot(pa01, x = 0, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa02, x = 0.2, y = 0.66, width = 0.1, height = 0.18) +
+  #draw_plot(pa03, x = -0.02, y = 0.6, width = 0.1, height = 0.18) +
+  #draw_plot(pa04, x = 0.1, y = 0.6, width = 0.1, height = 0.18) +
+  draw_plot(pa05, x = 0.4, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa06, x = 0.6, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa07, x = 0.8, y = 0.66, width = 0.1, height = 0.18) +
+  #draw_plot(pa08, x = 0.2, y = 0, width = 0.1, height = 0.18) +
+  draw_plot(pa09, x = 0, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa10, x = 0.2, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa11, x = 0.4, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa12, x = 0.6, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa13, x = 0.8, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(f2a, x = 0, y = 0.33, width = 0.66, height = 0.38) +
+  draw_plot(legend, x = 0.1, y = 0.77, width = 0.1, height = 0.2) +
+  draw_plot(f2b, x = 0.66, y = 0.33, width = 0.33, height = 0.38) +
+  draw_plot(f2c, x = 0, y = 0, width = 0.66, height = 0.33) +
+  draw_plot(f2d, x = 0.66, y = 0, width = 0.33, height = 0.33)
+```
+
 ```{r}
 #| eval: false
 
-save_plot(filename = "../manuscript/revision2/Figure_2_recolor_covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 5.5, base_width = 8)
+save_plot(filename = "../manuscript/revision2/Figure_2_recolor_resize_covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 7.5, base_width = 6.5)
+
 ```
 
 ## Table 1

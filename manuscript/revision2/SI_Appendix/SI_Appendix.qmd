@@ -101,18 +101,6 @@ classoption:
  - twoside
 ---
 
-\noindent This PNAS template for Supporting Information (SI) may be used to organize your supporting material. The template is intended to provide a clearly organized PDF file that will ensure readers can easily navigate to sections or specific figures and tables. Movie files or large datasets can be presented as separate files. Further information is available in the [PNAS Author Center](https://www.pnas.org/authors/submitting-your-manuscript).
-
-## Using the template {.unnumbered}
-
-Specify the title, author list, and corresponding authors with the same YAML specification as in the [corresponding PNAS Quarto template](https://github.com/christopherkenny/pnas). The cover page will be automatically generated with the relevant description of the SI.
-
-Figures should be placed on separate pages with legends set immediately below each figure. Table titles should be set immediately above each table. Note that tables extending beyond the width of the page can be included in the PDF or provided as separate dataset files. Oversized/nonstandard page sizes are accepted as part of your SI Appendix file.
-
-## Submitting SI {.unnumbered}
-
-Save your completed SI file as a PDF for submission. Further submission instructions are available [here](https://www.pnas.org/page/authors/submission#preparation).
-
 # Supplementary Methods
 
 ## Section S1. Generation of covariance matrices to provide multiple ways SNP effects could covary across common gardens {.unnumbered}
@@ -156,6 +144,8 @@ $$
 where the vector $\mathbf{y}$ represents the flowering date or greenup date values for that garden, $Z$ the design matrix for random effects, $u$ the whole genome additive genetic effect, $e$ the residual, $G$ the genomic relationship matrix based on all SNPs retained for subpopulation-specific analyses, and $I$ the rank-$\mathbf{y}$ identity matrix [@clark2013]. ASReml can specify considerably more complex variance structures; however, we were interested in specifying covariance structures using *mash*, which allows the specification of multiple covariance structures; hence, we used a relatively simple model to calculate BLUPs for use in univariate GWAS. The code for these calculations can be found at git\@github.com:Alice-MacQueen/pvdiv-phenology-gxe.git/R/Analysis_v1.2_mash_using_greedy_covar.qmd, starting at line 75.
 
 Univariate GWAS were run independently for each combination of trait, genetic subpopulation, and common garden. The code used to run GWAS can be found at git\@github.com:Alice-MacQueen/pvdiv-phenology-gxe.git/R/Analysis_v1.2_mash_using_greedy_covar.qmd, starting at line 240. We used [`pvdiv_standard_run()`](https://alice-macqueen.github.io/switchgrassGWAS/reference/pvdiv_standard_gwas.html), an opinionated function of the [switchgrassGWAS](https://github.com/Alice-MacQueen/switchgrassGWAS) R package, to conduct GWAS. To control for population structure and run GWAS, this function uses a three-part process. First, a fast truncated singular value decomposition (SVD) is generated from the SNP data, which has initial pruning of regions in long-range linkage disequilibrium (LD) and iterative pruning and removal of regions in long-range LD [@privé2017a]. By default, 15 vectors of singular values, $k$, are computed. Pruning and removal of long-range LD regions are recommended in research in human genetics to best control for population structure [@abdellaoui2013; @privé2017; @price2008]. Second, linear regression models using 0-15 of these vectors of singular values were used to run GWAS and to calculate the genomic control coefficient, $\lambda_{GC}$, for each $k$ [@Devlin1999]. Third, we chose the lowest value of $k$ that made $\lambda_{GC}$ closest to 1, and ran GWAS using a linear regression model with this $k$ for population structure correction.
+
+At this stage, we reviewed the univariate GWAS results, both Manhattan and QQ-plots, for population structure issues that were not resolved using the $k$ that minimized $\lambda_{GC}$. These issues were apparent in the data in two ways: (i) univariate GWAS with many significant SNPs with extremely similar *p*-values, usually indicative of genetic effects that, by chance or, more likely, because of confounding effects of population structure, were identical across many SNPs and thus not resolvable to a single genomic location; (ii) univariate GWAS with many effect estimates and standard errors of zero, indicating an inability to estimate effects given the constraints of small population size & population structure. We only noticed these issues in our smallest subpopulation, the Midwest subpopulation, in the green-up date trait at the SD garden, and in the flowering date trait at the OK and NE gardens. Due to these issues, we dropped the SD garden from subsequent green-up analyses for the Midwest subpopulation, and we dropped the OK and NE gardens from subsequent Midwest flowering date analyses.
 
 ## Section S3. Selection of effect estimate subsets to model using *mash* {.unnumbered}
 
@@ -207,21 +197,30 @@ $$
 phenotype = \mu + QTL + E + QTL*E + kinship + e
 $$
 
-where $\mu$ is the population mean, QTL is the marker genetic effect, E is the environmental effects (here, common garden), QTL\*E is the interaction between marker genetic and environmental effects, kinship corresponds to the background polygenic variation, and e is the error term. The genome scan was accomplished with the ‘scan1’ function. The statistical significance of the genome scan was established by performing a stratified (i.e., stratifying on common garden) permutation test (n=1000) using ‘scan1perm’ function. The estimated QTL effect was obtained using ‘scan1coef’ function in R/qtl2.
+where $\mu$ is the population mean, QTL is the marker genetic effect, E is the environmental effects (here, common garden), QTL\*E is the interaction between marker genetic and environmental effects, kinship corresponds to the background polygenic variation, and e is the error term. The genome scan was accomplished with the ‘scan1’ function. The statistical significance of the genome scan was established by performing a stratified (i.e., stratifying on common garden) permutation test (n=1000) using ‘scan1perm’ function. The estimated QTL effects (@fig-qtl-by-env) were obtained using ‘scan1coef’ function in R/qtl2.
 
-Figures should be cross-referenced like @fig-qtl-by-env. Each figure should be on its own page. You can control this by placing a pagebreak shortcode, with `{{< pagebreak >}}`.
-
-This can also be done with LaTeX's `\newpage` command. You may find `\FloatBarrier` useful if your figures or tables are running off to the wrong pages.
 
 {{< pagebreak >}}
 
-![Figure](figs/frog.eps){#fig-garden-by-garden-gxe}
+![Narrow sense heritability of green-up date and flowering date within single common gardens (purple) and across all eight common gardens (green), within and between two genetic subpopulations.](images/Figure_S1_h2.png){#fig-garden-by-garden-gxe}
 
 \FloatBarrier <!-- always leave a blank line between this and figures --->
 
 {{< pagebreak >}}
 
-![Figure](figs/frog.eps){#fig-qtl-by-env}
+![Types of GxE present between of pairs of jointly re-estimated effects in eight common gardens, for effects with lfsr \< 0.05 at both gardens in each pair. Effect patterns: Sign: Effects that differ in sign at these pairs of gardens (p \< 0.05, lfsr). Magnitude: Effects identical in sign (p \< 0.05, lfsr) that differ in magnitude by a factor of \>0.4. Not Distinguishable: Effects not distinguishable by magnitude nor sign of the effect, with no measurable GxE. b) The number of effects with each GxE type for the onset of vegetative growth (green-up date) within and between two genetic subpopulations.](images/S2_Greenup.png)
+
+\FloatBarrier <!-- always leave a blank line between this and figures --->
+
+{{< pagebreak >}}
+
+![Types of GxE present between of pairs of jointly re-estimated effects in eight common gardens, for effects with lfsr \< 0.05 at both gardens in each pair. Effect patterns: Sign: Effects that differ in sign at these pairs of gardens (p \< 0.05, lfsr). Magnitude: Effects identical in sign (p \< 0.05, lfsr) that differ in magnitude by a factor of \>0.4. Not Distinguishable: Effects not distinguishable by magnitude nor sign of the effect, with no measurable GxE. b) The number of effects with each GxE type for the onset of reproductive growth (green-up date) within and between two genetic subpopulations.](images/S3_Flowering.png)
+
+\FloatBarrier <!-- always leave a blank line between this and figures --->
+
+{{< pagebreak >}}
+
+![All QTL identified in the outbred mapping population displayed GxE, in that all QTL had effects that differed in at least two gardens. Gardens are on the y-axis in latitudinal order; the effects of the significant QTL in Figure 4 are displayed as differences between allelic effects for the two sets of grandparent lines in the outbred mapping panel. ](images/Figure_S4_QTL_effects_by_trait.png){#fig-qtl-by-env}
 
 \FloatBarrier <!-- always leave a blank line between this and figures --->
 
@@ -288,6 +287,8 @@ The remaining column names follow the pattern Effect\_\[Mean/StandardError/lfsr\
 \dataset{Dataset_7_QTL_intervals_with_functionally_validated_homologs.csv}{Genes in the quantitative trait loci (QTL) regions shown in Figure 4 that have functionally validated homologs in rice for vegetative or reproductive development. The first 9 columns of this table provide QTL information, the remainder provide annotation information for the switchgrass genes in the QTL interval with homologs in A. thaliana or rice that have functional validation in flowering or vegetative-growth related traits. Columns 20-30 provide the titles of papers providing functional validation of the rice homolog of the switchgrass gene.}
 
 \dataset{Dataset_8_QTL_mash_overlap.csv}{Overlap between quantitative trait loci (QTL) for the start of vegetative or reproductive growth with significant mash effect estimates (with a log10(Bayes Factor) > 2) found using diversity panels of the Midwest, Gulf, and Both genetic subpopulations. The first five columns of this table provide QTL information, and columns 6-10 provide mash Marker information for markers within the QTL regions.}
+
+{{< pagebreak >}}
 
 # References
 
