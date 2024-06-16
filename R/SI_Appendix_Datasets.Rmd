@@ -351,7 +351,7 @@ All flowering and green-up QTL intervals contained at least one SNP significant 
 
 ## Objects generated earlier
 
-Get `qtlplot` object by running code starting at about line 150 (for Dataset 7). Get `m_gulf_fl_hyp` and other objects by running code starting at about line 35 (for Datasets 1-6).
+Get `qtlplot` object by running code starting at about line 233 (for Dataset 7). Get `m_gulf_fl_hyp` and other objects by running code starting at about line 35 (for Datasets 1-6).
 
 ## Thresholds
 
@@ -404,7 +404,7 @@ qtl_mash_overlap_function <- function(qtl, m, subpop, phe, onepcttail = 2){
       as_tibble() %>%
       left_join(switchgrassGWAS:::get_marker_df(m = m), by = "value") %>%
       dplyr::rename(log10BayesFactor = .data$V1) %>%
-      dplyr::select(-.data$value) |> 
+      #dplyr::select(-.data$value) |> 
   ## TODO: FIX list/matrix column here
     tidyr::separate(.data$Marker, into = c("Chr", "Pos"), remove = FALSE, 
                     sep = "_", extra = "merge", convert = TRUE) %>%
@@ -422,6 +422,7 @@ qtl_mash_overlap_function <- function(qtl, m, subpop, phe, onepcttail = 2){
                        QTL_Pos_hi = qtl$POS_hi[i], 
                        QTL_phenotype = qtl$lodcolumn[i], 
                        QTL_LOD = qtl$lod[i], mash_Pos = qtl_sub$Pos, 
+                       mash_idx = qtl_sub$value,
                        mash_log10BayesFactor = qtl_sub$log10BayesFactor, mash_subpop = subpop, 
                        mash_phenotype = phe)
     } else {
@@ -429,6 +430,7 @@ qtl_mash_overlap_function <- function(qtl, m, subpop, phe, onepcttail = 2){
                           QTL_Pos_hi = qtl$POS_hi[i], 
                           QTL_phenotype = qtl$lodcolumn[i], 
                           QTL_LOD = qtl$lod[i], mash_Pos = qtl_sub$Pos, 
+                          mash_idx = qtl_sub$value,
                           mash_log10BayesFactor = qtl_sub$log10BayesFactor,
                           mash_subpop = subpop, 
                           mash_phenotype = phe)
@@ -485,6 +487,120 @@ dataset_8 <- overlap1 %>%
 
 write_csv(dataset_8, file = here("manuscript", "revision2", "SI_Appendix",
                                  "Dataset_8_QTL_mash_overlap.csv"))
+```
+
+
+### Exploratory effect plots for mash QTL overlaps
+
+2N 59.5Mb: biggest effect at TX2, mostly opposite to other gardens or other gardens have NSE
+2N 60.9Mb: biggest effect at TX2, AP between TX1 and TX2
+2 Gulf effects I would say look nothing like that.
+```{r}
+overlap <- dataset_8 %>%
+  select(mash_idx, mash_subpop, everything()) |> 
+  distinct(mash_idx, .keep_all = TRUE)
+overlap
+```
+
+```{r}
+refactor_conditions <- function(phe, subpop, idx) {
+  if (phe == "Flowering Date" & subpop == "Both") {
+    plot <- mash_plot_effects(m_gam_fl_hyp, i = idx)
+    plot$effect_df$Conditions <- 
+      factor(plot$effect_df$Conditions, 
+             levels = c(paste0("Gulf_and_Midwest_FL50_", c("TX1", "TX2", "TX3",
+                                                           "OK", "MO", "NE",
+                                                           "MI", "SD"))))
+  } else if (phe == "Flowering Date" & subpop == "Gulf") {
+    plot <- mash_plot_effects(m_gulf_fl_hyp, i = idx)
+    plot$effect_df$Conditions <- 
+      factor(plot$effect_df$Conditions, 
+             levels = c(paste0("Gulf_FL50_", c("TX1", "TX2", "TX3",
+                                               "OK", "MO", "NE",
+                                               "MI", "SD"))))
+  } else if (phe == "Flowering Date" & subpop == "Midwest") {
+    plot <- mash_plot_effects(m_midw_fl_hyp, i = idx)
+    plot$effect_df$Conditions <- 
+      factor(plot$effect_df$Conditions, 
+             levels = c(paste0("Midwest_FL50_", c("TX1", "TX2", "TX3",
+                                               "MO", "M", "SD"))))
+    } else if (phe == "Greenup Date" & subpop == "Both") {
+    plot <- mash_plot_effects(m_gam_gr_hyp, i = idx)
+    plot$effect_df$Conditions <- 
+      factor(plot$effect_df$Conditions, 
+             levels = c(paste0("Gulf_and_Midwest_GR50_", c("TX1", "TX2", "TX3",
+                                                           "OK", "MO", "NE",
+                                                           "MI", "SD"))))
+  } else if (phe == "Greenup Date" & subpop == "Gulf") {
+    plot <- mash_plot_effects(m_gulf_gr_hyp, i = idx)
+    plot$effect_df$Conditions <- 
+      factor(plot$effect_df$Conditions, 
+             levels = c(paste0("Gulf_GR50_", c("TX1", "TX2", "TX3",
+                                               "OK", "MO", "NE",
+                                               "MI", "SD"))))
+  } else if (phe == "Greenup Date" & subpop == "Midwest") {
+    plot <- mash_plot_effects(m_midw_gr_hyp, i = idx)
+    plot$effect_df$Conditions <- 
+      factor(plot$effect_df$Conditions, 
+             levels = c(paste0("Midwest_GR50_", c("TX1", "TX2", "TX3", "OK",
+                                               "MO", "NE", "MI", "SD"))))
+  } else stop("not built in yet")
+  plot$ggobject <- ggplot(data = plot$effect_df) + 
+      geom_point(mapping = aes(x = as.factor(.data$Conditions), 
+                               y = .data$mn)) + 
+      switchgrassGWAS::theme_oeco + 
+      geom_errorbar(mapping = aes(ymin = .data$mn - 
+                                    .data$se, ymax = .data$mn + .data$se, 
+                                  x = .data$Conditions), 
+                    width = 0.3) + geom_hline(yintercept = 0, lty = 2) + 
+        labs(x = "Conditions", y = "Effect Size") + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      coord_flip() +
+      ggtitle(plot$marker)
+  return(plot)
+}
+```
+
+```{r}
+gr_qtl_overlap <- overlap |> 
+  mutate(row_n = row_number(),
+         .before = 1) |> 
+  filter(mash_phenotype == "Greenup Date") |> 
+  arrange(Chr, desc(mash_log10BayesFactor)) |> 
+  select(row_n, mash_subpop, mash_log10BayesFactor, Chr, QTL_Pos_lo,
+         Marker_in_mash_1pct_tail, everything())
+
+fl_qtl_overlap <- overlap |> 
+  mutate(row_n = row_number(),
+         .before = 1) |> 
+  filter(mash_phenotype == "Flowering Date") |> 
+  arrange(Chr, desc(mash_log10BayesFactor)) |> 
+  select(row_n, mash_subpop, mash_log10BayesFactor, Chr, QTL_Pos_lo,
+         Marker_in_mash_1pct_tail, everything())
+```
+row_n 117: No match to QTL effects, just large Midwest mash effect at MO
+
+9N QTL: (-) effects at OK & MI. 
+
+For greenup, all but 3 significant mash SNPs (in the Gulf subpop) have just a single significant effect at MO. No QTL are like this, the only strong effect at MO is on Chr3K in the QTL. The 3 Gulf QTL don't really look like the 9N QTL either.
+
+```{r}
+i = 142 # 152
+for (i in 1:nrow(gr_qtl_overlap)) {
+  i <- gr_qtl_overlap$row_n[i]
+  replot <- refactor_conditions(phe = overlap$mash_phenotype[i],
+                    subpop = overlap$mash_subpop[i],
+                    idx = overlap$mash_idx[i])
+  save_plot(filename = here("manuscript", "revision2", "intermediate_files", "mash_effect_plots", "greenup", paste0(str_replace_all(replot$marker, pattern = " ", "_"), "_effect.png")), plot = replot$ggobject)
+}
+
+for (i in 1:nrow(fl_qtl_overlap)) {
+  i <- fl_qtl_overlap$row_n[i]
+  replot <- refactor_conditions(phe = overlap$mash_phenotype[i],
+                    subpop = overlap$mash_subpop[i],
+                    idx = overlap$mash_idx[i])
+  save_plot(filename = here("manuscript", "revision2", "intermediate_files", "mash_effect_plots", "flowering", paste0(str_replace_all(replot$marker, pattern = " ", "_"), "_effect.png")), plot = replot$ggobject)
+}
 ```
 
 
