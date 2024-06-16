@@ -32,10 +32,7 @@ data/older/
 analysis/gwas/GDD/Lambda*
 analysis/heritability/single_sites/
 analysis/heritability/nine_sites/
-analysis/gwas/BLUPs/single_sites/Lambda*
-analysis/gwas/BLUPs/single_sites/Manhattan*
-analysis/gwas/BLUPs/single_sites/QQplot*
-analysis/gwas/BLUPs/single_sites/*
+analysis/gwas/BLUPs/unused_trait_model_GWAS/
 
 # docx working files in manuscript
 manuscript/~$*
