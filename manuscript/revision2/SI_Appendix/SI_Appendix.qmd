@@ -199,7 +199,6 @@ $$
 
 where $\mu$ is the population mean, QTL is the marker genetic effect, E is the environmental effects (here, common garden), QTL\*E is the interaction between marker genetic and environmental effects, kinship corresponds to the background polygenic variation, and e is the error term. The genome scan was accomplished with the ‘scan1’ function. The statistical significance of the genome scan was established by performing a stratified (i.e., stratifying on common garden) permutation test (n=1000) using ‘scan1perm’ function. The estimated QTL effects (@fig-qtl-by-env) were obtained using ‘scan1coef’ function in R/qtl2.
 
-
 {{< pagebreak >}}
 
 ![Narrow sense heritability of green-up date and flowering date within single common gardens (purple) and across all eight common gardens (green), within and between two genetic subpopulations.](images/Figure_S1_h2.png){#fig-garden-by-garden-gxe}
@@ -208,19 +207,19 @@ where $\mu$ is the population mean, QTL is the marker genetic effect, E is the e
 
 {{< pagebreak >}}
 
-![Types of GxE present between of pairs of jointly re-estimated effects in eight common gardens, for effects with lfsr \< 0.05 at both gardens in each pair. Effect patterns: Sign: Effects that differ in sign at these pairs of gardens (p \< 0.05, lfsr). Magnitude: Effects identical in sign (p \< 0.05, lfsr) that differ in magnitude by a factor of \>0.4. Not Distinguishable: Effects not distinguishable by magnitude nor sign of the effect, with no measurable GxE. b) The number of effects with each GxE type for the onset of vegetative growth (green-up date) within and between two genetic subpopulations.](images/S2_Greenup.png)
+![Types of GxE present between of pairs of jointly re-estimated effects in eight common gardens, for effects with lfsr \< 0.05 at both gardens in each pair. Effect patterns: Sign: Effects that differ in sign at these pairs of gardens (p \< 0.05, lfsr). Magnitude: Effects identical in sign (p \< 0.05, lfsr) that differ in magnitude by a factor of \>0.4. Not Distinguishable: Effects not distinguishable by magnitude nor sign of the effect, with no measurable GxE. b) The number of effects with each GxE type for the onset of vegetative growth (green-up date) within and between two genetic subpopulations.](images/Fig_S2.png)
 
 \FloatBarrier <!-- always leave a blank line between this and figures --->
 
 {{< pagebreak >}}
 
-![Types of GxE present between of pairs of jointly re-estimated effects in eight common gardens, for effects with lfsr \< 0.05 at both gardens in each pair. Effect patterns: Sign: Effects that differ in sign at these pairs of gardens (p \< 0.05, lfsr). Magnitude: Effects identical in sign (p \< 0.05, lfsr) that differ in magnitude by a factor of \>0.4. Not Distinguishable: Effects not distinguishable by magnitude nor sign of the effect, with no measurable GxE. b) The number of effects with each GxE type for the onset of reproductive growth (green-up date) within and between two genetic subpopulations.](images/S3_Flowering.png)
+![Types of GxE present between of pairs of jointly re-estimated effects in eight common gardens, for effects with lfsr \< 0.05 at both gardens in each pair. Effect patterns: Sign: Effects that differ in sign at these pairs of gardens (p \< 0.05, lfsr). Magnitude: Effects identical in sign (p \< 0.05, lfsr) that differ in magnitude by a factor of \>0.4. Not Distinguishable: Effects not distinguishable by magnitude nor sign of the effect, with no measurable GxE. b) The number of effects with each GxE type for the onset of reproductive growth (green-up date) within and between two genetic subpopulations.](images/Fig_S3.png)
 
 \FloatBarrier <!-- always leave a blank line between this and figures --->
 
 {{< pagebreak >}}
 
-![All QTL identified in the outbred mapping population displayed GxE, in that all QTL had effects that differed in at least two gardens. Gardens are on the y-axis in latitudinal order; the effects of the significant QTL in Figure 4 are displayed as differences between allelic effects for the two sets of grandparent lines in the outbred mapping panel. ](images/Figure_S4_QTL_effects_by_trait.png){#fig-qtl-by-env}
+![All QTL identified in the outbred mapping population displayed GxE, in that all QTL had effects that differed in at least two gardens. Gardens are on the y-axis in latitudinal order; the effects of the significant QTL in Figure 4 are displayed as differences between allelic effects for the two sets of grandparent lines in the outbred mapping panel.](images/Figure_S4_QTL_effects_by_trait.png){#fig-qtl-by-env}
 
 \FloatBarrier <!-- always leave a blank line between this and figures --->
 
@@ -233,7 +232,7 @@ where $\mu$ is the population mean, QTL is the marker genetic effect, E is the e
 | Phenology type | Subpopulation | Effects Selected per GWAS, Strong Subset | Effects Selected per GWAS, Random Subset | Total Markers, Strong Subset | Total Markers, Random Subset |
 |:-----------|-----------:|-----------:|-----------:|------------|------------|
 | Greenup Date   |          Gulf |                                    19000 |                                    38000 | 45931                        | 91862                        |
-|                |       Midwest |                                    24000 |                                    48000 | 49030                        | 98060                        |
+|                |       Midwest |                                    33000 |                                    66000 | 57729                        | 115458                       |
 |                |          Both |                                    19000 |                                    38000 | 44765                        | 89530                        |
 | Flowering Date |          Gulf |                                    19000 |                                    38000 | 50490                        | 100980                       |
 |                |       Midwest |                                    33000 |                                    66000 | 63367                        | 126734                       |
@@ -243,20 +242,20 @@ where $\mu$ is the population mean, QTL is the marker genetic effect, E is the e
 
 {{< pagebreak >}}
 
-| Greedy Algorithm Iteration \# |     Gulf Greenup Date |           Midwest Greenup Date |    Both Greenup Date | Gulf Flowering Date     | Midwest Flowering Date         | Both Flowering Date     |
+| Greedy Algorithm Iteration \# |     Gulf Greenup Date |     Midwest Greenup Date |    Both Greenup Date | Gulf Flowering Date     | Midwest Flowering Date         | Both Flowering Date     |
 |:----------|----------:|----------:|----------:|-----------|-----------|-----------|
-| 1                             |              Identity |                       Identity |             Identity | Identity                | Identity                       | Identity                |
-| 2                             |         Simple Het. 2 |               Single Effect MO |     Single Effect MI | Simple Het. 1           | Simple Het. 1                  | Single Effect TX3       |
-| 3                             |      Single Effect MO |               Single Effect NE |     Single Effect SD | Single Effect MI        | Single Effect MI               | Single Effect TX1       |
-| 4                             |      Single Effect NE |              Single Effect TX2 |     Single Effect NE | Single Effect TX3       | Single Effect TX2              | Single Effect OK        |
-| 5                             | Daylength (14d prior) |              Single Effect TX1 |    Single Effect TX2 | Single Effect SD        | Single Effect MO               | Single Effect MI        |
-| 6                             |      Single Effect MI |               Single Effect MI |     Single Effect OK | Single Effect OK        | Single Effect TX3              | Single Effect NE        |
-| 7                             |      Single Effect SD |               Single Effect OK |    Single Effect TX3 | Single Effect NE        | Daylength change (s), 2d prior | Single Effect TX2       |
-| 8                             |     Single Effect TX2 |              Single Effect TX3 |        Simple Het. 1 | Single Effect TX1       | Single Effect SD               | Single Effect MO        |
-| 9                             |    Cumulative GDD, 6d |                  Simple Het. 1 |    Single Effect TX1 | Single Effect TX2       | \-                             | Single Effect SD        |
-| 10                            |     Single Effect TX3 | Daylength change (s), 7d prior |     Single Effect MO | Single Effect MO        | \-                             | Simple Het. 1           |
-| 11                            |   Data-driven $PCA_2$ |                             \- |         Temp Ave, 1d | Cumulative rainfall, 7d | \-                             | Cumulative rainfall, 1d |
-| 12                            |                    \- |                             \- | Daylength change (s) | \-                      | \-                             | \-                      |
+| 1                             |              Identity |                 Identity |             Identity | Identity                | Identity                       | Identity                |
+| 2                             |         Simple Het. 2 |         Single Effect OK |     Single Effect MI | Simple Het. 1           | Simple Het. 1                  | Single Effect TX3       |
+| 3                             |      Single Effect MO |            Equal Effects |     Single Effect SD | Single Effect MI        | Single Effect MI               | Single Effect TX1       |
+| 4                             |      Single Effect NE |        Single Effect TX3 |     Single Effect NE | Single Effect TX3       | Single Effect TX2              | Single Effect OK        |
+| 5                             | Daylength (14d prior) |        Single Effect TX2 |    Single Effect TX2 | Single Effect SD        | Single Effect MO               | Single Effect MI        |
+| 6                             |      Single Effect MI |  Cumulative GDD, 12C, 1d |     Single Effect OK | Single Effect OK        | Single Effect TX3              | Single Effect NE        |
+| 7                             |      Single Effect SD | Cumulative GDD, 12C, 28d |    Single Effect TX3 | Single Effect NE        | Daylength change (s), 2d prior | Single Effect TX2       |
+| 8                             |     Single Effect TX2 |                       \- |        Simple Het. 1 | Single Effect TX1       | Single Effect SD               | Single Effect MO        |
+| 9                             |    Cumulative GDD, 6d |                       \- |    Single Effect TX1 | Single Effect TX2       | \-                             | Single Effect SD        |
+| 10                            |     Single Effect TX3 |                       \- |     Single Effect MO | Single Effect MO        | \-                             | Simple Het. 1           |
+| 11                            |   Data-driven $PCA_2$ |                       \- |         Temp Ave, 1d | Cumulative rainfall, 7d | \-                             | Cumulative rainfall, 1d |
+| 12                            |                    \- |                       \- | Daylength change (s) | \-                      | \-                             | \-                      |
 
 : Covariance matrices selected in each iteration of the greedy *mash* algorithm, for each phenological trait and genetic subpopulation. Naming matches the conventions in Figure 2 of the main text. {#tbl-greedy}
 

@@ -36,7 +36,7 @@ Dataset 8. Overlap between quantitative trait loci for flowering measured using 
 ```{r}
 mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
 
-numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
+numSNPs_v <- c(19000, 19000, 19000, 19000, 33000, 33000)
 suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
               "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
 ```
@@ -93,10 +93,10 @@ for (i in seq_along(popkey)) {
     
     if (i == 2 & j == 1) {
       betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
-                                 paste0("B_hat_random_df_24000topSNPs_",
+                                 paste0("B_hat_random_df_33000topSNPs_",
                                         phekey[[j]], "_", popkey[[i]], ".rds")))
       stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
-                                 paste0("S_hat_random_df_24000topSNPs_",
+                                 paste0("S_hat_random_df_33000topSNPs_",
                                         phekey[[j]], "_", popkey[[i]], ".rds")))
     } else if (i == 2 & j == 2) {
       betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
@@ -128,14 +128,14 @@ Numbers for this section: We then selected 19K relatively unlinked (r2 < 0.2) SN
 ```{r}
 switchgrassGWAS:::get_marker_df(m_gulf_gr_hyp) # 45931
 switchgrassGWAS:::get_marker_df(m_gulf_fl_hyp) # 50490
-switchgrassGWAS:::get_marker_df(m_midw_gr_hyp) # 49030
+switchgrassGWAS:::get_marker_df(m_midw_gr_hyp) # 57729
 switchgrassGWAS:::get_marker_df(m_midw_fl_hyp) # 63367
 switchgrassGWAS:::get_marker_df(m_gam_gr_hyp)  # 44765
 switchgrassGWAS:::get_marker_df(m_gam_fl_hyp)  # 35735
 ```
 
 ```{r}
-m <- m_gulf_gr_hyp
+m <- m_midw_gr_hyp
 dataset_creation_function <- function(m, filename){
 
   all_effects <- switchgrassGWAS:::get_marker_df(m)
@@ -497,7 +497,7 @@ write_csv(dataset_8, file = here("manuscript", "revision2", "SI_Appendix",
 2 Gulf effects I would say look nothing like that.
 ```{r}
 overlap <- dataset_8 %>%
-  select(mash_idx, mash_subpop, everything()) |> 
+  dplyr::select(mash_idx, mash_subpop, everything()) |> 
   distinct(mash_idx, .keep_all = TRUE)
 overlap
 ```

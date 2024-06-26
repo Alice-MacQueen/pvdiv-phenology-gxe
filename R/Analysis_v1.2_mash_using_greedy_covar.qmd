@@ -251,15 +251,16 @@ library(AnnotationDbi)
 library(here)
 txdb <- loadDb(file = here("data-raw", "ignore",
                            "Pvirgatum_516_v5.1.gene.txdb.sqlite"))
-workingdir <- file.path("~", "Github", "pvdiv-phenology-gxe")
+workingdir <- here()
 inputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
 outputdir <- file.path(workingdir, "analysis", "gwas", "BLUPs")
 subpop_v <- list(Gulf_and_Midwest = c("Gulf", "Midwest"), Midwest = "Midwest", Gulf = "Gulf")
 snp_v <- c("12\\.1M", "8\\.8M", "10\\.3M")
 
 inputfiles <- read_delim(file.path(workingdir, "analysis", "gwas",
-                                   "inputkinship.txt"),  delim = " ", 
-                                   col_names = "SNPfiles")
+                                   "inputkinship.txt"),  
+                         delim = " ", comment = "#",
+                         col_names = "SNPfiles")
 set_v <- list(eight_sites = "eight_sites", tx_sites = "tx_sites", north_sites = "north_sites", single_sites = "!sites")
 
 
@@ -320,13 +321,13 @@ NB: Do this on server, where the large GWAS_datatable objects were created.
 # library()
 k = 3 # subpop: G&M, M, Gulf
 for(k in c(1, 3)){
-phe_suffix <- paste("GR50", subpop_v[k], 
+phe_suffix <- paste("GR50", snp_v[k], 
                     sep = "*.*")
 snp <- snp_attach(inputfiles$SNPfiles[k])
-gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+gwas_rds <- pvdiv_results_in_folder(path = here("analysis", "gwas", "BLUPs", "single_sites", "Datatables_single_sites"), 
                                       pattern = paste0("GWAS_datatable*.*",
                                                        phe_suffix))
-phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -42) %>%
+phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -41) %>%
     str_replace(., "_$", "")
 phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
 numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
@@ -351,24 +352,26 @@ summary(mwdf)
 
 ```{r mash midwest}
 k=2
-phe_suffix <- paste("GR50", subpop_v[k], 
+phe_suffix <- paste("GR50", snp_v[k], 
                     sep = "*.*")
 snp <- snp_attach(inputfiles$SNPfiles[k])
-gwas_rds <- pvdiv_results_in_folder(path = file.path(outputdir), 
+gwas_rds <- pvdiv_results_in_folder(path = here("analysis", "gwas", "BLUPs", "single_sites", "Datatables_single_sites"), 
                                       pattern = paste0("GWAS_datatable*.*",
                                                        phe_suffix))
-gwas_rds <- gwas_rds[c(1:4,6:8)]
+gwas_rds <- gwas_rds[c(1, 3:4,6:8)]
 
 phenotypes_1 <- str_sub(gwas_rds, start = 16, end = -41) %>%
     str_replace(., "_$", "")
 phenotypes <- paste0(names(subpop_v)[k], "_", phenotypes_1)
 numSNPs <- round(ceiling(1200000/length(phenotypes)^2)/1000)*1000
-out1phe <- pvdiv_bigsnp2mashr(path = file.path(outputdir), 
+out1phe <- pvdiv_bigsnp2mashr(path = here("analysis", "gwas", "BLUPs",
+                                          "single_sites",
+                                          "Datatables_single_sites"), 
                            snp = snp, gwas_rds = gwas_rds, 
                            phenotypes = phenotypes, numSNPs = numSNPs, 
                            clump = TRUE, scaled = TRUE, saveoutput = TRUE,
                            suffix = paste0("GR50_", names(subpop_v)[k]))
-# Ran mash using a 'nohup_v0.6' R script.
+
 ```
 
 Used scp to move these output files (which all have the same suffix) to laptop.
@@ -377,7 +380,7 @@ e.g. `scp -i Github/jls_alice alice@popgen.biosci.utexas.edu:~/Github/pvdiv-phen
 
 `scp -i ~/Github/jls_alice alice@popgen.biosci.utexas.edu:~/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/Part-One-Output*  /home/alice/Github/pvdiv-phenology-gxe/analysis/gwas/BLUPs/single_sites/`
 
-Files with the six suffixes I have/want mash results for: B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds B_hat_strong_df_19000topSNPs_FL50_Gulf.rds B_hat_strong_df_19000topSNPs_GR50_Gulf_and_Midwest.rds B_hat_strong_df_19000topSNPs_GR50_Gulf.rds B_hat_strong_df_24000topSNPs_GR50_Midwest.rds B_hat_strong_df_33000topSNPs_FL50_Midwest.rds
+Files with the six suffixes I have/want mash results for: B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds B_hat_strong_df_19000topSNPs_FL50_Gulf.rds B_hat_strong_df_19000topSNPs_GR50_Gulf_and_Midwest.rds B_hat_strong_df_19000topSNPs_GR50_Gulf.rds B_hat_strong_df_33000topSNPs_GR50_Midwest.rds B_hat_strong_df_33000topSNPs_FL50_Midwest.rds
 
 # ----------------------
 
@@ -733,7 +736,7 @@ colnames(gr_ten_sites)[8:50]
 
 I don't have access to ASREML any more, so need a different package to do this.
 
-### sketch out how h2 is calculated in rrBLUP
+### Calculate h2 in rrBLUP
 
 Use the kinship matrix I've already calculated (using the van Raden method, using switchgrassGWAS::pvdiv_kinship()) using the SNPs as the K matrix.
 
@@ -742,7 +745,7 @@ Use the kinship matrix I've already calculated (using the van Raden method, usin
 
 
 library(rrBLUP)
-k_full <- read_rds("~/Github/pvdiv-genome/tensite_twoyear/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds")
+k_full <- read_rds(here("data/Kinship_van_Raden_630_individuals_SNPs_r2_20percent.rds"))
 fl_ten_sites
 colnames(k_full)
 
@@ -1083,9 +1086,13 @@ for (mat in matnames) {
 
 ```
 
-#### greenup: 7 sites
+#### greenup: 6 sites
 
-MI, MO, NE, OK, TX1, TX2, TX3
+MO has clear population structure bias in the Manhattan & QQplot
+
+SD dropped because of many 0 Bhat and 0 Shat values
+
+MI, NE, OK, TX1, TX2, TX3
 
 ```{r}
 #| eval: false
@@ -1107,12 +1114,12 @@ for(i in seq_along(phe_hyp)){
       pivot_wider(names_from = manu_site, values_from = phe_hyp[i]) %>%
       mutate(PLANT_ID = as.factor(PLANT_ID),
              IND = as.factor(IND)) %>%
-      select(PLANT_ID, SUBPOP, IND, MI, MO, NE, OK, TX1, TX2, TX3) #####  IL,
+      select(PLANT_ID, SUBPOP, IND, MI, NE, OK, TX1, TX2, TX3) #####  IL,
     
     cor_phe <- cor(cov_df[,-(1:3)], use = "pairwise")
     # Set diagonal of this matrix = heritability within each garden
     h2_diag <- c()
-    site_names <- c("MI", "MO", "NE", "OK", "TX1", "TX2", "TX3")
+    site_names <- c("MI", "NE", "OK", "TX1", "TX2", "TX3")
     for(j in seq_along(site_names)) {
       phe_one <- fl_ten_sites %>% filter(manu_site == site_names[j]) %>%
         filter(WHERE != "FWCR") %>%
@@ -1136,9 +1143,9 @@ for(i in seq_along(phe_hyp)){
 
 for (i in seq_along(U_hyp_2019)) {
   if (is.matrix(U_hyp_2019[[i]])) {
-    matrixout = matrix(unlist(U_hyp_2019[[i]]), ncol = 7, byrow = TRUE)
+    matrixout = matrix(unlist(U_hyp_2019[[i]]), ncol = 6, byrow = TRUE)
   } else {
-    matrixout = matrix(unlist(U_hyp_2019[[i]]$mat), ncol = 7, byrow = TRUE)
+    matrixout = matrix(unlist(U_hyp_2019[[i]]$mat), ncol = 6, byrow = TRUE)
   }
   row.names(matrixout) = site_names
   colnames(matrixout) = site_names
@@ -1152,38 +1159,40 @@ for (i in seq_along(U_hyp_2019)) {
 
 ```
 
+## June 2024
+
 ```{r}
 #| eval: false
 workingdir <- here("analysis", "mash_greedy_algorithm", 
-                                   "mash_h2_diag_covar", "midwest_greenup")
+                                   "mash_h2_diag_covar", "midwest_inputs")
 pheno = "greenup"
 betas = read.table(here(workingdir, "combined_mash_effects", paste0( pheno,'.midwest.betas.random.txt')))
 stderrs = read.table(here(workingdir, "combined_mash_stderrs", paste0( pheno,'.midwest.stderrs.random.txt')))
 
-mat_betas = matrix(unlist(betas),ncol=7,byrow = TRUE)
-mat_stderrs = matrix(unlist(stderrs),ncol=7,byrow = TRUE)
+mat_betas = matrix(unlist(betas),ncol=6,byrow = TRUE)
+mat_stderrs = matrix(unlist(stderrs),ncol=6,byrow = TRUE)
 
-sites = c('MI','MO','NE', 'OK','TX1','TX2','TX3')
+sites = c('MI','NE', 'OK','TX1','TX2','TX3')
 data=mash_set_data(mat_betas,mat_stderrs) 
 
 canonical = cov_canonical(data = data)
 matnames = ls(canonical)
 for (matrix in matnames) {
   if (matrix %in% c('equal_effects','identity','simple_het_1','simple_het_2','simple_het_3')) {
-  matrixout = matrix(unlist(canonical[matrix]), ncol = 7, byrow = TRUE)
+  matrixout = matrix(unlist(canonical[matrix]), ncol = 6, byrow = TRUE)
   row.names(matrixout) = sites
   colnames(matrixout) = sites
   write.csv(matrixout, file = here(workingdir, "matrices", paste0(pheno,'.', matrix, '.csv')))
   }
 }
 print(canonical)
-for (i in 1:7) {
+for (i in 1:6) {
   singleton = paste0('singletons_',i)
   print(singleton)
   singmat = canonical[singleton]
   site = sites[i]
   
-  singmat = matrix(unlist(canonical[singleton]),ncol = 7, byrow = TRUE)
+  singmat = matrix(unlist(canonical[singleton]),ncol = 6, byrow = TRUE)
   row.names(singmat) = sites
   colnames(singmat) = sites
   write.csv(singmat, file = here(workingdir, "matrices", paste0(pheno, '.singleton.', site, '.csv')))
@@ -1194,12 +1203,13 @@ cohort = "midwest"
 effect = "random"
 matnames = ls(canonical)
 for (mat in matnames) {
-  matrixout = matrix(unlist(canonical[mat]),ncol = 7,byrow=TRUE)
+  matrixout = matrix(unlist(canonical[mat]),ncol = 6,byrow=TRUE)
   row.names(matrixout) = sites
   colnames(matrixout) = sites
   print(matrixout)
   write.csv(matrixout, file = here(workingdir, "matrices",
-                                   paste0(pheno,'.', cohort,'.', effect,'.', mat, '.csv')))
+                                   paste0(pheno,'.', cohort,'.', effect,'.',
+                                          mat, '.csv')))
 }
 
 ```
@@ -1228,19 +1238,21 @@ data/mash_switchgrass_models/mash/all_matrices/matrices hosts all covar mat (?) 
 
 '.singleton.*' '.identity.*' '.simple_het\_*.*' '.equal_effects.*' '.*PCA\*'
 
-Set up new analysis/mash_greedy_algorithm/mash_1_to_28d_covar/ or subdirectory to have all the subdir necessary to run `run.mash.greedy.search.py` python script. I think these may have to be pre-generated for the script to work, and I'll make sure they're empty to keep there from being I/O issues I haven't tested for.
+Set up new analysis/mash_greedy_algorithm/mash_h2_diag_covar/ or subdirectory to have all the subdir necessary to run `run.mash.greedy.search.py` python script. I think these may have to be pre-generated for the script to work, and I'll make sure they're empty to keep there from being I/O issues I haven't tested for.
 
 Make sure all matrices are present in matrices/ subdir and named & output appropriately for recognition
 
 Make sure random and strong Bhat and Shat in combined_mash_effects and combined_mash_stderrs are appropriate - perhaps ultimately replace these with my inputs in mash/Subpop/inputs; perhaps use what's here as tests first
 
-When I change to my inputs for effects & stderrs, I will need to adjust midwest covar & effects appropriately to reflect only 6 (flowering) and 7 (greenup) rows & columns used; the other GWAS were dropped as too low power or due to substantial phenotype data loss, & including them would give misleading results.
+When I change to my inputs for effects & stderrs, I will need to adjust midwest covar & effects appropriately to reflect only 6 (flowering) and 6 (greenup) rows & columns used; the other GWAS were dropped as too low power, due to population structure issues in the GWAS, or due to substantial phenotype data loss, & including them would give misleading results, even if it would just result in loadings onto the single garden effect matrices.
 
 ### Next steps
 
 Redo Midwest: Remake Midwest covar matrices, including hypothesis, singleton, identity, simple het, equal effects, and data-driven matrices. Make mash_greedy.R variants for changed input dir & for different Midwest column numbers. Run two new run.mash.greedy.search.py commands: python run.mash.greedy.search.py -p greenup -c midwest -e random python run.mash.greedy.search.py -p flowering -c midwest -e random
 
-Try Gulf & All with my known inputs: python run.mash.greedy.search.py -p greenup -c gulf -e random python run.mash.greedy.search.py -p greenup -c all -e random python run.mash.greedy.search.py -p flowering -c gulf -e random python run.mash.greedy.search.py -p flowering -c all -e random
+Try Gulf & All with my known inputs: python run.mash.greedy.search.py -p greenup -c gulf -e random python run.mash.greedy.search.py -p greenup -c all -e random python run.mash.greedy.search.py -p flowering -c gulf -e random
+
+python run.mash.greedy.search.py -p flowering -c all -e random
 
 Write inputs to mash_h2_diag_covar/All_inputs, Gulf_inputs, and Midwest_inputs, from the original mash work. Especially important for Midwest which has some poor GWAS at dropped sites. The inputs Sam used have no column or rownames and look to be tab delimited.
 
@@ -1258,11 +1270,13 @@ for (i in seq_along(popkey)) {
   for (j in seq_along(phekey)) {
     
     if (i == 2 & j == 1) {
-      betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
-                                 paste0("B_hat_random_df_24000topSNPs_",
+      betas <- readRDS(file = here("analysis", "gwas", "BLUPs", "single_sites",
+                                   "Datatables_single_sites", 
+                                 paste0("B_hat_random_df_33000topSNPs_",
                                         phekey[[j]], "_", popkey[[i]], ".rds")))
-      stderr <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
-                                 paste0("S_hat_random_df_24000topSNPs_",
+      stderr <- readRDS(file = here("analysis", "gwas", "BLUPs", "single_sites",
+                                   "Datatables_single_sites",  
+                                 paste0("S_hat_random_df_33000topSNPs_",
                                         phekey[[j]], "_", popkey[[i]], ".rds")))
     } else if (i == 2 & j == 2) {
       betas <- readRDS(file = here("analysis", "mash", popkey[[i]], "inputs", 
@@ -1336,10 +1350,10 @@ library(mashr)
 library(rlist)
 library(here)
 
-source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
+# source("~/Github/Functions_ggplot-theme-adjustments_2018-01-03.R")
 mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
 
-numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
+numSNPs_v <- c(19000, 19000, 19000, 19000, 33000, 33000)
 suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
               "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
 suffix_vli <- c("Gulf_and_Midwest", "Gulf", "Gulf_and_Midwest",
@@ -1360,11 +1374,11 @@ Upaths <- c(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
             here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
                  "gulf_inputs"),
             here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
-                 "midwest_greenup"),
+                 "midwest_inputs"),
             here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
                  "midwest_flowering"))
 
-#   i = 4
+#   i = 5
 for (i in 1:6) {  # change this for different scripts
   # B_hat_strong_df_19000topSNPs_FL50_Gulf_and_Midwest.rds
   # B_hat_strong_df_19000topSNPs_FL50_Gulf.rds
@@ -1394,8 +1408,8 @@ for (i in 1:6) {  # change this for different scripts
     if (i == 5) {
     # MI, MO, NE, OK, TX1, TX2, TX3 used for GR50  
       U_single <- U_single %>%
-        filter(`...1` %in% c("MI", "MO", "NE", "OK", "TX1", "TX2", "TX3")) %>%
-        select(`...1`, .data$MI, .data$MO, .data$NE, .data$OK, .data$TX1,
+        filter(`...1` %in% c("MI", "NE", "OK", "TX1", "TX2", "TX3")) %>%
+        select(`...1`, .data$MI, .data$NE, .data$OK, .data$TX1,
                .data$TX2, .data$TX3)
     } else if (i == 6) {
     # MI, MO, SD, TX1, TX2, TX3 used for FL50  
@@ -1484,7 +1498,7 @@ NB: Figure 1 is in Plots_v0.3_manuscript_figures.Rmd
 ```{r}
 mashdir <- here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar")
 
-numSNPs_v <- c(19000, 19000, 19000, 19000, 24000, 33000)
+numSNPs_v <- c(19000, 19000, 19000, 19000, 33000, 33000)
 suffix_v <- c("FL50_Gulf_and_Midwest", "FL50_Gulf", "GR50_Gulf_and_Midwest",
               "GR50_Gulf", "GR50_Midwest", "FL50_Midwest")
 ```
@@ -1525,6 +1539,18 @@ m_gam_fl_hyp <- readRDS(file.path(mashdir,
 
 ```
 
+```{r}
+get_significant_results(m2)
+print(length(get_significant_results(m2)))
+get_significant_results(m_midw_gr_hyp)
+print(length(get_significant_results(m_midw_gr_hyp)))
+print(length(get_significant_results(m_midw_fl_hyp)))
+print(length(get_significant_results(m_gulf_gr_hyp)))
+print(length(get_significant_results(m_gulf_fl_hyp)))
+print(length(get_significant_results(m_gam_gr_hyp)))
+print(length(get_significant_results(m_gam_fl_hyp)))
+```
+
 ## Figure 2
 
 ```{r}
@@ -1533,17 +1559,17 @@ get_cov_type <- function(m, summarise = FALSE, subpop = FALSE){
   cov_type <- cov_df$covar_df %>% 
     mutate(Type = case_when(grepl("PCA", `Covariance Matrix`) ~ "data-driven",
                             grepl("singleton", `Covariance Matrix`) ~
-                              "canonical",
+                              "Canonical",
                             grepl("simple_het", `Covariance Matrix`) ~
-                              "canonical",
+                              "Canonical",
                             grepl("no_effects", `Covariance Matrix`) ~
-                              "canonical",
+                              "Canonical",
                             grepl("identity", `Covariance Matrix`) ~
-                              "canonical",
+                              "Canonical",
                             grepl("equal_effects", `Covariance Matrix`) ~
-                              "canonical",
+                              "Canonical",
                             grepl("U.mat$", `Covariance Matrix`) ~
-                              "hypothesized",
+                              "GxWeather",
                             TRUE ~ "other"
                             )) 
   if (summarise == TRUE) {
@@ -1619,8 +1645,8 @@ cov_gamf$ggobject +
 ```{r get covar matrices picked by greedy mash}
 get_greedy_Ulist <- function(i) {
   pop_sc <- c("all", "gulf", "all", "gulf", "midwest", "midwest")
-  phe_sc <- c("flowering", "flowering", "greenup", "greenup", "greenup",
-              "flowering")
+  phe_sc <- c("flowering", "flowering", "greenup", "greenup", 
+              "greenup", "flowering")
   Upaths <- c(here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
                    "all_inputs"),
               here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
@@ -1630,7 +1656,7 @@ get_greedy_Ulist <- function(i) {
               here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
                    "gulf_inputs"),
               here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
-                   "midwest_greenup"),
+                   "midwest_inputs"),
               here("analysis", "mash_greedy_algorithm", "mash_h2_diag_covar",
                    "midwest_flowering"))
 
@@ -1662,8 +1688,8 @@ get_greedy_Ulist <- function(i) {
     if (i == 5) {
     # MI, MO, NE, OK, TX1, TX2, TX3 used for GR50  
       U_single <- U_single %>%
-        filter(`...1` %in% c("MI", "MO", "NE", "OK", "TX1", "TX2", "TX3")) %>%
-        select(`...1`, .data$MI, .data$MO, .data$NE, .data$OK, .data$TX1,
+        filter(`...1` %in% c("MI", "NE", "OK", "TX1", "TX2", "TX3")) %>%
+        select(`...1`, .data$MI, .data$NE, .data$OK, .data$TX1,
                .data$TX2, .data$TX3)
     } else if (i == 6) {
     # MI, MO, SD, TX1, TX2, TX3 used for FL50  
@@ -1685,6 +1711,9 @@ get_greedy_Ulist <- function(i) {
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "singleton.", "Single Effect "),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "simple_het_", "Simple Het. "),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "no_effects", "No Effects"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "equal_effects", "Equal Effects"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "cgdd_12c_28d.U.mat", "Cumulative GDD (28d)"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "cgdd_12c_1d.U.mat", "Cumulative GDD (1d)"),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "tave_1d.U.mat", "Temp Ave, 1d"),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_14d_prior.U.mat", "Daylength (14d prior)"),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_change_sec.U.mat", "Daylength change (s)"),
@@ -1704,7 +1733,7 @@ get_greedy_Ulist <- function(i) {
 plot_covar_Ulist_fig2 <- function(df, mf = FALSE, mg = FALSE, legend = FALSE) {
   if (mg) {
     df <- df %>%
-      select(`...1`, TX1, TX2, TX3, OK, MO, NE, MI) 
+      select(`...1`, TX1, TX2, TX3, OK, NE, MI) 
   } else if (mf) {
     df <- df %>%
       select(`...1`, TX1, TX2, TX3, MO, MI, SD) 
@@ -1776,7 +1805,7 @@ Ulist_gg <- get_greedy_Ulist(4)
 Ulist_mg <- get_greedy_Ulist(5)
 Ulist_mf <- get_greedy_Ulist(6)
 Ulist_gf$`Cumulative rainfall, 7d`
-Ulist_mg$dyln_change_sec_7d_prior.U.mat
+Ulist_mg$`Cumulative GDD (28d)`
 ```
 
 ```{r build panels of covar matrices for 2a}
@@ -1800,8 +1829,12 @@ pa05 <- plot_covar_Ulist_fig2(Ulist_gamg$`Temp Ave, 1d`) +
 pa08 <- plot_covar_Ulist_fig2(Ulist_gamf$crain_1d.U.mat) + 
   labs(subtitle = "Cumulative rainfall, 1d")
 
-pa13 <- plot_covar_Ulist_fig2(Ulist_gf[[1]]) + 
-  labs(subtitle = "identity (Mass <1%)") 
+pa13 <- plot_covar_Ulist_fig2(Ulist_mg[[3]], mg = TRUE) + 
+  labs(subtitle = "Equal Effects") 
+pa14 <- plot_covar_Ulist_fig2(Ulist_mg[[7]], mg = TRUE) + 
+  labs(subtitle = "Cumulative GDD (28d)") 
+pa15 <- plot_covar_Ulist_fig2(Ulist_gf[[1]]) + 
+  labs(subtitle = "Identity (Mass <1%)") 
 pa09 <- plot_covar_Ulist_fig2(Ulist_gf[[5]]) + 
   labs(subtitle = names(Ulist_gf)[5]) 
 pa10 <- plot_covar_Ulist_fig2(Ulist_gf[[2]]) + 
@@ -1815,8 +1848,8 @@ pa11 <- plot_covar_Ulist_fig2(Ulist_gf[[8]]) +
 ```{r build panels of barplots for fig 2}
 cov_gr1 <- mash_plot_Ulist(m_gulf_gr_hyp, range = 2, limits = TRUE)
 legend <- get_legend(cov_gr1) 
-fig_eqeff <- plot_covar_Ulist_fig2(Ulist_mg[[2]], mg = TRUE) +
-  labs(subtitle = "simple heterozygousity")
+#fig_eqeff <- plot_covar_Ulist_fig2(Ulist_mg[[2]], mg = TRUE) +
+#  labs(subtitle = "simple heterozygousity")
 
 df_2a <- get_cov_type(m_gulf_gr_hyp, summarise = TRUE) %>%
   mutate(subpop = "Gulf",
@@ -1865,7 +1898,10 @@ df_2gr_a <- df_2a %>% full_join(df_2b) %>% full_join(df_2c) %>%
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "singleton.", "Single Effect "),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "simple_het_", "Simple Het. "),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "no_effects", "No Effects"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "equal_effects", "Equal Effects"),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "tave_1d.U.mat", " Temp Ave, 1d"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "cgdd_12c_28d.U.mat", "  Cumulative GDD, 28d"),
+         `Covariance Matrix` = str_replace(`Covariance Matrix`, "cgdd_12c_1d.U.mat", "  Cumulative GDD, 1d"),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_14d_prior.U.mat", " Daylength (14d prior)"),
          `Covariance Matrix` = str_replace(`Covariance Matrix`, "dyln_change_sec.U.mat", " Daylength change (s)")
          )
@@ -1885,8 +1921,8 @@ df_2gr_b$subpop <- factor(df_2gr_b$subpop, levels = c("Gulf", "Midwest", "Both")
 df_2fl_b$subpop <- factor(df_2fl_b$subpop, levels = c("Gulf", "Midwest", "Both"))
 df_2gr_a$subpop <- factor(df_2gr_a$subpop, levels = c("Gulf", "Midwest", "Both"))
 df_2fl_a$subpop <- factor(df_2fl_a$subpop, levels = c("Gulf", "Midwest", "Both"))
-df_2fl_a$Type <- factor(df_2fl_a$Type, levels = c("canonical", "hypothesized"))
-df_2fl_a$Type <- factor(df_2fl_a$Type, levels = c("canonical", "hypothesized"))
+df_2fl_a$Type <- factor(df_2fl_a$Type, levels = c("Canonical", "GxWeather"))
+df_2fl_b$Type <- factor(df_2fl_b$Type, levels = c("Canonical", "GxWeather"))
 
 f2b <- df_2gr_b %>%
   filter(Mass > 1e-05) %>%
@@ -1906,24 +1942,24 @@ f2d <- df_2fl_b %>%
   theme(axis.title.x=element_blank(),
         legend.position = "none",
         axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45))
-f2a <- df_2gr_a %>%
-  filter(Mass > 1e-06) %>%
+(f2a <- df_2gr_a %>%
+  filter(Mass > 0.001) %>%
   ggplot(aes(x = `Covariance Matrix`, y = Mass)) + 
   geom_bar(aes(fill = Type), stat = "identity") +
   facet_wrap(~subpop) +
   coord_flip() + scale_fill_viridis_d(end = 0.9, option = "H") +
   theme(legend.position = c(-0.4, 0.3),
         axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
-        panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
-f2c <- df_2fl_a %>%
-  filter(Mass > 1e-06) %>%
+        panel.spacing.x = unit(-0, 'cm'))) #+ labs(x = "")
+(f2c <- df_2fl_a %>%
+  filter(Mass > 0.001) %>%
   ggplot(aes(x = `Covariance Matrix`, y = Mass)) + 
   geom_bar(aes(fill = Type), stat = "identity") +
   facet_wrap(~subpop) +
   coord_flip() + scale_fill_viridis_d(end = 0.9, option = "H") +
   theme(legend.position = "none",
         axis.text.x=element_text(hjust = 1, vjust = 1, angle = 45), 
-        panel.spacing.x = unit(-0, 'cm')) #+ labs(x = "")
+        panel.spacing.x = unit(-0, 'cm'))) #+ labs(x = "")
 
 
 pa_legend <- plot_covar_Ulist_fig2(Ulist_gg$`Daylength (14d prior)`, legend = TRUE) + 
@@ -1964,18 +2000,20 @@ Build Figure 2 with covariance matrices as first two rows over covar barplots
 ggdraw() +
   theme_oeco + 
   draw_plot(pa01, x = 0, y = 0.66, width = 0.1, height = 0.18) +
-  draw_plot(pa02, x = 0.2, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa14, x = 1/6, y = 0.66, width = 0.1, height = 0.18) +
   #draw_plot(pa03, x = -0.02, y = 0.6, width = 0.1, height = 0.18) +
   #draw_plot(pa04, x = 0.1, y = 0.6, width = 0.1, height = 0.18) +
-  draw_plot(pa05, x = 0.4, y = 0.66, width = 0.1, height = 0.18) +
-  draw_plot(pa06, x = 0.6, y = 0.66, width = 0.1, height = 0.18) +
-  draw_plot(pa07, x = 0.8, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa05, x = 2/6, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa02, x = 0.5, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa06, x = 4/6, y = 0.66, width = 0.1, height = 0.18) +
+  draw_plot(pa07, x = 5/6, y = 0.66, width = 0.1, height = 0.18) +
   #draw_plot(pa08, x = 0.2, y = 0, width = 0.1, height = 0.18) +
-  draw_plot(pa09, x = 0, y = 0.83, width = 0.1, height = 0.18) +
-  draw_plot(pa10, x = 0.2, y = 0.83, width = 0.1, height = 0.18) +
-  draw_plot(pa11, x = 0.4, y = 0.83, width = 0.1, height = 0.18) +
-  draw_plot(pa12, x = 0.6, y = 0.83, width = 0.1, height = 0.18) +
-  draw_plot(pa13, x = 0.8, y = 0.83, width = 0.1, height = 0.18) +
+  #draw_plot(pa09, x = 0, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa10, x = 1/6, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa12, x = 2/6, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa13, x = 0.5, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa11, x = 4/6, y = 0.83, width = 0.1, height = 0.18) +
+  draw_plot(pa09, x = 5/6, y = 0.83, width = 0.1, height = 0.18) +
   draw_plot(f2a, x = 0, y = 0.33, width = 0.66, height = 0.38) +
   draw_plot(legend, x = 0.1, y = 0.77, width = 0.1, height = 0.2) +
   draw_plot(f2b, x = 0.66, y = 0.33, width = 0.33, height = 0.38) +
@@ -1986,7 +2024,7 @@ ggdraw() +
 ```{r}
 #| eval: false
 
-save_plot(filename = "../manuscript/revision2/Figure_2_recolor_resize_covariance_matrices_and_posterior_weights.svg", plot = last_plot(), base_height = 7.5, base_width = 6.5)
+save_plot(filename = "../manuscript/revision2/intermediate_files/Figure_2_six_sites_Midwest.svg", plot = last_plot(), base_height = 7.5, base_width = 6.5)
 
 ```
 
@@ -2026,9 +2064,9 @@ one_gxe_summary <- function(df, n_cond = 8, n_sep = 2) {
     separate(Condition_1, into = c(nsep, "Phenotype", "Garden_1"), sep = "_") %>%
     separate(Condition_2, into = c(nsep, NA, "Garden_2"), sep = "_") %>%
     left_join(site_regions, by = c("Garden_1" = "Site")) %>%
-    rename("Region_1" = "Region") %>%
+    dplyr::rename("Region_1" = "Region") %>%
     left_join(site_regions, by = c("Garden_2" = "Site")) %>%
-    rename("Region_2" = "Region") %>%
+    dplyr::rename("Region_2" = "Region") %>%
     filter(Garden_1 != Garden_2) %>%
     filter(Region_1 != "OK" & Region_2 !="OK") %>%
     group_by(Region_1, Region_2) %>%
@@ -2040,7 +2078,7 @@ one_gxe_summary <- function(df, n_cond = 8, n_sep = 2) {
   }
   df <- df %>%
     ungroup() %>%
-    select(-Region_1, -Region_2) %>%
+    dplyr::select(-Region_1, -Region_2) %>%
     group_by(Region_comparison) %>%
     summarise(n = floor(sum(Total_sig)/2))
   return(df)
@@ -2050,11 +2088,11 @@ one_gxe_summary(df = gxe_mf$S_AP, n_cond = 6)
 
 get_gxe_summary <- function(gxe_list, n_cond = 8, n_sep = 2) {
   AP <- one_gxe_summary(gxe_list$S_AP, n_cond = n_cond, n_sep = n_sep) %>%
-    rename(Sign = n)
+    dplyr::rename(Sign = n)
   DS <- one_gxe_summary(gxe_list$S_DS, n_cond = n_cond, n_sep = n_sep) %>%
-    rename(Magnitude = n)
+    dplyr::rename(Magnitude = n)
   ND <- one_gxe_summary(gxe_list$S_2_no, n_cond = n_cond, n_sep = n_sep) %>%
-    rename(None = n)
+    dplyr::rename(None = n)
   gxe_n <- AP %>%
     full_join(DS, by = "Region_comparison") %>%
     full_join(ND, by = "Region_comparison") %>%
@@ -2068,12 +2106,12 @@ get_gxe_summary <- function(gxe_list, n_cond = 8, n_sep = 2) {
   return(list(gxe_counts = gxe_n, gxe_fractions = gxe_frac))
 }
 
-get_gxe_summary(gxe_gg) 
+get_gxe_summary(gxe_mf, n_cond = 6) 
 ```
 
 ```{r}
 fig3_gg <- get_gxe_summary(gxe_gg) 
-fig3_mg <- get_gxe_summary(gxe_mg, n_cond = 7) 
+fig3_mg <- get_gxe_summary(gxe_mg, n_cond = 6) 
 fig3_bg <- get_gxe_summary(gxe_gamg, n_sep = 4) 
 print("flowering")
 fig3_gf <- get_gxe_summary(gxe_gf) 
@@ -2147,7 +2185,7 @@ fig3_frac_plot <- fig3_fractions |>
 ggdraw() +
   theme_oeco +
   draw_plot(fig3_frac_plot, x = 0, y = 0, width = 1, height = .67)
-save_plot(filename = "../manuscript/revision2/Figure_3_Fraction_GxE_by_Region.svg", base_height = 6, base_width = 4.5, plot = last_plot())
+save_plot(filename = "../manuscript/revision2/intermediate_files/Figure_3_Fraction_GxE_by_Region_six_midwest_sites.svg", base_height = 6, base_width = 4.5, plot = last_plot())
 ```
 
 ```{r}
@@ -2208,14 +2246,16 @@ pvdiv_plot_cor <- function(corrmatrix, upper = NULL, legend = FALSE){
     ggplot(aes(x = .data$rowU, y = .data$colU)) +
     switchgrassGWAS::theme_oeco +
     geom_tile(aes(fill = .data$covar)) +
-    scale_fill_viridis_c(option = "H", limits = c(0, upper)) +
+    scale_fill_viridis_c(option = "A", limits = c(0, upper)) +
     #geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey") +
+    theme_oeco +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
     xlab("") + ylab("") 
-  if(legend == TRUE){
+  if (legend == TRUE) {
     U1_covar <- U1_covar +
-      theme(legend.position = c(0.2, 0.9)) +
+      theme(legend.position = c(0.05, 0.9),
+            axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
       geom_text(aes(label = round(.data$covar, 1)), color = "darkgrey")
   }
   return(U1_covar)
@@ -2224,90 +2264,76 @@ pvdiv_plot_cor <- function(corrmatrix, upper = NULL, legend = FALSE){
 ```
 
 ```{r}
- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_AP, legend = TRUE) + 
-  theme_oeco +
+ pvdiv_plot_cor(corrmatrix = gxe_mf$S_AP, legend = TRUE) + 
   labs(subtitle = " ")
 ```
 
 ```{r}
 p3legend <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, legend = TRUE, 
                            upper = 4333) + 
-  theme_oeco +
   labs(title = "Gulf", subtitle = "Sign difference")
 legend <- get_legend(p3legend)
+p3legend_fl <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, legend = TRUE, 
+                           upper = 2500) + 
+  labs(title = "Gulf", subtitle = "Sign difference")
+legend_fl <- get_legend(p3legend_fl)
 
 p3a1 <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_AP, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
+  theme(legend.position = c(0.45, 0.9)) +
   labs(subtitle = " ")
 p3a2 <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_DS, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = " ")
 p3a3 <- pvdiv_plot_cor(corrmatrix = gxe_gg$S_2_no, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = " ")
 p3b1 <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_AP, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = "Sign difference")
 p3b2 <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_DS, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = "Magnitude difference")
 p3b3 <- pvdiv_plot_cor(corrmatrix = gxe_mg$S_2_no, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = "Not distinguishable")
 p3c1 <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_AP, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = " ")
 p3c2 <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_DS, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = " ")
 p3c3 <- pvdiv_plot_cor(corrmatrix = gxe_gamg$S_2_no, legend = FALSE, 
                        upper = 4333) + 
-  theme_oeco +
   labs(subtitle = " ")
 
 p3d1 <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_AP, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
+  theme(legend.position = c(0.45, 0.9))
   labs(subtitle = " ")
 p3d2 <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_DS, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = " ")
 p3d3 <- pvdiv_plot_cor(corrmatrix = gxe_gf$S_2_no, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = " ")
 p3e1 <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_AP, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = "Sign difference")
 p3e2 <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_DS, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = "Magnitude difference")
 p3e3 <- pvdiv_plot_cor(corrmatrix = gxe_mf$S_2_no, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = "Not distinguishable")
 p3f1 <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_AP, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = " ")
 p3f2 <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_DS, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = " ")
 p3f3 <- pvdiv_plot_cor(corrmatrix = gxe_gamf$S_2_no, legend = FALSE, 
-                       upper = 4333) + 
-  theme_oeco +
+                       upper = 2500) + 
   labs(subtitle = " ")
 ```
 
@@ -2332,14 +2358,15 @@ ggdraw() +
   draw_plot(p3f1, x = 0.66, y = 2/6, width = 1/3, height = .18) +
   draw_plot(p3f2, x = 0.66, y = 1/6, width = 1/3, height = .18) +
   draw_plot(p3f3, x = 0.66, y = 0/6, width = 1/3, height = .18) +
-  draw_plot(legend, x = 0.37, y = .38, width = 1/3, height = .18)
+  draw_plot(legend, x = 0.67, y = .68, width = 1/3, height = .18) +
+  draw_plot(legend_fl, x = 0.37, y = .38, width = 1/3, height = .18)
 
 ```
 
 ```{r}
 #| eval: false
 
-save_plot(filename = "../manuscript/Coauthors/PNAS/Revision/Figure_3_Effect_Types_by_Site.svg", plot = last_plot(), base_height = 10, base_width = 5.5)
+save_plot(filename = "../manuscript/revision2/intermediate_files/Figure_S3_S4_Effect_Types_by_Garden.svg", plot = last_plot(), base_height = 10, base_width = 5.5)
 ```
 
 ## Figure 4
@@ -2450,7 +2477,7 @@ quantile(pw_gamf$log10BayesFactor, 0.99)  # GAM: Use 2.65 BF
 quantile(pw_mf$log10BayesFactor, 0.995119)
 
 quantile(pw_gg$log10BayesFactor, 0.99)  # Gulf: Use 2.0989 BF
-quantile(pw_mg$log10BayesFactor, 0.99)  # Midwest: Use 4.6831 BF
+quantile(pw_mg$log10BayesFactor, 0.9998446)  # Midwest: Use 2 BF
 quantile(pw_gamg$log10BayesFactor, 0.99)  # GAM: Use 3.0865 BF
 ```
 
@@ -2477,7 +2504,7 @@ rug_gamg <- pw_gamg %>%
   mutate(Pos = Pos/1000000, 
          LOD = -0.5)
 rug_mg <- pw_mg %>%
-  filter(log10BayesFactor > 4.6831) %>% 
+  filter(log10BayesFactor > 2) %>% 
   mutate(Pos = Pos/1000000, 
          LOD = -0.5)
 ```
@@ -2760,16 +2787,16 @@ fl_enrichd |>
   write_csv(here("data", "Enriched_flowering_QTL.csv"))
 fl_labels <- read_csv(here("data", "Enriched_flowering_QTL_labels.csv"))
 
-
+library(ggrepel)
 fig_4b <- fig4b +
   geom_text_repel(data = fl_labels, aes(x = pos, y = lod, label = subpop), nudge_y = 2)
-library(ggrepel)
+
 ```
 
 ```{r}
 enrich_gg <- get_QTL_enrichment(m_gulf_gr_hyp, qtl_df = qtlplot_gr, 0.99) %>%
   mutate(subpop = "Gulf", phenotype = "greenup")
-enrich_mg <- get_QTL_enrichment(m_midw_gr_hyp, qtl_df = qtlplot_gr, 0.99) %>%
+enrich_mg <- get_QTL_enrichment(m_midw_gr_hyp, qtl_df = qtlplot_gr, 0.9998446) %>%
   mutate(subpop = "Midwest", phenotype = "greenup")
 enrich_gamg <- get_QTL_enrichment(m_gam_gr_hyp, qtl_df = qtlplot_gr, 0.99) %>%
   mutate(subpop = "Both", phenotype = "greenup")
@@ -2803,7 +2830,7 @@ ggdraw() +
   draw_plot(fig_4a, x = 0, y = 0.5, width = 1, height = .5) +
   draw_plot(fig_4b, x = 0, y = 0, width = 1, height = .5)
   
-save_plot(filename = "../manuscript/revision2/Figure_4_QTL_Overlaps.svg", base_height = 9, base_width = 6.5, plot = last_plot())
+save_plot(filename = "../manuscript/revision2/intermediate_files/Figure_4_QTL_Overlaps_6_Midwest_Gardens.svg", base_height = 9, base_width = 6.5, plot = last_plot())
 ```
 
 ```{r}

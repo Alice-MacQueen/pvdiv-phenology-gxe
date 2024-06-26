@@ -36,7 +36,7 @@ analysis/gwas/BLUPs/unused_trait_model_GWAS/
 
 # docx working files in manuscript
 manuscript/~$*
-
+manuscript/revision2/intermediate_files/Results_and_MandM_edits.qmd
 
 # Files and folders that aren't pertinent to the completed manuscript
 analysis/common-garden-allele-balancing
@@ -51,6 +51,8 @@ manuscript/plots/
 presentations/
 R/Pre_manuscript/
 R/Visualize_BIOMASS_mash_GxE_cache/
+manuscript/revision2/intermediate_files/mash_effect_plots/
+manuscript/revision2/cover_letter/cover_letter.qmd
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

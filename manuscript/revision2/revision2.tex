@@ -487,13 +487,13 @@ has negative correlations between Texas and North gardens
 GxWeather matrix, we would infer that the effects of those SNPs have
 that form of GxWeather covariation.
 
-Eight GxWeather covariance structures were selected by the greedy
-algorithm, one to two per subpopulation: five for green-up date, and
-three for flowering date (SI Appendix, Table S2). Of these eight, five
-had mass on them in \emph{mash} models of the strong effects
-(Figure~\ref{fig-covar} B,D). Three of these five matrices had negative
-covariances between sites between Texas and North gardens
-(Figure~\ref{fig-covar} A), while two had all positive or near-zero
+Nine GxWeather covariance structures were selected by the greedy
+algorithm, one to two per subpopulation: six for green-up date, and
+three for flowering date (SI Appendix, Table S2). Of these nine, six had
+mass (\textgreater0.1\%) on them in \emph{mash} models of the strong
+effects (Figure~\ref{fig-covar} B,D). Five of these six matrices had
+negative covariances between gardens in the Texas and North regions
+(Figure~\ref{fig-covar} A), while one had all positive or near-zero
 covariances.
 
 For green-up date, SNP-associated phenotypic effects covaried with
@@ -507,16 +507,20 @@ correlation for the timing of vegetative growth in the Gulf
 subpopulation (Figure~\ref{fig-map} B; Figure~\ref{fig-covar} A).
 \emph{Mash} models of the timing of vegetative growth in the Midwest
 subpopulation and Both subpopulations did not include this GxWeather
-covariance; the Midwest had no weight on any GxWeather covariance, while
-Both subpopulations had non-zero weights on two additional GxWeather
-covariance types, average temperature one day prior to green-up, and the
-day length change in seconds in the day prior to green-up
-(Figure~\ref{fig-covar} B). The average temperature covariance matrix
-had negative covariances between Texas and North gardens, though not as
-strong as the negative phenotypic correlations seen in Both
-subpopulations (Figure~\ref{fig-map} B; Figure~\ref{fig-covar} A). Only
-the Gulf subpopulation and Both subpopulations had mass on any GxWeather
-covariance matrices (Figure~\ref{fig-covar} C) for vegetative growth.
+covariance. The Midwest had 0.15\% weight on a GxWeather covariance
+matrix of cumulative GDD for the 28d prior to green-up, a GxWeather
+matrix that was visually similar to the Midwest's observed pattern of
+phenotypic correlation (Figure~\ref{fig-map} B). Both subpopulations had
+non-zero weights on two additional GxWeather covariance types, average
+temperature one day prior to green-up, and the day length change in
+seconds in the day prior to green-up (Figure~\ref{fig-covar} B). The
+average temperature covariance matrix had negative covariances between
+Texas and North gardens, though not as strong as the negative phenotypic
+correlations seen in Both subpopulations (Figure~\ref{fig-map} B;
+Figure~\ref{fig-covar} A). The Gulf subpopulation and Both
+subpopulations had substantially more mass on GxWeather covariance
+matrices than the Midwest population (Figure~\ref{fig-covar} C) for the
+onset of vegetative growth.
 
 For flowering date, distinct GxWeather covariance structures captured
 covariance in effect sizes for SNPs in the Gulf and Midwest
@@ -553,7 +557,8 @@ effects at the level of individual loci into SNP effects that differ in
 sign between gardens (effects with rank-changing GxE between gardens),
 SNP effects that differ in magnitude (effects that are large in one
 garden or region and smaller in others), and SNP effects that are
-indistinguishable in two gardens (Figure~\ref{fig-effects} A).
+indistinguishable in two gardens (similarly large or small in
+comparisons between gardens) (Figure~\ref{fig-effects} A).
 
 For green-up date for the Gulf subpopulation, hundreds to thousands of
 pairwise effects exhibited rank-changing GxE, or a difference in sign
@@ -562,10 +567,13 @@ Appendix, Fig S2). 78.7\% of pairwise comparisons between North and
 Texas gardens had a difference in sign, while only 28.6\% and 0.2\% of
 North-North or Texas-Texas comparisons had a difference in sign,
 respectively (Figure~\ref{fig-effects} B). The majority of pairwise
-effects for greenup for the Midwest (\textgreater55\%) and Both
-(\textgreater85\%) subpopulations were the same sign, and effects most
-often differed in magnitude between gardens within and between the
-regions (Figure~\ref{fig-effects} B; SI Appendix, Fig S2).
+effects for greenup for the Midwest (\textgreater73\%; 68-342 effects)
+were indistinguishable, or had no GxE. The majority of pairwise effects
+for Both (\textgreater85\%) subpopulations were the same sign, and
+effects most often differed in magnitude between gardens within and
+between the regions; however, these differences in effect sign and
+magnitude were mostly between the MO site and other sites
+(Figure~\ref{fig-effects} B; SI Appendix, Fig S2).
 
 For flowering date for the Gulf subpopulation, less than 2\% of pairwise
 effects exhibited rank-changing GxE, or a difference in effect sign
@@ -573,15 +581,15 @@ within or between regions (Figure~\ref{fig-effects} B). More effects
 differed in magnitude between the Texas and North regions than within
 these regions (42.7\% vs \textless20\%; Figure~\ref{fig-effects} B),
 while the majority of effects had no GxE. The Midwest population had
-relatively few significant effects for flowering, but a large proportion
-of these differed in sign between Texas and North regions (42.7\%) or
-within the North region (65.4\%). Finally, in Both subpopulations, less
-than 20\% of pairwise effects differed in sign (Figure~\ref{fig-effects}
-B). Most differences in sign were between TX1, the southernmost garden,
-and all other gardens (SI Appendix, Figure S3). Similarly, more effects
-that differed in magnitude included gardens in the Texas region
-(52.3-55.9\%), and most effect pairs in the North region were not
-distinguishable (91.5\%).
+relatively few significant effects for flowering (0-174 per pairwise
+comparison), but a large proportion of these differed in sign between
+Texas and North regions (42.7\%) or within the North region (65.4\%).
+Finally, in Both subpopulations, less than 20\% of pairwise effects
+differed in sign (Figure~\ref{fig-effects} B). Most differences in sign
+were between TX1, the southernmost garden, and all other gardens (SI
+Appendix, Figure S3). Similarly, more effects that differed in magnitude
+included gardens in the Texas region (52.3-55.9\%), and most effect
+pairs in the North region were not distinguishable (91.5\%).
 
 \subsubsection{Confirmation of effects on phenology using an independent
 mapping
@@ -630,16 +638,18 @@ study GxWeather for the timings of vegetative and reproductive
 development in the deeply genetically diverged Gulf and Midwest
 subpopulations of switchgrass.
 
-Our analysis of the timing of vegetative growth in the Gulf and in Both
-subpopulations revealed many alleles with rank-changing GxE, or sign
-changes in their effects between the Texas and North gardens
-(Figure~\ref{fig-effects} B). As phenological timings are major
-components of plant fitness, this result supports theoretical models
-that local adaptation should involve antagonistic pleiotropy at the
-level of individual loci (26--29). In addition, it advances local
-adaptation research by using more than two field sites and a wide range
-of genetic variation to determine that rank-changing GxE for
-phenological timings is common in small genomic regions (14, 43, 44).
+Our analysis of the timing of vegetative and reproductive growth
+revealed many alleles with rank-changing GxE, or sign changes in their
+effects between the Texas and North gardens (Figure~\ref{fig-effects}
+B). The Gulf \& Both subpopulations had rank-changing GxE for green-up
+date, while the Midwest subpopulation had rank-changing GxE for
+flowering date. As phenological timings are major components of plant
+fitness, this result supports theoretical models that local adaptation
+should involve antagonistic pleiotropy at the level of individual loci
+(26--29). In addition, it advances local adaptation research by using
+more than two field sites and a wide range of genetic variation to
+determine that rank-changing GxE for phenological timings is common in
+small genomic regions (14, 43, 44).
 
 Our analysis of the timing of flowering showed that the Gulf and Midwest
 subpopulations have distinct GxWeather: flowering timing in the Midwest
@@ -724,7 +734,7 @@ within and between two genetic subpopulations.}
 
 \centering{
 
-\includegraphics{images/Figure_2.png}
+\includegraphics{images/Figure_2_six_sites_Midwest.png}
 
 }
 
@@ -753,7 +763,7 @@ were hypothesized or canonical, for the (c) green-up date phenotype and
 
 \centering{
 
-\includegraphics{images/Figure_3_GxE.png}
+\includegraphics{images/Figure_3_Fraction_GxE_by_Region_six_midwest_sites.png}
 
 }
 
@@ -781,7 +791,7 @@ the Gulf subpopulation, and include TX1, TX2, and TX3.}
 
 \centering{
 
-\includegraphics{images/Figure_4_QTL_Overlaps.png}
+\includegraphics{images/Figure_4_QTL_Overlaps_6_Midwest_Gardens.png}
 
 }
 
