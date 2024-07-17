@@ -325,59 +325,60 @@ affected by multiple external environmental cues (e.g.~degree of winter
 chilling, day length, temperature, and water availability) that signal
 existing or upcoming growing conditions (1--4). Genetic responses to
 environmental cues determine the speed, timing, and energy apportioned
-to vegetative and reproductive growth and shape both the individual's
-lifespan and its lifetime production of viable seed. Day length (or
-photoperiod) is one of the most predictable environmental cues, and
-genetic sensitivity to photoperiod protects plants from potentially
-fatal consequences of phenological responses to temperature cues at the
-``wrong'' time of year. However, the usefulness of specific
-environmental cues depends on both features of the environment, such as
-cue predictability and relevance, and the species' adaptive strategies
-(5). Species with wide natural distributions can have multiple distinct
-environmentally cued phenological responses: for example, populations of
-sunflower (\emph{Helianthus annuus}) exhibit day-neutral, facultative
-short day, and facultative long-day flowering responses, which vary with
-their environments (6, 7). Distinct genetic responses in different
-environments are known as genotype-by-environment interactions, or GxE.
+to vegetative and reproductive growth and shape the individual's
+physiological responses, lifespan, and lifetime production of viable
+seed. Day length (or photoperiod) is one of the most predictable
+environmental cues, and genetic sensitivity to photoperiod protects
+plants from potentially fatal consequences of phenological responses to
+temperature cues at the ``wrong'' time of year. However, the usefulness
+of specific environmental cues depends on both features of the
+environment, such as cue predictability and relevance, and the species'
+adaptive strategies (5). Species with wide natural distributions can
+have multiple distinct environmentally cued phenological responses: for
+example, populations of sunflower (\emph{Helianthus annuus}) exhibit
+day-neutral, facultative short day, and facultative long-day flowering
+responses, which vary with their environments (6, 7). Distinct genetic
+responses in different environments are known as genotype-by-environment
+interactions, or GxE.
 
 Flowering time, or the transition from vegetative to reproductive
 growth, is a common subject of GxE research (6--13), a key output of
-selection driving adaptation to local environments (2, 14--16), and a
+selection driving adaptation to local environments (2, 14--17), and a
 selection target for crop improvement to adapt crops to local or future
-environments (17). Changing flowering responsiveness to photoperiod cues
+environments (18). Changing flowering responsiveness to photoperiod cues
 has allowed geographic range expansion and increased yields in several
-cereal species (18--22) and other crops (23, 24). Recent statistical
+cereal species (14, 19--23) and other crops (24, 25). Recent statistical
 advances in studying phenological GxE have involved determining critical
 environmental indices before the phenological event occurs, such as
 photothermal time within a critical growth window (11). However, most
 studies of flowering GxE focus on finding a single, best fitting form of
 genotype-environment covariance, despite the key expectation that
 different genetic subpopulations, and even different genomic regions,
-have likely evolved distinct patterns of GxE (25). Additionally, despite
+have likely evolved distinct patterns of GxE (26). Additionally, despite
 theoretical predictions that local adaptation should involve
 antagonistic pleiotropy, or alleles with effects with opposing fitness
-outcomes (26--29), previous empirical work has found limited evidence of
-antagonistic pleiotropy (14, 30, 31). However, this work has been
+outcomes (27--30), previous empirical work has found limited evidence of
+antagonistic pleiotropy (15, 31, 32). However, this work has been
 limited by a known statistical bias that reduced detection of genetic
-effects that differ in sign (30, 32, 33). Thus, despite substantial
+effects that differ in sign (31, 33, 34). Thus, despite substantial
 interest in the frequencies of various forms of GxE, the frequency of
 sign-changing GxE relative to other forms of GxE remains unknown.
 
 Previous research suggests that switchgrass phenological timings should
 have GxWeather and that these timings could differ by genetic
 subpopulation. Switchgrass is considered a short-day plant with
-reproductive development strongly linked to day of the year (34).
+reproductive development strongly linked to day of the year (35).
 However, as part of its wide environmental adaptation across the eastern
 half of North America, its photoperiodicity has been predicted to differ
-by plant latitude of origin (35, 36). We previously found divergent
+by plant latitude of origin (36, 37). We previously found divergent
 Midwest and Gulf genetic subpopulations of switchgrass with distinct
 sets of environmental adaptations, in that both populations had distinct
 genetic variation associated with each of two fitness proxies, biomass
-and overwinter survival (37). The Midwest genetic subpopulation is
+and overwinter survival (38). The Midwest genetic subpopulation is
 primarily composed of individuals from the well-studied upland
-switchgrass ecotype (38, 39), while the Gulf subpopulation has
+switchgrass ecotype (39, 40), while the Gulf subpopulation has
 individuals from the well-studied lowland ecotype and the phenotypically
-intermediate coastal ecotype (37).
+intermediate coastal ecotype (38).
 
 Here, we test for GxWeather for two phenological timings by assigning
 patterns of genetic effects on phenology at eight common gardens to many
@@ -393,15 +394,15 @@ covary with weather (Table 1) and additional ways phenological timings
 might vary by garden (SI Appendix, Section S1), then jointly re-estimate
 genetic effects on these timings at all eight common gardens using the
 set of these covariance matrices that significantly improved the modeled
-log-likelihood when included (SI Appendix, Section S2-S5) (40). We use
+log-likelihood when included (SI Appendix, Section S2-S5) (41). We use
 the Bayesian framework \emph{mash} (multivariate adaptive shrinkage)
-developed by (40), to refine effect size estimates from genome-wide
+developed by (41), to refine effect size estimates from genome-wide
 association (GWAS). \emph{Mash} allows us to identify and specify
 multiple covariance structures among genetic effect estimates across
 sites, including structures that represent covariance in weather
 variables of interest. Importantly, this method circumvents statistical
 biases in detecting genetic effects with the same or opposite signs
-(41). To confirm our genetic mapping of GxWeather, we compare genomic
+(42). To confirm our genetic mapping of GxWeather, we compare genomic
 locations of the significant posterior effect estimates from \emph{mash}
 to mapping results from an outbred mapping population grown at the same
 sites. Our analyses allow us to describe the weather cues and types of
@@ -546,19 +547,20 @@ effects}\label{frequency-of-rank-changing-gxe-in-significant-snp-effects}
 
 We expected to observe common rank-changing GxE at the level of
 individual loci as this is a key theoretical prediction of local
-adaptation (26--29). To determine the frequency of rank-changing GxE, we
-used the local false sign rate (lfsr), an analogue of the lfdr that
-establishes confidence in the effect sign, not the effect's difference
-from zero, to determine significance. We required lfsr significance (p
-\textless{} 0.05) in both gardens to include effects. This means that
-our tests for a sign change between gardens carry an equal statistical
-burden to those for effects with the same sign. We separated kinds of
-effects at the level of individual loci into SNP effects that differ in
-sign between gardens (effects with rank-changing GxE between gardens),
-SNP effects that differ in magnitude (effects that are large in one
-garden or region and smaller in others), and SNP effects that are
-indistinguishable in two gardens (similarly large or small in
-comparisons between gardens) (Figure~\ref{fig-effects} A).
+adaptation (27--30). To determine the frequency of rank-changing GxE, we
+used the local false sign rate (lfsr), an analogue of the local false
+discovery rate that establishes confidence in the effect sign, not the
+effect's difference from zero, to determine significance. We required
+lfsr significance (p \textless{} 0.05) in both gardens to include
+effects. This means that our tests for a sign change between gardens
+carry an equal statistical burden to those for effects with the same
+sign. We separated kinds of effects at the level of individual loci into
+SNP effects that differ in sign between gardens (effects with
+rank-changing GxE between gardens), SNP effects that differ in magnitude
+(effects that are large in one garden or region and smaller in others),
+and SNP effects that are indistinguishable in two gardens (similarly
+large or small in comparisons between gardens) (Figure~\ref{fig-effects}
+A).
 
 For green-up date for the Gulf subpopulation, hundreds to thousands of
 pairwise effects exhibited rank-changing GxE, or a difference in sign
@@ -609,7 +611,7 @@ interactions (SI Appendix, Figure S4). All QTL for flowering overlapped
 one or more homologs from rice or \emph{A. thaliana} with functionally
 validated roles in flowering (SI Appendix, Dataset 7); the QTL on Chr04K
 overlapped a gene recently functionally validated for flowering in
-switchgrass (42). All flowering and green-up QTL intervals contained at
+switchgrass (43). All flowering and green-up QTL intervals contained at
 least one SNP significant in at least one \emph{mash} run at a
 log10-transformed Bayes Factor \textgreater{} 2, or in the 1\% tail of
 significance, whichever was stricter (SI Appendix, Dataset 8). We also
@@ -646,10 +648,10 @@ date, while the Midwest subpopulation had rank-changing GxE for
 flowering date. As phenological timings are major components of plant
 fitness, this result supports theoretical models that local adaptation
 should involve antagonistic pleiotropy at the level of individual loci
-(26--29). In addition, it advances local adaptation research by using
+(27--30). In addition, it advances local adaptation research by using
 more than two field sites and a wide range of genetic variation to
 determine that rank-changing GxE for phenological timings is common in
-small genomic regions (14, 43, 44).
+small genomic regions (15, 44, 45).
 
 Our analysis of the timing of flowering showed that the Gulf and Midwest
 subpopulations have distinct GxWeather: flowering timing in the Midwest
@@ -827,7 +829,7 @@ panels}\label{scoring-onset-of-vegetative-and-reproductive-development-in-two-ma
 
 In 2019, we scored two phenological events every two days in two mapping
 populations of switchgrass, a diversity panel and a pseudo-F2 cross,
-planted at eight common garden locations (39, 44, 45). We scored the
+planted at eight common garden locations (38, 40, 45). We scored the
 onset of vegetative growth, or green-up date, as the day of the year
 when 50\% of the tiller area of the crown of the plant cut the previous
 year had green growth. The onset of reproductive growth, or flowering
@@ -835,7 +837,7 @@ date, was the day of the year when 50\% of the plant tillers had
 panicles undergoing anthesis.
 
 The formation and resequencing of the diversity panel has been described
-previously (37). The diversity panel contained 134 sequenced, clonally
+previously (38). The diversity panel contained 134 sequenced, clonally
 propagated individuals from the Midwest genetic subpopulation, and 229
 from the Gulf genetic subpopulation. To allow for the possibility that
 different subpopulations had different strengths of connection between
@@ -843,13 +845,13 @@ our phenotypes and genotypes (46), we conducted three sets of genetic
 analyses: on Gulf and Midwest genotypes separately, and on both
 subpopulations together (`Both' subpopulations). Analyses to determine
 narrow-sense heritability (h\textsuperscript{2}) for green-up and
-flowering were done using linear mixed models and followed (37) (SI
+flowering were done using linear mixed models and followed (38) (SI
 Appendix, Section S6).
 
 To confirm candidate genomic regions found using \emph{mash} on the
 diversity panel, we analyzed flowering in an outbred pseudo-F2 cross
 between four individuals, two Midwest and two Gulf individuals. The
-formation of this mapping population has been described previously (39);
+formation of this mapping population has been described previously (40);
 additional details on QTL mapping can be found in SI Appendix, Section
 S7. To be directly comparable to the diversity panel data, only 2019
 phenology data from the pseudo-F2 cross from the same eight common
@@ -927,27 +929,28 @@ rates (lfsr) as the significance criteria. Then, this function
 determines if effects significant in both conditions are of opposite
 sign.
 
-Using the lfsr rather than the local false discovery rate (lfdr) is a
-critical change in our ability to detect alleles directly contributing
-to rank-changing GxE between environments. The lfdr, like other measures
-of FDR, focuses on if we have enough evidence to reject the null
-hypothesis that an effect j is 0, or that there is a significant effect.
-Previous studies of antagonistic pleiotropy (e.g. (44)) have used the
-lfdr or equivalent statistical tests to detect antagonistic pleiotropy.
-These tests were conservative, in that they required two non-zero
-effects of different signs, while tests for differential sensitivity
-required only one non-zero effect. This previous work recognized that
-this testing bias could lead to undercounting occurrences of
-antagonistic pleiotropy (30, 33), and sought to reduce it by permutation
-(32). However, using the lfsr to test for allelic effects that differ in
-sign does not undercount these occurences, as this statistic answers a
-fundamentally different question. For each effect \(j\), the \(lfsr_j\)
-is defined as the probability that we make an error in the sign of
-effect \(j\) if we were forced to declare the effect positive or
-negative (41). Thus, rather than asking ``Are these two effects
-different?'' - as we reasonably expect two effects to be, even if this
-difference cannot be measured - the local false sign rate answers a more
-meaningful question: Can we be confident in the sign of this effect?
+Using the lfsr rather than the local false discovery rate (local FDR) is
+a critical change in our ability to detect alleles directly contributing
+to rank-changing GxE between environments. The local FDR, like other
+measures of FDR, focuses on if we have enough evidence to reject the
+null hypothesis that an effect j is 0, or that there is a significant
+effect. Previous studies of antagonistic pleiotropy (e.g. (45)) have
+used the local FDR or equivalent statistical tests to detect
+antagonistic pleiotropy. These tests were conservative, in that they
+required two non-zero effects of different signs, while tests for
+differential sensitivity required only one non-zero effect. This
+previous work recognized that this testing bias could lead to
+undercounting occurrences of antagonistic pleiotropy (31, 34), and
+sought to reduce it by permutation (33). However, using the lfsr to test
+for allelic effects that differ in sign does not undercount these
+occurences, as this statistic answers a fundamentally different
+question. For each effect \(j\), the \(lfsr_j\) is defined as the
+probability that we make an error in the sign of effect \(j\) if we were
+forced to declare the effect positive or negative (42). Thus, rather
+than asking ``Are these two effects different?'' - as we reasonably
+expect two effects to be, even if this difference cannot be measured -
+the local false sign rate answers a more meaningful question: Can we be
+confident in the sign of this effect?
 
 In addition, the get\_GxE function also sets an arbitrary threshold to
 count an effect as changing in magnitude between environments, commonly
@@ -1060,21 +1063,28 @@ multi{-}environment field trials elucidate the genetic basis of
 adaptation in barley}. \emph{The Plant Journal} \textbf{99}, 1172--1191
 (2019).}
 
-\bibitem[\citeproctext]{ref-wadgymar2017identifying}
+\bibitem[\citeproctext]{ref-unterseer2016}
 \CSLLeftMargin{14. }%
+\CSLRightInline{S. Unterseer, \emph{et al.},
+\href{https://doi.org/10.1186/s13059-016-1009-x}{A comprehensive study
+of the genomic differentiation between temperate Dent and Flint maize}.
+\emph{Genome Biology} \textbf{17} (2016).}
+
+\bibitem[\citeproctext]{ref-wadgymar2017identifying}
+\CSLLeftMargin{15. }%
 \CSLRightInline{S. M. Wadgymar, \emph{et al.}, Identifying targets and
 agents of selection: Innovative methods to evaluate the processes that
 contribute to local adaptation. \emph{Methods in Ecology and Evolution}
 \textbf{8}, 738--749 (2017).}
 
 \bibitem[\citeproctext]{ref-blumel2015flowering}
-\CSLLeftMargin{15. }%
+\CSLLeftMargin{16. }%
 \CSLRightInline{M. Blümel, N. Dally, C. Jung, Flowering time regulation
 in crops---what did we learn from arabidopsis? \emph{Current opinion in
 biotechnology} \textbf{32}, 121--129 (2015).}
 
 \bibitem[\citeproctext]{ref-fournier-level2016}
-\CSLLeftMargin{16. }%
+\CSLLeftMargin{17. }%
 \CSLRightInline{A. Fournier-Level, \emph{et al.},
 \href{https://doi.org/10.1073/pnas.1517456113}{Predicting the
 evolutionary dynamics of seasonal adaptation to novel climates in
@@ -1082,165 +1092,166 @@ evolutionary dynamics of seasonal adaptation to novel climates in
 Academy of Sciences} \textbf{113} (2016).}
 
 \bibitem[\citeproctext]{ref-jung2009flowering}
-\CSLLeftMargin{17. }%
+\CSLLeftMargin{18. }%
 \CSLRightInline{C. Jung, A. E. Müller, Flowering time control and
 applications in plant breeding. \emph{Trends in plant science}
 \textbf{14}, 563--573 (2009).}
 
 \bibitem[\citeproctext]{ref-turner2005pseudo}
-\CSLLeftMargin{18. }%
+\CSLLeftMargin{19. }%
 \CSLRightInline{A. Turner, J. Beales, S. Faure, R. P. Dunford, D. A.
 Laurie, The pseudo-response regulator ppd-H1 provides adaptation to
 photoperiod in barley. \emph{Science} \textbf{310}, 1031--1034 (2005).}
 
 \bibitem[\citeproctext]{ref-faure2012mutation}
-\CSLLeftMargin{19. }%
+\CSLLeftMargin{20. }%
 \CSLRightInline{S. Faure, \emph{et al.}, Mutation at the circadian clock
 gene EARLY MATURITY 8 adapts domesticated barley (hordeum vulgare) to
 short growing seasons. \emph{Proceedings of the National Academy of
 Sciences} \textbf{109}, 8328--8333 (2012).}
 
 \bibitem[\citeproctext]{ref-hung2012zmcct}
-\CSLLeftMargin{20. }%
+\CSLLeftMargin{21. }%
 \CSLRightInline{H.-Y. Hung, \emph{et al.}, ZmCCT and the genetic basis
 of day-length adaptation underlying the postdomestication spread of
 maize. \emph{Proceedings of the National Academy of Sciences}
 \textbf{109}, E1913--E1921 (2012).}
 
 \bibitem[\citeproctext]{ref-zakhrabekova2012induced}
-\CSLLeftMargin{21. }%
+\CSLLeftMargin{22. }%
 \CSLRightInline{S. Zakhrabekova, \emph{et al.}, Induced mutations in
 circadian clock regulator mat-a facilitated short-season adaptation and
 range extension in cultivated barley. \emph{Proceedings of the National
 Academy of Sciences} \textbf{109}, 4326--4331 (2012).}
 
 \bibitem[\citeproctext]{ref-yang2013oself3}
-\CSLLeftMargin{22. }%
+\CSLLeftMargin{23. }%
 \CSLRightInline{Y. Yang, Q. Peng, G.-X. Chen, X.-H. Li, C.-Y. Wu, OsELF3
 is involved in circadian clock regulation for promoting flowering under
 long-day conditions in rice. \emph{Molecular Plant} \textbf{6}, 202--215
 (2013).}
 
 \bibitem[\citeproctext]{ref-pin2012multifaceted}
-\CSLLeftMargin{23. }%
+\CSLLeftMargin{24. }%
 \CSLRightInline{P. Pin, O. Nilsson, The multifaceted roles of FLOWERING
 LOCUS t in plant development. \emph{Plant, cell \& environment}
 \textbf{35}, 1742--1755 (2012).}
 
 \bibitem[\citeproctext]{ref-weller2019parallel}
-\CSLLeftMargin{24. }%
+\CSLLeftMargin{25. }%
 \CSLRightInline{J. L. Weller, \emph{et al.}, Parallel origins of
 photoperiod adaptation following dual domestications of common bean.
 \emph{Journal of Experimental Botany} \textbf{70}, 1209--1219 (2019).}
 
 \bibitem[\citeproctext]{ref-Weine2023.06.21.545998}
-\CSLLeftMargin{25. }%
+\CSLLeftMargin{26. }%
 \CSLRightInline{E. Weine, S. P. Smith, R. K. Knowlton, A. Harpak,
 Tradeoffs in modeling context dependency in complex trait genetics.
 \emph{bioRxiv} (2024)
 https:/doi.org/\href{https://doi.org/10.1101/2023.06.21.545998}{10.1101/2023.06.21.545998}.}
 
 \bibitem[\citeproctext]{ref-levene1953genetic}
-\CSLLeftMargin{26. }%
+\CSLLeftMargin{27. }%
 \CSLRightInline{H. Levene, Genetic equilibrium when more than one
 ecological niche is available. \emph{The American Naturalist}
 \textbf{87}, 331--333 (1953).}
 
 \bibitem[\citeproctext]{ref-felsenstein1976theoretical}
-\CSLLeftMargin{27. }%
+\CSLLeftMargin{28. }%
 \CSLRightInline{J. Felsenstein, The theoretical population genetics of
 variable selection and migration. \emph{Annual review of genetics}
 \textbf{10}, 253--280 (1976).}
 
 \bibitem[\citeproctext]{ref-kawecki2004conceptual}
-\CSLLeftMargin{28. }%
+\CSLLeftMargin{29. }%
 \CSLRightInline{T. J. Kawecki, D. Ebert, Conceptual issues in local
 adaptation. \emph{Ecology letters} \textbf{7}, 1225--1241 (2004).}
 
 \bibitem[\citeproctext]{ref-hedrick1986genetic}
-\CSLLeftMargin{29. }%
+\CSLLeftMargin{30. }%
 \CSLRightInline{P. W. Hedrick, Genetic polymorphism in heterogeneous
 environments: A decade later. \emph{Annual review of ecology and
 systematics} \textbf{17}, 535--566 (1986).}
 
 \bibitem[\citeproctext]{ref-des2013genotype}
-\CSLLeftMargin{30. }%
+\CSLLeftMargin{31. }%
 \CSLRightInline{D. L. Des Marais, K. M. Hernandez, T. E. Juenger,
 Genotype-by-environment interaction and plasticity: Exploring genomic
 responses of plants to the abiotic environment. \emph{Annual Review of
 Ecology, Evolution, and Systematics} \textbf{44}, 5--29 (2013).}
 
 \bibitem[\citeproctext]{ref-millet2016}
-\CSLLeftMargin{31. }%
+\CSLLeftMargin{32. }%
 \CSLRightInline{E. Millet, \emph{et al.},
 \href{https://doi.org/10.1104/pp.16.00621}{Genome-wide analysis of yield
 in Europe: allelic effects as functions of drought and heat scenarios}.
 \emph{Plant Physiology}, pp.00621.2016 (2016).}
 
 \bibitem[\citeproctext]{ref-anderson2013genetic}
-\CSLLeftMargin{32. }%
+\CSLLeftMargin{33. }%
 \CSLRightInline{J. T. Anderson, C.-R. Lee, C. A. Rushworth, R. I.
 Colautti, T. Mitchell-Olds, Genetic trade-offs and conditional
 neutrality contribute to local adaptation. \emph{Molecular ecology}
 \textbf{22}, 699--708 (2013).}
 
 \bibitem[\citeproctext]{ref-anderson2011evolutionary}
-\CSLLeftMargin{33. }%
+\CSLLeftMargin{34. }%
 \CSLRightInline{J. T. Anderson, J. H. Willis, T. Mitchell-Olds,
 Evolutionary genetics of plant adaptation. \emph{Trends in Genetics}
 \textbf{27}, 258--266 (2011).}
 
 \bibitem[\citeproctext]{ref-mitchell1997predicting}
-\CSLLeftMargin{34. }%
+\CSLLeftMargin{35. }%
 \CSLRightInline{R. B. Mitchell, K. J. Moore, L. E. Moser, J. O. Fritz,
 D. D. Redfearn, Predicting developmental morphology in switchgrass and
 big bluestem. \emph{Agronomy Journal} \textbf{89}, 827--832 (1997).}
 
 \bibitem[\citeproctext]{ref-parrish2005biology}
-\CSLLeftMargin{35. }%
+\CSLLeftMargin{36. }%
 \CSLRightInline{D. J. Parrish, J. H. Fike, The biology and agronomy of
 switchgrass for biofuels. \emph{BPTS} \textbf{24}, 423--459 (2005).}
 
 \bibitem[\citeproctext]{ref-casler2004latitudinal}
-\CSLLeftMargin{36. }%
+\CSLLeftMargin{37. }%
 \CSLRightInline{M. Casler, K. P. Vogel, C. Taliaferro, R. Wynia,
 Latitudinal adaptation of switchgrass populations. \emph{Crop Science}
 \textbf{44}, 293--303 (2004).}
 
-\bibitem[\citeproctext]{ref-lovell2021genomic}
-\CSLLeftMargin{37. }%
-\CSLRightInline{J. T. Lovell, \emph{et al.}, Genomic mechanisms of
-climate adaptation in polyploid bioenergy switchgrass. \emph{Nature}
-\textbf{590}, 438--444 (2021).}
+\bibitem[\citeproctext]{ref-lovell2021}
+\CSLLeftMargin{38. }%
+\CSLRightInline{J. T. Lovell, \emph{et al.},
+\href{https://doi.org/10.1038/s41586-020-03127-1}{Genomic mechanisms of
+climate adaptation in polyploid bioenergy switchgrass}. \emph{Nature},
+1--7 (2021).}
 
 \bibitem[\citeproctext]{ref-porter1966analysis}
-\CSLLeftMargin{38. }%
+\CSLLeftMargin{39. }%
 \CSLRightInline{C. L. Porter Jr, An analysis of variation between upland
 and lowland switchgrass, panicum virgatum l., in central oklahoma.
 \emph{Ecology} \textbf{47}, 980--992 (1966).}
 
 \bibitem[\citeproctext]{ref-milano2016genetic}
-\CSLLeftMargin{39. }%
+\CSLLeftMargin{40. }%
 \CSLRightInline{E. R. Milano, D. B. Lowry, T. E. Juenger, The genetic
 basis of upland/lowland ecotype divergence in switchgrass (panicum
 virgatum). \emph{G3: Genes, Genomes, Genetics} \textbf{6}, 3561--3570
 (2016).}
 
 \bibitem[\citeproctext]{ref-urbut2019flexible}
-\CSLLeftMargin{40. }%
+\CSLLeftMargin{41. }%
 \CSLRightInline{S. M. Urbut, G. Wang, P. Carbonetto, M. Stephens,
 Flexible statistical methods for estimating and testing effects in
 genomic studies with multiple conditions. \emph{Nature genetics}
 \textbf{51}, 187--195 (2019).}
 
 \bibitem[\citeproctext]{ref-10.1093ux2fbiostatisticsux2fkxw041}
-\CSLLeftMargin{41. }%
+\CSLLeftMargin{42. }%
 \CSLRightInline{M. Stephens,
 \href{https://doi.org/10.1093/biostatistics/kxw041}{{False discovery
 rates: a new deal}}. \emph{Biostatistics} \textbf{18}, 275--294 (2016).}
 
 \bibitem[\citeproctext]{ref-choi2023}
-\CSLLeftMargin{42. }%
+\CSLLeftMargin{43. }%
 \CSLRightInline{S. Choi, \emph{et al.},
 \href{https://doi.org/10.1093/jxb/erad255}{A single amino acid change
 led to structural and functional differentiation of {\emph{PvHd1}} to
@@ -1248,24 +1259,17 @@ control flowering in switchgrass}. \emph{Journal of Experimental Botany}
 \textbf{74}, 5532--5546 (2023).}
 
 \bibitem[\citeproctext]{ref-savolainen2013ecological}
-\CSLLeftMargin{43. }%
+\CSLLeftMargin{44. }%
 \CSLRightInline{O. Savolainen, M. Lascoux, J. Merilä, Ecological
 genomics of local adaptation. \emph{Nature Reviews Genetics}
 \textbf{14}, 807--820 (2013).}
 
 \bibitem[\citeproctext]{ref-lowry2019qtl}
-\CSLLeftMargin{44. }%
+\CSLLeftMargin{45. }%
 \CSLRightInline{D. B. Lowry, \emph{et al.}, QTL\(\times\) environment
 interactions underlie adaptive divergence in switchgrass across a large
 latitudinal gradient. \emph{Proceedings of the National Academy of
 Sciences} \textbf{116}, 12933--12941 (2019).}
-
-\bibitem[\citeproctext]{ref-lovell2021}
-\CSLLeftMargin{45. }%
-\CSLRightInline{J. T. Lovell, \emph{et al.},
-\href{https://doi.org/10.1038/s41586-020-03127-1}{Genomic mechanisms of
-climate adaptation in polyploid bioenergy switchgrass}. \emph{Nature},
-1--7 (2021).}
 
 \bibitem[\citeproctext]{ref-kortefarlow2013}
 \CSLLeftMargin{46. }%
