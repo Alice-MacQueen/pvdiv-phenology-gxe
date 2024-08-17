@@ -23,15 +23,15 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="pt"
      showgrid="false"
-     inkscape:zoom="1.2096507"
-     inkscape:cx="212.04468"
-     inkscape:cy="298.01991"
+     inkscape:zoom="1.6993079"
+     inkscape:cx="235.09571"
+     inkscape:cy="215.08757"
      inkscape:window-width="1472"
      inkscape:window-height="805"
-     inkscape:window-x="1921"
+     inkscape:window-x="1920"
      inkscape:window-y="621"
      inkscape:window-maximized="0"
-     inkscape:current-layer="g123">
+     inkscape:current-layer="svg123">
     <inkscape:grid
        id="grid123"
        units="pt"
@@ -42,7 +42,7 @@
        empcolor="#0099e5"
        empopacity="0.30196078"
        color="#0099e5"
-       opacity="0.14901961"
+       opacity="0.14902"
        empspacing="5"
        dotted="false"
        gridanglex="30"
@@ -131,7 +131,7 @@
   <g
      clip-path="url(#cpOTYuNDV8MTc0LjUyfDIzLjM0fDE4NC4wNg==)"
      id="g35"
-     transform="translate(-74.764439,-78.610935)">
+     transform="translate(-61.264439,-78.610935)">
     <rect
        x="96.449997"
        y="113.9601"
@@ -265,12 +265,12 @@
      points="96.45,184.06 96.45,23.34 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline329"
-     transform="matrix(0.99999998,0,0,0.27059008,38.41058,56.723965)" />
+     transform="matrix(0.99999998,0,0,0.27059008,47.41058,56.723965)" />
   <polyline
      points="93.71,152.70 96.45,152.70 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline331"
-     transform="translate(38.41058,-77.531229)" />
+     transform="translate(47.41058,-77.531229)" />
   <polyline
      points="96.45,184.06 96.45,23.34 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
@@ -282,7 +282,7 @@
      id="polyline343"
      transform="translate(142.5203,-75.850052)" />
   <circle
-     cx="200.23537"
+     cx="209.23537"
      cy="75.113136"
      r="1.95"
      style="fill:#000000;stroke:#000000;stroke-width:0.71;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10"
@@ -291,21 +291,21 @@
      points="126.43,155.64 126.43,149.76 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline382"
-     transform="translate(80.505364,-77.58685)" />
+     transform="translate(89.505364,-77.58685)" />
   <polyline
      points="126.43,152.70 113.03,152.70 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline383"
-     transform="translate(80.505364,-77.58685)" />
+     transform="translate(89.505364,-77.58685)" />
   <polyline
      points="113.03,155.64 113.03,149.76 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline384"
-     transform="translate(80.505364,-77.58685)" />
+     transform="translate(89.505364,-77.58685)" />
   <line
-     x1="161.21535"
+     x1="170.21535"
      y1="106.47314"
-     x2="161.21535"
+     x2="170.21535"
      y2="63.703106"
      style="fill:none;stroke:#000000;stroke-width:0.551974;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:2.93526, 2.93526"
      id="line384" />
@@ -341,21 +341,14 @@
      points="96.45,184.06 96.45,23.34 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline391"
-     transform="matrix(0.99999998,0,0,0.27059008,-62.662899,56.674946)" />
+     transform="matrix(0.99999998,0,0,0.27059008,-49.162899,56.674946)" />
   <polyline
      points="93.71,152.70 96.45,152.70 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline393"
-     transform="translate(-62.662899,-77.580248)" />
-  <text
-     transform="matrix(0,-0.7818294,1,0,25.082746,85.052109)"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre"
-     textLength="47.240002"
-     lengthAdjust="spacingAndGlyphs"
-     id="text403">Regions</text>
+     transform="translate(-49.162899,-77.580248)" />
   <circle
-     cx="94.661896"
+     cx="108.1619"
      cy="75.064117"
      r="1.95"
      style="fill:#000000;stroke:#000000;stroke-width:0.71;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10"
@@ -364,45 +357,45 @@
      points="126.43,155.64 126.43,149.76 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline407"
-     transform="translate(-25.068109,-77.635869)" />
+     transform="translate(-11.568109,-77.635869)" />
   <polyline
      points="126.43,152.70 113.03,152.70 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline408"
-     transform="translate(-25.068109,-77.635869)" />
+     transform="translate(-11.568109,-77.635869)" />
   <polyline
      points="113.03,155.64 113.03,149.76 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline409"
-     transform="translate(-25.068109,-77.635869)" />
+     transform="translate(-11.568109,-77.635869)" />
   <line
-     x1="60.14188"
+     x1="73.641876"
      y1="106.42412"
-     x2="60.14188"
+     x2="73.641876"
      y2="63.654087"
      style="fill:none;stroke:#000000;stroke-width:0.551974;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:2.93526, 2.93526"
      id="line409" />
   <text
      xml:space="preserve"
      style="font-size:9px;white-space:pre;fill:#000000;stroke-width:0.75"
-     x="34.827488"
+     x="48.327488"
      y="58.007313"
      id="text409"><tspan
        sodipodi:role="line"
        id="tspan409"
        style="fill:#000000;stroke-width:0.75"
-       x="34.827488"
+       x="48.327488"
        y="58.007313">Sign</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:9px;white-space:pre;fill:#000000;stroke-width:0.75"
-     x="136.54181"
+     x="145.54181"
      y="57.74577"
      id="text410"><tspan
        sodipodi:role="line"
        id="tspan410"
        style="stroke-width:0.75"
-       x="136.54181"
+       x="145.54181"
        y="57.74577">Magnitude</tspan></text>
   <text
      xml:space="preserve"
@@ -420,59 +413,21 @@
        x="228.7291"
        y="58.708775"
        id="tspan1">   (No GxE)</tspan></text>
-  <text
-     transform="matrix(0,-0.7818294,1,0,125.58274,85.052109)"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre"
-     textLength="47.240002"
-     lengthAdjust="spacingAndGlyphs"
-     id="text415">Regions</text>
-  <text
-     transform="matrix(0,-0.7818294,1,0,229.08274,85.052109)"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre"
-     textLength="47.240002"
-     lengthAdjust="spacingAndGlyphs"
-     id="text416">Regions</text>
   <polyline
      points="93.71,172.30 96.45,172.30 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline330"
-     transform="translate(38.41058,-77.531229)" />
+     transform="translate(47.41058,-77.531229)" />
   <polyline
      points="96.45,184.06 174.52,184.06 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline332"
-     transform="translate(38.41058,-77.531229)" />
-  <polyline
-     points="103.42,186.80 103.42,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline333"
-     transform="translate(38.41058,-77.531229)" />
+     transform="translate(47.41058,-77.531229)" />
   <polyline
      points="122.71,186.80 122.71,184.06 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline334"
-     transform="translate(38.41058,-77.531229)" />
-  <polyline
-     points="142.01,186.80 142.01,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline335"
-     transform="translate(38.41058,-77.531229)" />
-  <polyline
-     points="161.30,186.80 161.30,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline336"
-     transform="translate(38.41058,-77.531229)" />
-  <text
-     x="103.42"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="17.23"
-     lengthAdjust="spacingAndGlyphs"
-     id="text336"
-     transform="translate(38.41058,-77.531229)">-0.2</text>
+     transform="translate(47.41058,-77.531229)" />
   <text
      x="122.71"
      y="196.17"
@@ -481,34 +436,7 @@
      textLength="13.9"
      lengthAdjust="spacingAndGlyphs"
      id="text337"
-     transform="translate(38.41058,-77.531229)">0.0</text>
-  <text
-     x="142.00999"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="13.9"
-     lengthAdjust="spacingAndGlyphs"
-     id="text338"
-     transform="translate(38.41058,-77.531229)">0.2</text>
-  <text
-     x="161.3"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="13.9"
-     lengthAdjust="spacingAndGlyphs"
-     id="text339"
-     transform="translate(38.41058,-77.531229)">0.4</text>
-  <text
-     x="135.48"
-     y="208.3"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre"
-     textLength="47.790001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text340"
-     transform="translate(38.41058,-77.531229)">Effect Size</text>
+     transform="translate(47.41058,-77.531229)">0.0</text>
   <polyline
      points="93.71,172.30 96.45,172.30 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
@@ -520,34 +448,10 @@
      id="polyline344"
      transform="translate(142.5203,-75.850052)" />
   <polyline
-     points="103.42,186.80 103.42,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline345"
-     transform="translate(142.5203,-75.850052)" />
-  <polyline
      points="122.71,186.80 122.71,184.06 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline346"
      transform="translate(142.5203,-75.850052)" />
-  <polyline
-     points="142.01,186.80 142.01,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline347"
-     transform="translate(139.5203,-75.850052)" />
-  <polyline
-     points="161.30,186.80 161.30,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline348"
-     transform="translate(139.5203,-75.850052)" />
-  <text
-     x="103.42"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="17.23"
-     lengthAdjust="spacingAndGlyphs"
-     id="text348"
-     transform="translate(142.5203,-75.850052)">-0.2</text>
   <text
      x="122.71"
      y="196.17"
@@ -557,35 +461,8 @@
      lengthAdjust="spacingAndGlyphs"
      id="text349"
      transform="translate(142.5203,-75.850052)">0.0</text>
-  <text
-     x="142.00999"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="13.9"
-     lengthAdjust="spacingAndGlyphs"
-     id="text350"
-     transform="translate(142.5203,-75.850052)">0.2</text>
-  <text
-     x="161.3"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="13.9"
-     lengthAdjust="spacingAndGlyphs"
-     id="text351"
-     transform="translate(142.5203,-75.850052)">0.4</text>
-  <text
-     x="135.48"
-     y="208.3"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre"
-     textLength="47.790001"
-     lengthAdjust="spacingAndGlyphs"
-     id="text352"
-     transform="translate(142.5203,-75.850052)">Effect Size</text>
   <circle
-     cx="172.78535"
+     cx="181.78535"
      cy="94.713142"
      r="1.95"
      style="fill:#000000;stroke:#000000;stroke-width:0.71;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10"
@@ -594,17 +471,17 @@
      points="127.43,175.24 127.43,169.36 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline379"
-     transform="translate(52.00536,-77.586849)" />
+     transform="translate(61.00536,-77.586849)" />
   <polyline
      points="127.43,172.30 114.13,172.30 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline380"
-     transform="translate(52.00536,-77.586849)" />
+     transform="translate(61.00536,-77.586849)" />
   <polyline
      points="114.13,175.24 114.13,169.36 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline381"
-     transform="translate(52.00536,-77.586849)" />
+     transform="translate(61.00536,-77.586849)" />
   <circle
      cx="296.76788"
      cy="96.153893"
@@ -630,41 +507,17 @@
      points="93.71,172.30 96.45,172.30 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline392"
-     transform="translate(-62.662899,-77.580249)" />
+     transform="translate(-49.162899,-77.580249)" />
   <polyline
      points="96.45,184.06 174.52,184.06 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline394"
-     transform="translate(-62.662899,-77.580249)" />
-  <polyline
-     points="103.42,186.80 103.42,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline395"
-     transform="translate(-62.662899,-77.580249)" />
+     transform="translate(-49.162899,-77.580249)" />
   <polyline
      points="122.71,186.80 122.71,184.06 "
      style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline396"
-     transform="translate(-62.662899,-77.580249)" />
-  <polyline
-     points="142.01,186.80 142.01,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline397"
-     transform="translate(-62.662899,-77.580249)" />
-  <polyline
-     points="161.30,186.80 161.30,184.06 "
-     style="fill:none;stroke:#7f7f7f;stroke-width:0.53;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
-     id="polyline398"
-     transform="translate(-62.662899,-77.580249)" />
-  <text
-     x="103.42"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="17.23"
-     lengthAdjust="spacingAndGlyphs"
-     id="text398"
-     transform="translate(-62.662899,-77.580249)">-0.2</text>
+     transform="translate(-49.162899,-77.580249)" />
   <text
      x="122.71"
      y="196.17"
@@ -673,25 +526,7 @@
      textLength="13.9"
      lengthAdjust="spacingAndGlyphs"
      id="text399"
-     transform="translate(-62.662899,-77.580249)">0.0</text>
-  <text
-     x="142.00999"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="13.9"
-     lengthAdjust="spacingAndGlyphs"
-     id="text400"
-     transform="translate(-62.662899,-77.580249)">0.2</text>
-  <text
-     x="161.3"
-     y="196.17"
-     text-anchor="middle"
-     style="font-size:10px;font-family:Arial;white-space:pre;fill:#4d4d4d"
-     textLength="13.9"
-     lengthAdjust="spacingAndGlyphs"
-     id="text401"
-     transform="translate(-62.662899,-77.580249)">0.4</text>
+     transform="translate(-49.162899,-77.580249)">0.0</text>
   <text
      x="135.48"
      y="208.3"
@@ -700,9 +535,9 @@
      textLength="47.790001"
      lengthAdjust="spacingAndGlyphs"
      id="text402"
-     transform="translate(-62.662899,-77.580249)">Effect Size</text>
+     transform="matrix(1.7463587,0,0,1,-152.95006,-77.580249)">Posterior Effect Size</text>
   <circle
-     cx="43.21188"
+     cx="56.71188"
      cy="94.664131"
      r="1.95"
      style="fill:#000000;stroke:#000000;stroke-width:0.71;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10"
@@ -711,17 +546,17 @@
      points="127.43,175.24 127.43,169.36 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline404"
-     transform="translate(-77.568109,-77.635869)" />
+     transform="translate(-64.068109,-77.635869)" />
   <polyline
      points="127.43,172.30 114.13,172.30 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline405"
-     transform="translate(-77.568109,-77.635869)" />
+     transform="translate(-64.068109,-77.635869)" />
   <polyline
      points="114.13,175.24 114.13,169.36 "
      style="fill:none;stroke:#000000;stroke-width:1.07;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:10"
      id="polyline406"
-     transform="translate(-77.568109,-77.635869)" />
+     transform="translate(-64.068109,-77.635869)" />
   <text
      xml:space="preserve"
      style="font-size:14px;white-space:pre;fill:#000000;stroke-width:0.75"
@@ -1734,4 +1569,51 @@
        id="text123-1"
        transform="matrix(1.4742355,0,0,1.100002,-126.45966,-16.3461)">No GxE</text>
   </g>
+  <text
+     xml:space="preserve"
+     style="font-size:12px;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#000000;stroke:#000000;stroke-width:0.75"
+     x="8.6899424"
+     y="74.654503"
+     id="text2"><tspan
+       sodipodi:role="line"
+       id="tspan2"
+       style="stroke-width:0.75"
+       x="8.6899424"
+       y="85.60247" /></text>
+  <text
+     x="135.48"
+     y="208.3"
+     text-anchor="middle"
+     style="font-size:10px;font-family:Arial;white-space:pre"
+     textLength="47.790001"
+     lengthAdjust="spacingAndGlyphs"
+     id="text3"
+     transform="matrix(0.81597711,0,0,1,-86.581064,-130.1149)">Garden 1</text>
+  <text
+     x="135.48"
+     y="208.3"
+     text-anchor="middle"
+     style="font-size:10px;font-family:Arial;white-space:pre"
+     textLength="47.790001"
+     lengthAdjust="spacingAndGlyphs"
+     id="text4"
+     transform="matrix(0.81597711,0,0,1,-86.581064,-110.6149)">Garden 2</text>
+  <text
+     x="135.48"
+     y="208.3"
+     text-anchor="middle"
+     style="font-size:10px;font-family:Arial;white-space:pre"
+     textLength="47.790001"
+     lengthAdjust="spacingAndGlyphs"
+     id="text5"
+     transform="matrix(1.7463587,0,0,1,-55.45006,-77.580249)">Posterior Effect Size</text>
+  <text
+     x="135.48"
+     y="208.3"
+     text-anchor="middle"
+     style="font-size:10px;font-family:Arial;white-space:pre"
+     textLength="47.790001"
+     lengthAdjust="spacingAndGlyphs"
+     id="text6"
+     transform="matrix(1.7463587,0,0,1,39.04994,-77.580249)">Posterior Effect Size</text>
 </svg>
