@@ -22,7 +22,7 @@ author:
       - ref: a
     attributes:
       equal-contributor: true
-  - name: Samuel P. Smith
+  - name: Samuel Pattillo Smith
     affiliations:
         - ref: a
     attributes:
