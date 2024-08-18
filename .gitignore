@@ -34,9 +34,10 @@ analysis/heritability/single_sites/
 analysis/heritability/nine_sites/
 analysis/gwas/BLUPs/unused_trait_model_GWAS/
 
-# docx working files in manuscript
+# docx and pages working files in manuscript
 manuscript/~$*
 manuscript/revision2/intermediate_files/Results_and_MandM_edits.qmd
+manuscript/revision2/Revision_bioRxiv.pages
 
 # Files and folders that aren't pertinent to the completed manuscript
 analysis/common-garden-allele-balancing
