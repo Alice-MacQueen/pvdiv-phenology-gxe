@@ -22,12 +22,12 @@ author:
       - ref: a
     attributes:
       equal-contributor: true
-  - name: Samuel A. Smith
+  - name: Samuel P. Smith
     affiliations:
         - ref: a
     attributes:
       equal-contributor: true
-  - name: Jason Bonnette
+  - name: Jason E. Bonnette
     affiliations:
           - ref: a
   - name: Arvid R. Boe
@@ -38,7 +38,7 @@ author:
         city: Brookings
         state: SD
         postal-code: 57006
-  - name: Phillip A. Fay
+  - name: Philip A. Fay
     affiliations:
       - name: USDA-ARS
         id: c
