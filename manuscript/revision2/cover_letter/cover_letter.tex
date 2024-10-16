@@ -169,13 +169,14 @@ genetic variants can exhibit different responses to the environment. Yet
 current statistical models to test for GxE don't have robust frameworks
 to specify and compete different models of GxE effects, instead focusing
 on finding a single, best fitting form of GxE covariance. We use
-multivariate adaptive shrinkage (mash {[}@urbut2018{]}) to determine the
-regions of the switchgrass genome with different types of GxE,
-specifically regions of the genome with effects on phenology that covary
-with several weather-based `cues'. We use a greedy algorithm to compete
-and select types of GxE and GxWeather that improve our models, then use
-mash to identify which SNP effects are best modeled with each type of
-GxE or GxWeather.
+multivariate adaptive shrinkage (mash,
+\href{https://doi.org/10.1038/s41588-018-0268-8}{Urbut \emph{et al}.,
+2018}) to determine the regions of the switchgrass genome with different
+types of GxE, specifically regions of the genome with effects on
+phenology that covary with several weather-based `cues'. We use a greedy
+algorithm to compete and select types of GxE and GxWeather that improve
+our models, then use mash to identify which SNP effects are best modeled
+with each type of GxE or GxWeather.
 
 Second, to our knowledge, this work is the first to use a statistically
 unbiased test to detect the relative frequencies of loci with and

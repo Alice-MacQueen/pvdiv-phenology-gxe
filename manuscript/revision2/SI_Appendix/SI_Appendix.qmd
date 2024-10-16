@@ -232,7 +232,7 @@ where $\mu$ is the population mean, QTL is the marker genetic effect, E is the e
 <!-- use these FloatBarrier calls to avoid true-to-the-theme jumping ahead of the frog --->
 
 | Phenology type | Subpopulation | Effects Selected per GWAS, Strong Subset | Effects Selected per GWAS, Random Subset | Total Markers, Strong Subset | Total Markers, Random Subset |
-|:-----------|-----------:|-----------:|-----------:|------------|------------|
+|:---------------|--------------:|-----------------------------------------:|-----------------------------------------:|------------------------------|------------------------------|
 | Greenup Date   |          Gulf |                                    19000 |                                    38000 | 45931                        | 91862                        |
 |                |       Midwest |                                    33000 |                                    66000 | 57729                        | 115458                       |
 |                |          Both |                                    19000 |                                    38000 | 44765                        | 89530                        |
@@ -245,7 +245,7 @@ where $\mu$ is the population mean, QTL is the marker genetic effect, E is the e
 {{< pagebreak >}}
 
 | Greedy Algorithm Iteration \# |     Gulf Greenup Date |     Midwest Greenup Date |    Both Greenup Date | Gulf Flowering Date     | Midwest Flowering Date         | Both Flowering Date     |
-|:----------|----------:|----------:|----------:|-----------|-----------|-----------|
+|:------------------------------|----------------------:|-------------------------:|---------------------:|-------------------------|--------------------------------|-------------------------|
 | 1                             |              Identity |                 Identity |             Identity | Identity                | Identity                       | Identity                |
 | 2                             |         Simple Het. 2 |         Single Effect OK |     Single Effect MI | Simple Het. 1           | Simple Het. 1                  | Single Effect TX3       |
 | 3                             |      Single Effect MO |            Equal Effects |     Single Effect SD | Single Effect MI        | Single Effect MI               | Single Effect TX1       |
